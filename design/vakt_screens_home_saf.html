@@ -1,0 +1,921 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; font-family: -apple-system, 'SF Pro Display', sans-serif; }
+
+  .screen-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .stab {
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    font-family: inherit;
+  }
+
+  .stab.active {
+    background: #648CC8;
+    color: #0A0E1A;
+    border-color: #648CC8;
+  }
+
+  .screen-panel { display: none; }
+  .screen-panel.active { display: block; }
+
+  /* iPhone frame */
+  .iphone-frame {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .iphone-shell {
+    background: #1A1E24;
+    border-radius: 42px;
+    padding: 12px;
+    border: 1px solid #2A2E34;
+    box-shadow: 0 0 0 1px #0A0C10;
+  }
+
+  .iphone-screen {
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .iphone-notch {
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 32px;
+    background: #1A1E24;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  .screen-content {
+    background: #0A0E1A;
+    min-height: 580px;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    padding: 48px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sb-time {
+    font-size: 15px;
+    font-weight: 600;
+    color: #DCE4F0;
+    letter-spacing: 0.3px;
+  }
+
+  .sb-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .sb-icon {
+    width: 14px; height: 10px;
+    background: #DCE4F0;
+    border-radius: 2px;
+    opacity: 0.8;
+  }
+
+  /* HOME SCREEN */
+  .home-top {
+    padding: 28px 24px 0;
+    flex: 1;
+  }
+
+  .prayer-name {
+    font-size: 42px;
+    font-weight: 100;
+    color: #DCE4F0;
+    letter-spacing: -2px;
+    line-height: 0.9;
+    margin-bottom: 4px;
+  }
+
+  .prayer-time {
+    font-size: 16px;
+    font-weight: 300;
+    color: #648CC8;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .prayer-countdown {
+    font-size: 13px;
+    color: #4A6080;
+    letter-spacing: 0.3px;
+    margin-bottom: 32px;
+  }
+
+  .horizon-display {
+    position: relative;
+    height: 140px;
+    margin: 0 -24px;
+  }
+
+  .h-sky {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 60px;
+    background: linear-gradient(to bottom, #0A0E1A 0%, #0F1826 100%);
+  }
+
+  .h-earth {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: #070A0F;
+  }
+
+  .h-line {
+    position: absolute;
+    top: 79px; left: 0; right: 0;
+    height: 0.5px;
+    background: #648CC8;
+    opacity: 0.5;
+  }
+
+  .h-dot {
+    position: absolute;
+    top: 75px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #648CC8;
+    opacity: 0.5;
+    transform: translateX(-50%);
+  }
+
+  .h-dot.me {
+    background: #DCE4F0;
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(220,228,240,0.4);
+    width: 10px; height: 10px;
+    top: 74px;
+  }
+
+  .h-count {
+    position: absolute;
+    bottom: 12px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: #4A6080;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .join-area {
+    padding: 20px 24px 0;
+  }
+
+  .join-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 16px;
+    background: #0F1826;
+    border: 0.5px solid #648CC8;
+    color: #8AAAD0;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+  }
+
+  .next-prayers {
+    padding: 20px 24px 0;
+  }
+
+  .prayer-list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 0.5px solid #0F1826;
+  }
+
+  .prayer-list-row:last-child { border-bottom: none; }
+
+  .pr-name { font-size: 14px; color: #4A6080; }
+  .pr-time { font-size: 14px; color: #2A3A50; }
+
+  .tab-bar {
+    padding: 12px 20px 28px;
+    display: flex;
+    justify-content: space-around;
+    border-top: 0.5px solid #0F1826;
+    margin-top: auto;
+  }
+
+  .tb-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+  }
+
+  .tb-icon {
+    width: 22px; height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tb-dot {
+    width: 18px; height: 2px;
+    border-radius: 1px;
+  }
+
+  .tb-label {
+    font-size: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  /* SAF LOBBY */
+  .saf-header {
+    padding: 28px 24px 16px;
+    border-bottom: 0.5px solid #0F1826;
+  }
+
+  .saf-title {
+    font-size: 13px;
+    color: #4A6080;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .saf-name {
+    font-size: 22px;
+    font-weight: 300;
+    color: #DCE4F0;
+    letter-spacing: -0.5px;
+  }
+
+  .saf-horizon-large {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
+
+  .sh-sky {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 80px;
+    background: #0A0E1A;
+  }
+
+  .sh-glow {
+    position: absolute;
+    top: 80px; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(100,140,200,0.15), transparent);
+  }
+
+  .sh-earth {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: #070A0F;
+  }
+
+  .sh-line {
+    position: absolute;
+    top: 119px; left: 0; right: 0;
+    height: 0.5px;
+    background: #648CC8;
+  }
+
+  .sh-dot {
+    position: absolute;
+    top: 114px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+  }
+
+  .sh-dot.others {
+    background: #1A2840;
+    border: 1px solid #648CC8;
+  }
+
+  .sh-dot.wudu {
+    background: #2A3A50;
+    border: 1px solid #8AAAD0;
+  }
+
+  .sh-dot.ready {
+    background: #648CC8;
+    border: none;
+  }
+
+  .sh-dot.me {
+    background: #DCE4F0;
+    border: none;
+    box-shadow: 0 0 12px rgba(220,228,240,0.5);
+    width: 12px; height: 12px;
+    top: 113px;
+  }
+
+  .sh-legend {
+    position: absolute;
+    bottom: 12px; left: 16px; right: 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .sh-leg-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+    color: #4A6080;
+    letter-spacing: 0.3px;
+  }
+
+  .sh-leg-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .saf-status-area {
+    padding: 16px 24px 0;
+  }
+
+  .sst-label {
+    font-size: 10px;
+    color: #4A6080;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .status-chips-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .schip {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    border: 0.5px solid;
+  }
+
+  .schip.idle {
+    background: #0F1826;
+    color: #4A6080;
+    border-color: #1A2840;
+  }
+
+  .schip.active {
+    background: #1A2840;
+    color: #8AAAD0;
+    border-color: #648CC8;
+  }
+
+  .schip.selected {
+    background: #648CC8;
+    color: #0A0E1A;
+    border-color: #648CC8;
+  }
+
+  .start-salah-area {
+    padding: 16px 24px 0;
+    margin-top: auto;
+  }
+
+  .start-btn {
+    width: 100%;
+    padding: 20px;
+    border-radius: 18px;
+    background: #DCE4F0;
+    color: #0A0E1A;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: center;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+
+  .start-sub {
+    text-align: center;
+    font-size: 11px;
+    color: #2A3A50;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  /* QUIET MODE */
+  .quiet-screen {
+    background: #060810;
+    min-height: 580px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .quiet-prayer-name {
+    font-size: 18px;
+    font-weight: 100;
+    color: rgba(220,228,240,0.3);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+
+  .quiet-horizon {
+    width: 100%;
+    position: relative;
+    margin-bottom: 60px;
+  }
+
+  .qh-line {
+    height: 0.5px;
+    background: rgba(100,140,200,0.2);
+    width: 100%;
+  }
+
+  .qh-dot {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(100,140,200,0.4);
+  }
+
+  .quiet-count {
+    font-size: 13px;
+    color: rgba(100,140,200,0.3);
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .quiet-end {
+    font-size: 14px;
+    color: rgba(74,96,128,0.6);
+    letter-spacing: 0.5px;
+    text-align: center;
+    border: 0.5px solid rgba(100,140,200,0.1);
+    padding: 14px 28px;
+    border-radius: 30px;
+  }
+
+  /* INSIGHTS */
+  .ins-header {
+    padding: 28px 24px 20px;
+  }
+
+  .ins-title {
+    font-size: 28px;
+    font-weight: 100;
+    color: #DCE4F0;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+
+  .ins-sub {
+    font-size: 13px;
+    color: #4A6080;
+  }
+
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: 0 24px;
+    margin-bottom: 20px;
+  }
+
+  .week-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .wd-label {
+    font-size: 9px;
+    color: #2A3A50;
+    letter-spacing: 0.3px;
+  }
+
+  .wd-bar-wrap {
+    width: 100%;
+    height: 48px;
+    background: #0F1826;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .wd-bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    background: #1A2840;
+    transition: all 0.3s;
+  }
+
+  .wd-bar.full { background: #648CC8; }
+  .wd-bar.most { background: #4A6080; }
+  .wd-bar.some { background: #2A3A50; }
+
+  .wd-count {
+    font-size: 9px;
+    color: #4A6080;
+  }
+
+  .ins-stat {
+    margin: 0 24px 8px;
+    padding: 14px;
+    background: #0F1826;
+    border-radius: 12px;
+    border: 0.5px solid #1A2840;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .is-label { font-size: 13px; color: #4A6080; }
+  .is-value { font-size: 20px; font-weight: 300; color: #8AAAD0; letter-spacing: -0.5px; }
+
+  /* screen label */
+  .screen-badge {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+</style>
+
+<div style="font-family: -apple-system, sans-serif;">
+
+  <div class="screen-tabs">
+    <button class="stab active" onclick="showScreen('home')">Ana Ekran</button>
+    <button class="stab" onclick="showScreen('saf')">Canlı Saf</button>
+    <button class="stab" onclick="showScreen('quiet')">Sessiz Mod</button>
+    <button class="stab" onclick="showScreen('insights')">Yansımalar</button>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen-panel active" id="screen-home">
+    <div class="screen-badge">Ana Ekran · Sonraki Vakit</div>
+    <div class="iphone-frame">
+      <div class="iphone-shell">
+        <div class="iphone-screen">
+          <div class="iphone-notch"></div>
+          <div class="screen-content">
+            <div class="status-bar">
+              <span class="sb-time">18:20</span>
+              <div class="sb-icons">
+                <div class="sb-icon" style="width:16px; height:10px; border-radius:1px;"></div>
+                <div class="sb-icon" style="width:12px; height:10px; border-radius:50%;"></div>
+                <div class="sb-icon" style="width:22px; height:10px; border-radius:2px;"></div>
+              </div>
+            </div>
+
+            <div class="home-top">
+              <div style="font-size:11px; color:#4A6080; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;">SIRADAKI</div>
+              <div class="prayer-name">İkindi</div>
+              <div class="prayer-time">18 : 32</div>
+              <div class="prayer-countdown">12 dakika kaldı</div>
+
+              <!-- Horizon visualization -->
+              <div class="horizon-display">
+                <div class="h-sky"></div>
+                <div class="h-earth"></div>
+                <div class="h-line"></div>
+                <div class="h-dot" style="left:18%"></div>
+                <div class="h-dot" style="left:27%"></div>
+                <div class="h-dot" style="left:35%"></div>
+                <div class="h-dot" style="left:44%"></div>
+                <div class="h-dot me" style="left:55%"></div>
+                <div class="h-dot" style="left:65%"></div>
+                <div class="h-dot" style="left:76%"></div>
+                <div class="h-dot" style="left:85%"></div>
+                <div class="h-count">7 kişi daha ufukta</div>
+              </div>
+            </div>
+
+            <div class="join-area">
+              <button class="join-btn" onclick="document.querySelector('[onclick=\'showScreen(\\\'saf\\\')\']').click()">Safa katıl →</button>
+            </div>
+
+            <div class="next-prayers">
+              <div style="font-size:10px; color:#2A3A50; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px;">SONRAKI</div>
+              <div class="prayer-list-row">
+                <span class="pr-name">Akşam</span>
+                <span class="pr-time">20:14</span>
+              </div>
+              <div class="prayer-list-row">
+                <span class="pr-name">Yatsı</span>
+                <span class="pr-time">21:48</span>
+              </div>
+              <div class="prayer-list-row">
+                <span class="pr-name">Sabah</span>
+                <span class="pr-time">04:31</span>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#DCE4F0; width:18px;"></div></div>
+                <span class="tb-label" style="color:#DCE4F0;">Ev</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; border:1.5px solid #4A6080;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Saflar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#4A6080; width:12px;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Yansımalar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; background:#4A6080;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Profil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAF LOBBY -->
+  <div class="screen-panel" id="screen-saf">
+    <div class="screen-badge">Canlı Saf Lobisi</div>
+    <div class="iphone-frame">
+      <div class="iphone-shell">
+        <div class="iphone-screen">
+          <div class="iphone-notch"></div>
+          <div class="screen-content">
+            <div class="status-bar">
+              <span class="sb-time">18:24</span>
+              <div class="sb-icons">
+                <div class="sb-icon" style="width:22px; border-radius:2px;"></div>
+              </div>
+            </div>
+
+            <div class="saf-header">
+              <div class="saf-title">KÜRESEL SAF</div>
+              <div class="saf-name">İkindi · 8 kişi</div>
+            </div>
+
+            <div class="saf-horizon-large">
+              <div class="sh-sky"></div>
+              <div class="sh-glow"></div>
+              <div class="sh-earth"></div>
+              <div class="sh-line"></div>
+
+              <!-- Various status dots -->
+              <div class="sh-dot others" style="left:10%"></div>
+              <div class="sh-dot others" style="left:20%"></div>
+              <div class="sh-dot wudu" style="left:30%"></div>
+              <div class="sh-dot wudu" style="left:42%"></div>
+              <div class="sh-dot me" style="left:53%"></div>
+              <div class="sh-dot ready" style="left:65%"></div>
+              <div class="sh-dot ready" style="left:76%"></div>
+              <div class="sh-dot others" style="left:88%"></div>
+
+              <div class="sh-legend">
+                <div class="sh-leg-item">
+                  <div class="sh-leg-dot" style="background:#1A2840; border:0.5px solid #648CC8;"></div>
+                  Kalkıyor / Yer arıyor
+                </div>
+                <div class="sh-leg-item">
+                  <div class="sh-leg-dot" style="background:#648CC8;"></div>
+                  Hazır
+                </div>
+                <div class="sh-leg-item">
+                  <div class="sh-leg-dot" style="background:#DCE4F0;"></div>
+                  Sen
+                </div>
+              </div>
+            </div>
+
+            <div class="saf-status-area">
+              <div class="sst-label">Durumun</div>
+              <div class="status-chips-row">
+                <button class="schip idle" onclick="updateChip(this)">Kalkıyorum</button>
+                <button class="schip active" onclick="updateChip(this)">Abdest</button>
+                <button class="schip idle" onclick="updateChip(this)">Yer arıyorum</button>
+                <button class="schip idle" onclick="updateChip(this)">Hazırım</button>
+              </div>
+            </div>
+
+            <div class="start-salah-area">
+              <button class="start-btn">Namaza Başla</button>
+              <div class="start-sub">Telefonu bırak · Namaza dur</div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#4A6080; width:18px;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Ev</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; border:1.5px solid #DCE4F0;"></div></div>
+                <span class="tb-label" style="color:#DCE4F0;">Saflar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#4A6080; width:12px;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Yansımalar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; background:#4A6080;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Profil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIET MODE -->
+  <div class="screen-panel" id="screen-quiet">
+    <div class="screen-badge">Sessiz Namaz Modu</div>
+    <div class="iphone-frame">
+      <div class="iphone-shell">
+        <div class="iphone-screen">
+          <div class="iphone-notch"></div>
+          <div class="quiet-screen">
+            <div class="quiet-prayer-name">İkindi</div>
+            
+            <div class="quiet-horizon">
+              <div class="qh-line"></div>
+              <div class="qh-dot"></div>
+            </div>
+
+            <div class="quiet-count">8 kişi seninle birlikte duruyor</div>
+
+            <div style="height:60px;"></div>
+
+            <button class="quiet-end" onclick="alert('Namazdan sonra dön')">Namaz bitti</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; padding:14px; background: var(--surface-1); border-radius:12px; border:0.5px solid var(--border);">
+      <div style="font-size:10px; color:var(--text-muted); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px;">Tasarım Kararları</div>
+      <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
+        Timer yok. Animasyon yok. Sayaç yok. Ödül yok. Suçlama yok.<br>
+        Ekran, bir insan değil ışık kadar mevcut olur.<br>
+        Tek eylem: "Namaz bitti" — bu bile sessiz ve küçük.
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="screen-panel" id="screen-insights">
+    <div class="screen-badge">Yansımalar Ekranı</div>
+    <div class="iphone-frame">
+      <div class="iphone-shell">
+        <div class="iphone-screen">
+          <div class="iphone-notch"></div>
+          <div class="screen-content">
+            <div class="status-bar">
+              <span class="sb-time">18:20</span>
+              <div class="sb-icons">
+                <div class="sb-icon" style="width:22px; border-radius:2px;"></div>
+              </div>
+            </div>
+
+            <div class="ins-header">
+              <div class="ins-title">Bu hafta</div>
+              <div class="ins-sub">Ufukta buluştuğun anlar</div>
+            </div>
+
+            <div class="week-grid">
+              <div class="week-day">
+                <div class="wd-label">Pzt</div>
+                <div class="wd-bar-wrap"><div class="wd-bar full" style="height:80%;"></div></div>
+                <div class="wd-count">5</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Sal</div>
+                <div class="wd-bar-wrap"><div class="wd-bar most" style="height:60%;"></div></div>
+                <div class="wd-count">3</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Çar</div>
+                <div class="wd-bar-wrap"><div class="wd-bar full" style="height:100%;"></div></div>
+                <div class="wd-count">5</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Per</div>
+                <div class="wd-bar-wrap"><div class="wd-bar some" style="height:40%;"></div></div>
+                <div class="wd-count">2</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Cum</div>
+                <div class="wd-bar-wrap"><div class="wd-bar full" style="height:80%;"></div></div>
+                <div class="wd-count">4</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Cmt</div>
+                <div class="wd-bar-wrap"><div class="wd-bar full" style="height:100%;"></div></div>
+                <div class="wd-count">5</div>
+              </div>
+              <div class="week-day">
+                <div class="wd-label">Paz</div>
+                <div class="wd-bar-wrap"><div class="wd-bar" style="height:20%; background:#0F1826; border:0.5px solid #1A2840;"></div></div>
+                <div class="wd-count" style="color:#2A3A50;">—</div>
+              </div>
+            </div>
+
+            <div class="ins-stat">
+              <span class="is-label">Birlikte başlandı</span>
+              <span class="is-value">24</span>
+            </div>
+            <div class="ins-stat">
+              <span class="is-label">En uzun ufuk</span>
+              <span class="is-value">247 kişi</span>
+            </div>
+            <div class="ins-stat">
+              <span class="is-label">Bu haftanın en kalabalık vakti</span>
+              <span class="is-value">Yatsı</span>
+            </div>
+
+            <div style="padding:12px 24px; margin-top:8px;">
+              <div style="font-size:11px; color:#2A3A50; text-align:center; letter-spacing:0.3px; line-height:1.6;">
+                Streak veya skor yok.<br>Sadece ne zaman ufukta birleştiğin.
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#4A6080; width:18px;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Ev</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; border:1.5px solid #4A6080;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Saflar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div class="tb-dot" style="background:#DCE4F0; width:12px;"></div></div>
+                <span class="tb-label" style="color:#DCE4F0;">Yansımalar</span>
+              </div>
+              <div class="tb-item">
+                <div class="tb-icon"><div style="width:14px; height:14px; border-radius:50%; background:#4A6080;"></div></div>
+                <span class="tb-label" style="color:#4A6080;">Profil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const idx = ['home','saf','quiet','insights'].indexOf(id);
+  document.querySelectorAll('.stab')[idx].classList.add('active');
+}
+
+function updateChip(el) {
+  el.closest('.status-chips-row').querySelectorAll('.schip').forEach(c => c.className = 'schip idle');
+  el.className = 'schip selected';
+}
+</script>

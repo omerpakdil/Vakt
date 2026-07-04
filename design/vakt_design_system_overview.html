@@ -1,0 +1,577 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; }
+  
+  .vakt-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    color: var(--text-primary);
+    padding: 0;
+  }
+
+  .direction-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: var(--surface-1);
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .tab-btn.active {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .direction-panel {
+    display: none;
+  }
+  .direction-panel.active {
+    display: block;
+  }
+
+  .dir-header {
+    padding: 20px 20px 16px;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 0;
+  }
+
+  .dir-name {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .dir-concept {
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.8;
+    margin-bottom: 12px;
+  }
+
+  .dir-tone-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    border: 0.5px solid rgba(255,255,255,0.2);
+  }
+
+  .palette-row {
+    display: flex;
+    height: 48px;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .palette-swatch {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .spec-card {
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .spec-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .spec-value {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .spec-card.full {
+    grid-column: 1 / -1;
+  }
+
+  .presence-demo {
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .presence-demo-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .risk-card {
+    background: var(--bg-warning);
+    border: 0.5px solid var(--border-warning);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+
+  .risk-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-warning);
+    margin-bottom: 6px;
+  }
+
+  .risk-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ===== DIRECTION 1: SAFF LINE ===== */
+  .dir1-header { background: #0D1117; color: #E8E8E0; }
+  .dir1-badge { background: rgba(255,255,255,0.1); color: #B0AFA8; }
+  .dir1-s1 { background: #0D1117; color: #4A4A42; }
+  .dir1-s2 { background: #1A1E24; color: #5A5A52; }
+  .dir1-s3 { background: #2D3340; color: #888880; }
+  .dir1-s4 { background: #E8E8E0; color: #0D1117; }
+  .dir1-s5 { background: #C4A882; color: #0D1117; }
+
+  /* ===== DIRECTION 2: BREATH ===== */
+  .dir2-header { background: #F2EFE8; color: #1A1917; }
+  .dir2-badge { background: rgba(0,0,0,0.08); color: #5A5750; }
+  .dir2-s1 { background: #F2EFE8; color: #8A8780; }
+  .dir2-s2 { background: #E6E2D8; color: #6A6760; }
+  .dir2-s3 { background: #B5AB95; color: #2A2820; }
+  .dir2-s4 { background: #4A5568; color: #F2EFE8; }
+  .dir2-s5 { background: #1A1917; color: #F2EFE8; }
+
+  /* ===== DIRECTION 3: HORIZON ===== */
+  .dir3-header { background: #0A0E1A; color: #DCE4F0; }
+  .dir3-badge { background: rgba(100,140,200,0.15); color: #8AAAD0; }
+  .dir3-s1 { background: #0A0E1A; color: #1E2A3A; }
+  .dir3-s2 { background: #0F1826; color: #2A3A50; }
+  .dir3-s3 { background: #1A2840; color: #648CC8; }
+  .dir3-s4 { background: #648CC8; color: #0A0E1A; }
+  .dir3-s5 { background: #DCE4F0; color: #0A0E1A; }
+
+  /* Presence visualization for each direction */
+  .saf-line-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .saf-row-visual {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    position: relative;
+    overflow: visible;
+  }
+
+  .saf-segment {
+    height: 3px;
+    border-radius: 2px;
+    transition: all 0.6s ease;
+  }
+
+  .saf-segment.filled { background: #C4A882; }
+  .saf-segment.preparing { background: rgba(196,168,130,0.4); }
+  .saf-segment.empty { background: rgba(255,255,255,0.08); }
+  .saf-segment.you { background: #E8E8E0; box-shadow: 0 0 6px #E8E8E0; }
+
+  .row-label {
+    font-size: 10px;
+    color: rgba(232,232,224,0.4);
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .breath-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .breath-horizon {
+    height: 1px;
+    background: #B5AB95;
+    position: relative;
+    width: 100%;
+  }
+
+  .breath-mark {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 7px;
+    border-radius: 1px;
+    background: #4A5568;
+    transform: translateX(-50%);
+  }
+
+  .breath-mark.you {
+    top: -5px;
+    width: 3px;
+    height: 11px;
+    background: #1A1917;
+  }
+
+  .breath-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #8A8780;
+  }
+
+  .horizon-demo {
+    position: relative;
+    height: 80px;
+    overflow: hidden;
+  }
+
+  .horizon-sky {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 40px;
+    background: linear-gradient(to bottom, #0F1826, #1A2840);
+  }
+
+  .horizon-earth {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: #0A0E1A;
+  }
+
+  .horizon-line-el {
+    position: absolute;
+    top: 40px; left: 0; right: 0;
+    height: 1px;
+    background: #648CC8;
+    opacity: 0.6;
+  }
+
+  .horizon-dot {
+    position: absolute;
+    top: 36px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #648CC8;
+    transform: translateX(-50%);
+  }
+
+  .horizon-dot.active {
+    background: #DCE4F0;
+    box-shadow: 0 0 8px rgba(100,140,200,0.6);
+  }
+
+  .recommend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .recommend-badge.is-rec {
+    background: var(--bg-success);
+    color: var(--text-success);
+    border: 0.5px solid var(--border-success);
+  }
+
+  .recommend-badge.not-rec {
+    background: var(--surface-1);
+    color: var(--text-muted);
+    border: 0.5px solid var(--border);
+  }
+
+  .why-rec {
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .why-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .why-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+</style>
+
+<div class="vakt-container">
+  <div class="direction-tabs">
+    <button class="tab-btn active" onclick="showDir(1)">Saf<br>Çizgisi</button>
+    <button class="tab-btn" onclick="showDir(2)">Nefes<br>Hattı</button>
+    <button class="tab-btn" onclick="showDir(3)">Ufuk<br>Noktası</button>
+  </div>
+
+  <!-- DIRECTION 1: SAF LINE -->
+  <div class="direction-panel active" id="dir-1">
+    <div class="dir-header dir1-header" style="border-radius:16px 16px 0 0; padding:20px;">
+      <div class="dir-name" style="color:#E8E8E0">Saf Çizgisi</div>
+      <div class="dir-concept" style="color:#8A8A82">Birinin namaz vaktiyle ilişkisi, safta işgal ettiği yer gibi görünür — bitişik, hizalı, sessiz.</div>
+      <span class="dir-tone-badge dir1-badge">Yerleşik · Sessiz · Dürüst</span>
+    </div>
+    <div class="palette-row">
+      <div class="palette-swatch dir1-s1">#0D11</div>
+      <div class="palette-swatch dir1-s2">#1A1E</div>
+      <div class="palette-swatch dir1-s3">#2D33</div>
+      <div class="palette-swatch dir1-s4">#E8E8</div>
+      <div class="palette-swatch dir1-s5">#C4A8</div>
+    </div>
+
+    <div class="recommend-badge not-rec">
+      ○ Alternatif Yön
+    </div>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="spec-label">Tipografi</div>
+        <div class="spec-value">SF Pro Display<br>Çok geniş harf aralığı<br>Yalnızca Regular ve Thin</div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">Layout</div>
+        <div class="spec-value">Yatay şeritler<br>Hizalama çizgileri<br>Izgara yok</div>
+      </div>
+      <div class="spec-card full">
+        <div class="spec-label">Metafor</div>
+        <div class="spec-value">Her kullanıcı bir saf yerini işgal eder. Hizalama kolektif hazırlığı gösterir. Ekran yatay çizgilerden oluşur — kart yok, baloncuk yok, sadece saflar.</div>
+      </div>
+    </div>
+
+    <div class="presence-demo" style="background:#0D1117; border-color:#2D3340;">
+      <div class="presence-demo-label" style="color:#4A4A42">Varlık Görselleştirmesi</div>
+      <div class="saf-line-demo">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+          <span class="row-label">1. Saf</span>
+          <div class="saf-row-visual" style="flex:1;">
+            <div class="saf-segment filled" style="width:30%;"></div>
+            <div class="saf-segment filled" style="width:15%;"></div>
+            <div class="saf-segment you" style="width:4%;"></div>
+            <div class="saf-segment preparing" style="width:20%;"></div>
+            <div class="saf-segment empty" style="width:31%;"></div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="row-label">2. Saf</span>
+          <div class="saf-row-visual" style="flex:1;">
+            <div class="saf-segment filled" style="width:20%;"></div>
+            <div class="saf-segment preparing" style="width:25%;"></div>
+            <div class="saf-segment empty" style="width:55%;"></div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:16px;">
+          <span style="font-size:10px; color:#C4A882;">● Hazır</span>
+          <span style="font-size:10px; color:rgba(196,168,130,0.4);">● Hazırlanıyor</span>
+          <span style="font-size:10px; color:#E8E8E0;">● Sen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-label">Risk</div>
+      <div class="risk-text">Çok teknik ve steril hissedebilir. Yatay çizgiler abartılırsa bir tablo gibi görünebilir. Işıklı bölge görsel metaforu olarak sıra kullanmak gerçek namaz saflarıyla fazla literal bir bağlantı kuruyor — bu saygısızlık olarak yorumlanabilir.</div>
+    </div>
+  </div>
+
+  <!-- DIRECTION 2: BREATH LINE -->
+  <div class="direction-panel" id="dir-2">
+    <div class="dir-header dir2-header" style="border-radius:16px 16px 0 0; padding:20px; border-bottom: 0.5px solid #DDD9CC;">
+      <div class="dir-name" style="color:#1A1917">Nefes Hattı</div>
+      <div class="dir-concept" style="color:#5A5750">Namazı bekleyenlerin varlığı ufku dolduran sakin işaretler olarak görünür — aralarında yeterli soluk alanı bırakarak.</div>
+      <span class="dir-tone-badge dir2-badge">Arımış · Toprağa Bağlı · Işıklı</span>
+    </div>
+    <div class="palette-row">
+      <div class="palette-swatch dir2-s1" style="color:#C0BBA8;">#F2EF</div>
+      <div class="palette-swatch dir2-s2" style="color:#908880;">#E6E2</div>
+      <div class="palette-swatch dir2-s3" style="color:#F2EFE8;">#B5AB</div>
+      <div class="palette-swatch dir2-s4" style="color:#F2EFE8;">#4A55</div>
+      <div class="palette-swatch dir2-s5" style="color:#F2EFE8;">#1A19</div>
+    </div>
+
+    <div class="recommend-badge not-rec">
+      ○ Alternatif Yön
+    </div>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="spec-label">Tipografi</div>
+        <div class="spec-value">SF Pro Text<br>Çok geniş satır aralığı<br>Küçük boyutlar</div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">Layout</div>
+        <div class="spec-value">Tek bir yatay hat<br>İşaretler hat üzerinde<br>Nefes boşlukları</div>
+      </div>
+      <div class="spec-card full">
+        <div class="spec-label">Metafor</div>
+        <div class="spec-value">Bir kıyı çizgisi. Hazır olan insanlar sessiz işaretler olarak ufukta belirir. Sen bir çizgisin aralarında. Zaman ilerledikçe hat dolar. Hazır olunca geride bir şey bırakmadan kaybolursun.</div>
+      </div>
+    </div>
+
+    <div class="presence-demo" style="background:#F2EFE8; border-color:#DDD9CC;">
+      <div class="presence-demo-label" style="color:#8A8780">Varlık Görselleştirmesi</div>
+      <div class="breath-demo">
+        <div class="breath-horizon" style="margin: 20px 0 6px;">
+          <div class="breath-mark" style="left:12%"></div>
+          <div class="breath-mark" style="left:23%"></div>
+          <div class="breath-mark" style="left:31%"></div>
+          <div class="breath-mark" style="left:48%"></div>
+          <div class="breath-mark" style="left:52%"></div>
+          <div class="breath-mark you" style="left:62%"></div>
+          <div class="breath-mark" style="left:71%"></div>
+          <div class="breath-mark" style="left:83%"></div>
+        </div>
+        <div class="breath-meta">
+          <span>← namaz vaktinden önce</span>
+          <span style="color:#1A1917; font-weight:500;">sen</span>
+          <span>şimdi →</span>
+        </div>
+        <div style="margin-top:12px; padding:10px; background:#E6E2D8; border-radius:8px; text-align:center;">
+          <span style="font-size:11px; color:#4A5568;">23 kişi bu vakitte hazırlanıyor</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-label">Risk</div>
+      <div class="risk-text">Kıyı çizgisi metaforu çok şiirsel — kullanıcı bağlantıyı anlamayabilir. Beyaz arka plan dark mode'u zorlaştırır, tamamen farklı bir his gerektirir. Fazla soyut olduğunda evsiz, kayıp hissine yol açabilir.</div>
+    </div>
+  </div>
+
+  <!-- DIRECTION 3: HORIZON POINT -->
+  <div class="direction-panel" id="dir-3">
+    <div class="dir-header dir3-header" style="border-radius:16px 16px 0 0; padding:20px;">
+      <div class="dir-name" style="color:#DCE4F0">Ufuk Noktası</div>
+      <div class="dir-concept" style="color:#8AAAD0">Namaz vakti yaklaştıkça tek bir ufuk çizgisine doğru kayan bir derinlik alanı. Herkes aynı yöne bakıyor.</div>
+      <span class="dir-tone-badge dir3-badge">Yönelimsel · Kolektif · Kasıtlı</span>
+    </div>
+    <div class="palette-row">
+      <div class="palette-swatch dir3-s1" style="color:#1E2A3A;">#0A0E</div>
+      <div class="palette-swatch dir3-s2" style="color:#2A3A50;">#0F18</div>
+      <div class="palette-swatch dir3-s3" style="color:#648CC8;">#1A28</div>
+      <div class="palette-swatch dir3-s4" style="color:#0A0E1A;">#648C</div>
+      <div class="palette-swatch dir3-s5" style="color:#0A0E1A;">#DCE4</div>
+    </div>
+
+    <div class="recommend-badge is-rec">
+      ✓ Önerilen Yön
+    </div>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="spec-label">Tipografi</div>
+        <div class="spec-value">SF Pro Display<br>Ultra hafif ağırlık<br>Büyük boşluk</div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">Layout</div>
+        <div class="spec-value">Dikey derinlik<br>Tek ufuk çizgisi<br>Boş alan baskın</div>
+      </div>
+      <div class="spec-card full">
+        <div class="spec-label">Metafor</div>
+        <div class="spec-value">Tüm ekran aynı yöne — ufka — bakıyor. Namaz vakti yaklaştıkça ufuk çizgisi yükselir. Diğerleri aynı düzlemde noktalar olarak belirir. Hazır olunca ekran yalnızca boş gece göğü olur.</div>
+      </div>
+    </div>
+
+    <div class="presence-demo" style="background:#0A0E1A; border-color:#1A2840;">
+      <div class="presence-demo-label" style="color:#2A3A50">Varlık Görselleştirmesi</div>
+      <div class="horizon-demo">
+        <div class="horizon-sky"></div>
+        <div class="horizon-earth"></div>
+        <div class="horizon-line-el"></div>
+        <div class="horizon-dot" style="left:15%"></div>
+        <div class="horizon-dot" style="left:28%"></div>
+        <div class="horizon-dot" style="left:42%"></div>
+        <div class="horizon-dot active" style="left:55%; width:9px; height:9px; top:35px;"></div>
+        <div class="horizon-dot" style="left:68%"></div>
+        <div class="horizon-dot" style="left:80%"></div>
+        <div class="horizon-dot" style="left:90%"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:12px; align-items:center;">
+        <span style="font-size:10px; color:#2A3A50;">● Diğerleri</span>
+        <span style="font-size:10px; color:#DCE4F0; font-weight:500;">● Sen</span>
+        <span style="font-size:11px; color:#648CC8;">7 kişi ufukta</span>
+      </div>
+    </div>
+
+    <div class="why-rec" style="background:#0F1826; border-color:#1A2840;">
+      <div class="why-label" style="color:#2A3A50">Neden Bu Yön</div>
+      <div class="why-text" style="color:#8AAAD0">Yönelim — kıble yönü — İslam namazının fiziksel gerçeğidir. Ufuk metaforu bunu soyut ama dürüst bir şekilde yakalar. Herkesin aynı yöne baktığını göstermek "birlikte namaza durmak" hissini en doğrudan temsil eder. Abartılmadan, aşırı sembolik olmadan.</div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-label">Risk</div>
+      <div class="risk-text">Ufuk imgesi çok evrensel olabilir — Vakt'a özgü değil. Derinlik illüzyonu SwiftUI'da ekstra çalışma gerektirir. Koyu mavi palet sakinleştirici ama soğuk da olabilir — sıcaklık dengesi kritik.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDir(n) {
+  document.querySelectorAll('.direction-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('dir-' + n).classList.add('active');
+  document.querySelectorAll('.tab-btn')[n-1].classList.add('active');
+}
+</script>

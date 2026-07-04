@@ -1,0 +1,726 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */; };
+		D20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */; };
+		D20B0C0D0E0F100000000003 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000004 /* XCTest.framework */; };
+		D20B0C0D0E0F10000000000C /* SupabaseBackendConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */; };
+		D20B0C0D0E0F10000000000D /* SupabaseRealtimeIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */; };
+		D20B0C0D0E0F10000000000E /* VaktTimeFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */; };
+		A10B0C0D0E0F100000000001 /* BackendDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000001 /* BackendDomain.swift */; };
+		A10B0C0D0E0F100000000002 /* BackendContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000002 /* BackendContracts.swift */; };
+		A10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */; };
+		A10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */; };
+		A10B0C0D0E0F100000000005 /* PresenceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */; };
+		A10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */; };
+		A10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */; };
+		A10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */; };
+		A10B0C0D0E0F100000000009 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A10B0C0D0E0F10000000000B /* Supabase */; };
+		A10B0C0D0E0F10000000000D /* SupabaseClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */; };
+		A10B0C0D0E0F10000000000E /* SupabaseBackendErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */; };
+		A10B0C0D0E0F10000000000F /* SupabasePrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */; };
+		A10B0C0D0E0F100000000010 /* SupabasePresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */; };
+		A10B0C0D0E0F100000000011 /* BackendComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000E /* BackendComposition.swift */; };
+		A10B0C0D0E0F100000000012 /* VaktTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */; };
+		0ED94935949120E7B1170581 /* VaktModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831B1BB56790783DFD52F1B9 /* VaktModels.swift */; };
+		21A6B3413F0615FF22E054B9 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B30E44D4A40A93E7009743 /* ProfileView.swift */; };
+		38F66ECBE58CB757BFE58B99 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14EF9F8240E2014699F60B23 /* HomeView.swift */; };
+		41B70FD3DB9C139D7ED59E08 /* QuietSalahView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142C12801A6EBF788BFF6221 /* QuietSalahView.swift */; };
+		4E8F7A0D42C91F38A1B5D602 /* SafPlacementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */; };
+		5F4311165A0043551C314031 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */; };
+		66367E44AB830D26ECC0E0EF /* VaktSplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */; };
+		6CA23CE595CBD57BD5B5B27B /* VaktTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280312D402C0838C19CBB66B /* VaktTokens.swift */; };
+		6F4F235F08012C1A9F102A69 /* OnboardingRemindersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */; };
+		789E75009CEEB1AE0241DBA4 /* OnboardingArrivalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */; };
+		A4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */; };
+		A5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */; };
+		7EC99F95868F2AA1B1F9A439 /* OnboardingLocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */; };
+		84D110A302C3213B7C1150F7 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939C690BE9751661252F8E29 /* InsightsView.swift */; };
+		85DF1682F2B9F4AD03CC863F /* VaktApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313155176F6E9E6E78CF30ED /* VaktApp.swift */; };
+		883155141CB8B94B11F0778C /* HorizonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8763A820A239FF8A5803F0E0 /* HorizonView.swift */; };
+		941B2CA7996F4BDEB347CC98 /* StatusSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032A724DC6B7B26396FAA10D /* StatusSelector.swift */; };
+		969F021541F880CA853403C3 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D506030A2900076C7FF7266 /* NotificationManager.swift */; };
+		970D7B70B84F1CB1948B9920 /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */; };
+		D4F35621112AD5FBFB2AE2FB /* VaktComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84854BCF88B44578C1D3B388 /* VaktComponents.swift */; };
+		D9B0D8000BC15E3B4E5AEA39 /* PresenceHorizonLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E193DD3DFC4C18F9D6DB4E /* PresenceHorizonLayout.swift */; };
+		EFB2CC9D1861E59A90427911 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E3F8520CB87A94974C984D /* AppRootView.swift */; };
+		F14280CF7FE9412CBF8A81D4 /* SafLobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */; };
+		F51A99813245014E89D21419 /* OnboardingAnonymousSafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D20B0C0D0E0F100000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B77786EB422C14541F7F27A6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F6AB8D5148E7A0FE20DAF0CE;
+			remoteInfo = Vakt;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepositoryTests.swift; sourceTree = "<group>"; };
+		E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinatorTests.swift; sourceTree = "<group>"; };
+		E20B0C0D0E0F100000000003 /* VaktTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E20B0C0D0E0F100000000004 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfigurationTests.swift; sourceTree = "<group>"; };
+		E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRealtimeIntegrationTests.swift; sourceTree = "<group>"; };
+		E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatterTests.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000001 /* BackendDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendDomain.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000002 /* BackendContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendContracts.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPrayerSessionRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinator.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedPresenceRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfiguration.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAnonymousIdentityRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientFactory.swift; sourceTree = "<group>"; };
+		032A724DC6B7B26396FAA10D /* StatusSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusSelector.swift; sourceTree = "<group>"; };
+		0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafLobbyView.swift; sourceTree = "<group>"; };
+		142C12801A6EBF788BFF6221 /* QuietSalahView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietSalahView.swift; sourceTree = "<group>"; };
+		14EF9F8240E2014699F60B23 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingArrivalView.swift; sourceTree = "<group>"; };
+		B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafGatheringView.swift; sourceTree = "<group>"; };
+		B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafPlacementView.swift; sourceTree = "<group>"; };
+		1EAAE208CF4BE03243528013 /* Vakt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Vakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		280312D402C0838C19CBB66B /* VaktTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTokens.swift; sourceTree = "<group>"; };
+		2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktSplashView.swift; sourceTree = "<group>"; };
+		2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
+		313155176F6E9E6E78CF30ED /* VaktApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktApp.swift; sourceTree = "<group>"; };
+		38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLocationView.swift; sourceTree = "<group>"; };
+		3D506030A2900076C7FF7266 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		4A2F87FA3C38918AB70A601B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000A /* Vakt.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Vakt.xcconfig; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendErrorMapper.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerSessionRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePresenceRepository.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000E /* BackendComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendComposition.swift; sourceTree = "<group>"; };
+		B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatter.swift; sourceTree = "<group>"; };
+		53B30E44D4A40A93E7009743 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRemindersView.swift; sourceTree = "<group>"; };
+		5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingAnonymousSafView.swift; sourceTree = "<group>"; };
+		831B1BB56790783DFD52F1B9 /* VaktModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktModels.swift; sourceTree = "<group>"; };
+		84854BCF88B44578C1D3B388 /* VaktComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktComponents.swift; sourceTree = "<group>"; };
+		8763A820A239FF8A5803F0E0 /* HorizonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonView.swift; sourceTree = "<group>"; };
+		939C690BE9751661252F8E29 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafPlacementView.swift; sourceTree = "<group>"; };
+		9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C5E193DD3DFC4C18F9D6DB4E /* PresenceHorizonLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceHorizonLayout.swift; sourceTree = "<group>"; };
+		D7E3F8520CB87A94974C984D /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10B0C0D0E0F10000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10B0C0D0E0F100000000009 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D20B0C0D0E0F100000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D20B0C0D0E0F100000000003 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		134F7721F45ED133987D24E9 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */,
+				1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */,
+				B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */,
+				B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */,
+				38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */,
+				5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */,
+				2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */,
+				9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */,
+				2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		1E4ECC9F7521C3A2BD64F3D5 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				3D506030A2900076C7FF7266 /* NotificationManager.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
+		2C61110B63AE03265F053F50 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0C0D0E0F100000000001 /* Backend */,
+				63951153D1EF2A0D9D7FD2AE /* Components */,
+				473663DB23DC56F1195CC533 /* DesignSystem */,
+				A99A0A24AC8771B0495F8BDD /* Models */,
+				1E4ECC9F7521C3A2BD64F3D5 /* Notifications */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		C10B0C0D0E0F100000000001 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				B10B0C0D0E0F10000000000E /* BackendComposition.swift */,
+				B10B0C0D0E0F100000000002 /* BackendContracts.swift */,
+				B10B0C0D0E0F100000000001 /* BackendDomain.swift */,
+				B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */,
+				B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */,
+				B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */,
+				B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */,
+				B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */,
+				B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */,
+				B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */,
+				B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */,
+				B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */,
+				B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		41BD06D30B9C13D53C98F71F /* Safs */ = {
+			isa = PBXGroup;
+			children = (
+				142C12801A6EBF788BFF6221 /* QuietSalahView.swift */,
+				0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */,
+				9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */,
+			);
+			path = Safs;
+			sourceTree = "<group>";
+		};
+		473663DB23DC56F1195CC533 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */,
+				280312D402C0838C19CBB66B /* VaktTokens.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		547D397658BD3C59ABCDDB08 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				53B30E44D4A40A93E7009743 /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		63951153D1EF2A0D9D7FD2AE /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8763A820A239FF8A5803F0E0 /* HorizonView.swift */,
+				C5E193DD3DFC4C18F9D6DB4E /* PresenceHorizonLayout.swift */,
+				032A724DC6B7B26396FAA10D /* StatusSelector.swift */,
+				84854BCF88B44578C1D3B388 /* VaktComponents.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		79B5CD8F189D9358F4E09065 /* Vakt */ = {
+			isa = PBXGroup;
+			children = (
+				907CC5517B1CC166930199C6 /* App */,
+				2C61110B63AE03265F053F50 /* Core */,
+				96F4BC5495485F28401E7E33 /* Features */,
+				91D9A1887341453B2D0CCC34 /* Resources */,
+			);
+			path = Vakt;
+			sourceTree = "<group>";
+		};
+		907CC5517B1CC166930199C6 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				D7E3F8520CB87A94974C984D /* AppRootView.swift */,
+				313155176F6E9E6E78CF30ED /* VaktApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		91D9A1887341453B2D0CCC34 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4A2F87FA3C38918AB70A601B /* Info.plist */,
+				B10B0C0D0E0F10000000000A /* Vakt.xcconfig */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		96F4BC5495485F28401E7E33 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				F29F78781C0F306CFDF85219 /* Home */,
+				FD374C8DDE51EA6B06C0AE80 /* Insights */,
+				134F7721F45ED133987D24E9 /* Onboarding */,
+				547D397658BD3C59ABCDDB08 /* Profile */,
+				41BD06D30B9C13D53C98F71F /* Safs */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		A99A0A24AC8771B0495F8BDD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				831B1BB56790783DFD52F1B9 /* VaktModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		DF9DD032B478211DF55B5C74 = {
+			isa = PBXGroup;
+			children = (
+				79B5CD8F189D9358F4E09065 /* Vakt */,
+				F20B0C0D0E0F100000000001 /* VaktTests */,
+				F3F96D6715363616DB1AEA7D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F29F78781C0F306CFDF85219 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				14EF9F8240E2014699F60B23 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		F3F96D6715363616DB1AEA7D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1EAAE208CF4BE03243528013 /* Vakt.app */,
+				E20B0C0D0E0F100000000003 /* VaktTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F20B0C0D0E0F100000000001 /* VaktTests */ = {
+			isa = PBXGroup;
+			children = (
+				F20B0C0D0E0F100000000002 /* Backend */,
+				F20B0C0D0E0F100000000003 /* Formatting */,
+			);
+			path = VaktTests;
+			sourceTree = "<group>";
+		};
+		F20B0C0D0E0F100000000002 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */,
+				E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */,
+				E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */,
+				E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		F20B0C0D0E0F100000000003 /* Formatting */ = {
+			isa = PBXGroup;
+			children = (
+				E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */,
+			);
+			path = Formatting;
+			sourceTree = "<group>";
+		};
+		FD374C8DDE51EA6B06C0AE80 /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				939C690BE9751661252F8E29 /* InsightsView.swift */,
+			);
+			path = Insights;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D20B0C0D0E0F100000000006 /* VaktTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D20B0C0D0E0F100000000007 /* Build configuration list for PBXNativeTarget "VaktTests" */;
+			buildPhases = (
+				D20B0C0D0E0F100000000008 /* Sources */,
+				D20B0C0D0E0F100000000005 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D20B0C0D0E0F100000000009 /* PBXTargetDependency */,
+			);
+			name = VaktTests;
+			productName = VaktTests;
+			productReference = E20B0C0D0E0F100000000003 /* VaktTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F6AB8D5148E7A0FE20DAF0CE /* Vakt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 738283A2F6203AEF2809FE14 /* Build configuration list for PBXNativeTarget "Vakt" */;
+			buildPhases = (
+				B76DBDDED3483A6300D0FA10 /* Sources */,
+				A10B0C0D0E0F10000000000A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vakt;
+			packageProductDependencies = (
+				A10B0C0D0E0F10000000000B /* Supabase */,
+			);
+			productName = Vakt;
+			productReference = 1EAAE208CF4BE03243528013 /* Vakt.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B77786EB422C14541F7F27A6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = CCA76CD174F5D58D59724306 /* Build configuration list for PBXProject "Vakt" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DF9DD032B478211DF55B5C74;
+			packageReferences = (
+				A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F6AB8D5148E7A0FE20DAF0CE /* Vakt */,
+				D20B0C0D0E0F100000000006 /* VaktTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D20B0C0D0E0F100000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift in Sources */,
+				D20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift in Sources */,
+				D20B0C0D0E0F10000000000C /* SupabaseBackendConfigurationTests.swift in Sources */,
+				D20B0C0D0E0F10000000000D /* SupabaseRealtimeIntegrationTests.swift in Sources */,
+				D20B0C0D0E0F10000000000E /* VaktTimeFormatterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B76DBDDED3483A6300D0FA10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10B0C0D0E0F100000000011 /* BackendComposition.swift in Sources */,
+				A10B0C0D0E0F100000000002 /* BackendContracts.swift in Sources */,
+				A10B0C0D0E0F100000000001 /* BackendDomain.swift in Sources */,
+				EFB2CC9D1861E59A90427911 /* AppRootView.swift in Sources */,
+				38F66ECBE58CB757BFE58B99 /* HomeView.swift in Sources */,
+				883155141CB8B94B11F0778C /* HorizonView.swift in Sources */,
+				84D110A302C3213B7C1150F7 /* InsightsView.swift in Sources */,
+				969F021541F880CA853403C3 /* NotificationManager.swift in Sources */,
+				F51A99813245014E89D21419 /* OnboardingAnonymousSafView.swift in Sources */,
+				789E75009CEEB1AE0241DBA4 /* OnboardingArrivalView.swift in Sources */,
+				A4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift in Sources */,
+				A5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift in Sources */,
+				7EC99F95868F2AA1B1F9A439 /* OnboardingLocationView.swift in Sources */,
+				6F4F235F08012C1A9F102A69 /* OnboardingRemindersView.swift in Sources */,
+				970D7B70B84F1CB1948B9920 /* OnboardingStore.swift in Sources */,
+				5F4311165A0043551C314031 /* OnboardingView.swift in Sources */,
+				D9B0D8000BC15E3B4E5AEA39 /* PresenceHorizonLayout.swift in Sources */,
+				A10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift in Sources */,
+				A10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift in Sources */,
+				A10B0C0D0E0F100000000005 /* PresenceCoordinator.swift in Sources */,
+				A10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift in Sources */,
+				A10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift in Sources */,
+				A10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift in Sources */,
+				A10B0C0D0E0F10000000000D /* SupabaseClientFactory.swift in Sources */,
+				A10B0C0D0E0F10000000000E /* SupabaseBackendErrorMapper.swift in Sources */,
+				A10B0C0D0E0F10000000000F /* SupabasePrayerSessionRepository.swift in Sources */,
+				A10B0C0D0E0F100000000010 /* SupabasePresenceRepository.swift in Sources */,
+				21A6B3413F0615FF22E054B9 /* ProfileView.swift in Sources */,
+				41B70FD3DB9C139D7ED59E08 /* QuietSalahView.swift in Sources */,
+				F14280CF7FE9412CBF8A81D4 /* SafLobbyView.swift in Sources */,
+				4E8F7A0D42C91F38A1B5D602 /* SafPlacementView.swift in Sources */,
+				941B2CA7996F4BDEB347CC98 /* StatusSelector.swift in Sources */,
+				85DF1682F2B9F4AD03CC863F /* VaktApp.swift in Sources */,
+				D4F35621112AD5FBFB2AE2FB /* VaktComponents.swift in Sources */,
+				0ED94935949120E7B1170581 /* VaktModels.swift in Sources */,
+				66367E44AB830D26ECC0E0EF /* VaktSplashView.swift in Sources */,
+				6CA23CE595CBD57BD5B5B27B /* VaktTokens.swift in Sources */,
+				A10B0C0D0E0F100000000012 /* VaktTimeFormatter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D20B0C0D0E0F100000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F6AB8D5148E7A0FE20DAF0CE /* Vakt */;
+			targetProxy = D20B0C0D0E0F100000000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D20B0C0D0E0F100000000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Vakt";
+			};
+			name = Debug;
+		};
+		D20B0C0D0E0F100000000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Vakt";
+			};
+			name = Release;
+		};
+		48DCD646DBFCBF5E250670E8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A82ECD2426A25AB84E48BE2F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		BACF0F5E2D52331D1FEB279C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B10B0C0D0E0F10000000000A /* Vakt.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Vakt/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app;
+				PRODUCT_NAME = Vakt;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D520517D8C0A45B6F3527312 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B10B0C0D0E0F10000000000A /* Vakt.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Vakt/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app;
+				PRODUCT_NAME = Vakt;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D20B0C0D0E0F100000000007 /* Build configuration list for PBXNativeTarget "VaktTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D20B0C0D0E0F100000000010 /* Debug */,
+				D20B0C0D0E0F100000000011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		738283A2F6203AEF2809FE14 /* Build configuration list for PBXNativeTarget "Vakt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BACF0F5E2D52331D1FEB279C /* Debug */,
+				D520517D8C0A45B6F3527312 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CCA76CD174F5D58D59724306 /* Build configuration list for PBXProject "Vakt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				48DCD646DBFCBF5E250670E8 /* Debug */,
+				A82ECD2426A25AB84E48BE2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.46.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10B0C0D0E0F10000000000B /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B77786EB422C14541F7F27A6 /* Project object */;
+}

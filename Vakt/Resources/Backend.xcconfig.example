@@ -1,0 +1,4 @@
+// Duplicate as Backend.xcconfig. The real file is ignored by git.
+// $() prevents xcconfig from treating // as the start of a comment.
+SUPABASE_URL = https:/$()/YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_YOUR_KEY

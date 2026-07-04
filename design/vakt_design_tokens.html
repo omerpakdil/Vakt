@@ -1,0 +1,444 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .sys { font-family: -apple-system, 'SF Pro Display', sans-serif; color: var(--text-primary); }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 10px;
+  }
+
+  .section-label:first-child { margin-top: 0; }
+
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .color-token {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .color-swatch {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 9px;
+    font-family: 'SF Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .color-meta {
+    background: var(--surface-1);
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .color-token-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 10px;
+  }
+
+  /* Type scale */
+  .type-row {
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-meta { 
+    font-size: 10px; 
+    color: var(--text-muted); 
+    min-width: 80px; 
+    flex-shrink: 0;
+    font-family: 'SF Mono', monospace;
+  }
+  .type-sample { color: var(--text-primary); line-height: 1; }
+
+  /* Spacing */
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .spacing-row:last-child { border-bottom: none; }
+  .spacing-bar-wrap { flex: 1; }
+  .spacing-bar {
+    height: 3px;
+    background: #648CC8;
+    border-radius: 2px;
+  }
+  .spacing-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', monospace;
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+  .spacing-px {
+    font-size: 10px;
+    color: var(--text-secondary);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  /* Buttons */
+  .btn-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--surface-1);
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+  }
+
+  .vakt-btn {
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-align: center;
+    font-family: -apple-system, sans-serif;
+    border: none;
+    cursor: pointer;
+  }
+
+  .vakt-btn-primary {
+    background: #DCE4F0;
+    color: #0A0E1A;
+  }
+
+  .vakt-btn-secondary {
+    background: transparent;
+    color: #8AAAD0;
+    border: 0.5px solid #1A2840;
+  }
+
+  .vakt-btn-ghost {
+    background: transparent;
+    color: #648CC8;
+    font-size: 14px;
+    padding: 10px 24px;
+  }
+
+  .vakt-btn-critical {
+    background: #0F1826;
+    color: #DCE4F0;
+    border: 0.5px solid #648CC8;
+  }
+
+  /* Status selector */
+  .status-demo {
+    padding: 16px;
+    background: #0A0E1A;
+    border-radius: 12px;
+    border: 0.5px solid #1A2840;
+  }
+
+  .status-grid-d {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .status-chip {
+    padding: 12px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+
+  .status-chip.idle {
+    background: #0F1826;
+    color: #4A6080;
+    border: 0.5px solid #1A2840;
+  }
+
+  .status-chip.active {
+    background: #1A2840;
+    color: #DCE4F0;
+    border: 0.5px solid #648CC8;
+  }
+
+  .status-chip.selected {
+    background: #648CC8;
+    color: #0A0E1A;
+    border: 0.5px solid #648CC8;
+    font-weight: 600;
+  }
+
+  .status-chip-label { font-size: 10px; margin-bottom: 3px; opacity: 0.7; }
+  .status-chip-name { font-size: 13px; font-weight: 500; }
+
+  /* Icon rules */
+  .icon-demo {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    background: var(--surface-1);
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .icon-label { font-size: 9px; color: var(--text-muted); text-align: center; }
+
+  .empty-state {
+    padding: 32px 20px;
+    text-align: center;
+    background: #0A0E1A;
+    border-radius: 12px;
+    border: 0.5px solid #1A2840;
+  }
+
+  .empty-horizon {
+    width: 60px;
+    height: 1px;
+    background: #1A2840;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+
+  .empty-horizon::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1A2840;
+    transform: translateX(-50%);
+  }
+
+  .empty-title {
+    font-size: 16px;
+    color: #4A6080;
+    font-weight: 400;
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .empty-sub {
+    font-size: 13px;
+    color: #2A3A50;
+    line-height: 1.5;
+  }
+
+  .a11y-list { list-style: none; }
+  .a11y-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    align-items: flex-start;
+  }
+  .a11y-item:last-child { border-bottom: none; }
+  .a11y-dot { 
+    width: 6px; height: 6px; 
+    border-radius: 50%; 
+    background: #648CC8; 
+    flex-shrink: 0; 
+    margin-top: 4px;
+  }
+</style>
+
+<div class="sys">
+
+  <div class="section-label">Renk Tokenleri</div>
+  <div class="color-grid">
+    <div class="color-token">
+      <div class="color-swatch" style="background:#0A0E1A; color:#2A3A50;">horizon-night</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-bg</div>#0A0E1A · Temel zemin</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#0F1826; color:#2A3A50;">depth-1</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-surface</div>#0F1826 · Kart/bileşen</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#1A2840; color:#648CC8;">depth-2</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-elevated</div>#1A2840 · Öne çıkan</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#648CC8; color:#0A0E1A;">horizon-blue</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-accent</div>#648CC8 · Ufuk çizgisi</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#DCE4F0; color:#0A0E1A;">dawn</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-primary-text</div>#DCE4F0 · Birincil metin</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#8AAAD0; color:#0A0E1A;">dusk</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-secondary-text</div>#8AAAD0 · İkincil metin</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#4A6080; color:#DCE4F0;">fog</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-muted</div>#4A6080 · Pasif öğeler</div>
+    </div>
+    <div class="color-token">
+      <div class="color-swatch" style="background:#2A3A50; color:#648CC8;">shadow</div>
+      <div class="color-meta"><div class="color-token-name">--vakt-border</div>#2A3A50 · Çizgiler</div>
+    </div>
+  </div>
+
+  <div class="section-label">Tipografi Ölçeği</div>
+  <div style="background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px;">
+    <div class="type-row">
+      <div class="type-meta">largeTitle<br>34pt Ultra</div>
+      <div class="type-sample" style="font-size:28px; font-weight:100; letter-spacing:-1px; color:#DCE4F0; line-height:1;">İkindi</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">title1<br>28pt Light</div>
+      <div class="type-sample" style="font-size:22px; font-weight:300; letter-spacing:-0.5px; color:#DCE4F0;">18:32</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">title2<br>22pt Regular</div>
+      <div class="type-sample" style="font-size:17px; font-weight:400; color:#8AAAD0;">12 dakika kaldı</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">body<br>17pt Regular</div>
+      <div class="type-sample" style="font-size:14px; font-weight:400; color:#8AAAD0; letter-spacing:0.1px;">Namaz vakti yaklaşıyor</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">caption<br>12pt Regular</div>
+      <div class="type-sample" style="font-size:11px; font-weight:400; color:#4A6080; letter-spacing:0.3px; text-transform:uppercase;">KÜRESEL SAF · 23 KİŞİ</div>
+    </div>
+  </div>
+
+  <div class="section-label">Aralık Ölçeği</div>
+  <div style="background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px;">
+    <div class="spacing-row">
+      <div class="spacing-label">--space-xs</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:8%;"></div></div>
+      <div class="spacing-px">4pt</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">--space-sm</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:16%;"></div></div>
+      <div class="spacing-px">8pt</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">--space-md</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:32%;"></div></div>
+      <div class="spacing-px">16pt</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">--space-lg</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:48%;"></div></div>
+      <div class="spacing-px">24pt</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">--space-xl</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:64%;"></div></div>
+      <div class="spacing-px">32pt</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">--space-2xl</div>
+      <div class="spacing-bar-wrap"><div class="spacing-bar" style="width:88%;"></div></div>
+      <div class="spacing-px">44pt</div>
+    </div>
+  </div>
+
+  <div class="section-label">Buton Stilleri</div>
+  <div class="btn-demo">
+    <button class="vakt-btn vakt-btn-primary">Namaza başla</button>
+    <button class="vakt-btn vakt-btn-critical">Safa katıl</button>
+    <button class="vakt-btn vakt-btn-secondary">Durumu güncelle</button>
+    <button class="vakt-btn vakt-btn-ghost">Atla</button>
+  </div>
+
+  <div class="section-label">Durum Seçici</div>
+  <div class="status-demo">
+    <div style="font-size:10px; color:#4A6080; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px;">Hazırlık durumun</div>
+    <div class="status-grid-d">
+      <div class="status-chip active" onclick="selectStatus(this)">
+        <div class="status-chip-label">ayakta</div>
+        <div class="status-chip-name">Kalkıyorum</div>
+      </div>
+      <div class="status-chip selected" onclick="selectStatus(this)">
+        <div class="status-chip-label">temizlik</div>
+        <div class="status-chip-name">Abdest alıyorum</div>
+      </div>
+      <div class="status-chip idle" onclick="selectStatus(this)">
+        <div class="status-chip-label">yer</div>
+        <div class="status-chip-name">Yer arıyorum</div>
+      </div>
+      <div class="status-chip idle" onclick="selectStatus(this)">
+        <div class="status-chip-label">hazır</div>
+        <div class="status-chip-name">Hazırım</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Boş / Yükleniyor / Çevrimdışı Durumları</div>
+  <div class="empty-state">
+    <div class="empty-horizon"></div>
+    <div class="empty-title">Henüz kimse yok</div>
+    <div class="empty-sub">İkindi vakti yaklaştığında<br>ufukta başkaları belirir.</div>
+  </div>
+
+  <div class="section-label">Erişilebilirlik Kuralları</div>
+  <div style="background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px;">
+    <ul class="a11y-list">
+      <li class="a11y-item"><div class="a11y-dot"></div>Tüm dokunma hedefleri minimum 44×44 pt. Ufuk noktaları 20pt görsel boyutunda olsa bile 44pt dokunma alanı.</li>
+      <li class="a11y-item"><div class="a11y-dot"></div>Durum seçici: Her çip için accessibilityLabel="Durumunu şu şekilde ayarla: Abdest alıyorum" formatında.</li>
+      <li class="a11y-item"><div class="a11y-dot"></div>Ufuk noktaları: accessibilityLabel="23 kişi hazırlanıyor, sen dahil" — kimlik yok.</li>
+      <li class="a11y-item"><div class="a11y-dot"></div>Reduce Motion: Tüm animasyonlar .animation(.none) ile tamamen devre dışı. Ufuk çizgisi hareketi yok, sadece opaklık değişimi.</li>
+      <li class="a11y-item"><div class="a11y-dot"></div>Renk körü: Ufuk noktaları renk + boyut ile encode edilir. Yalnızca renge dayanılmaz.</li>
+      <li class="a11y-item"><div class="a11y-dot"></div>Dynamic Type: largeTitle ve title1 skalalanamaz — bunlar sabit bağlamsal öğeler. Body ve caption skalalar.</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+function selectStatus(el) {
+  document.querySelectorAll('.status-chip').forEach(c => {
+    c.className = 'status-chip idle';
+  });
+  el.className = 'status-chip selected';
+}
+</script>
