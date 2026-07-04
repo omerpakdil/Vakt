@@ -62,7 +62,6 @@ struct OnboardingPage: Identifiable, Equatable {
         case anonymousSaf
         case location
         case reminders
-        case paywall
     }
 
     let id: Kind
@@ -120,14 +119,6 @@ struct OnboardingPage: Identifiable, Equatable {
             body: "Vakt can remind you before salah and stay silent when it is time to pray. You can pause reminders anytime from My Vakt.",
             primaryAction: "Allow Prayer Reminders",
             secondaryAction: "Continue for now"
-        ),
-        OnboardingPage(
-            id: .paywall,
-            eyebrow: "Vakt+",
-            title: "Protect every vakt.",
-            body: "You\u2019ve found your place in the Saf. Vakt+ keeps the next salah close, prayer after prayer.",
-            primaryAction: "Continue with Vakt+",
-            secondaryAction: "Continue with the open Saf"
         )
     ]
 }
