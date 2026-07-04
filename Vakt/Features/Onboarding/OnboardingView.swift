@@ -6,6 +6,8 @@ struct OnboardingView: View {
     @ObservedObject var prayerStore: PrayerScheduleStore
     @ObservedObject var notificationManager: NotificationManager
 
+    @StateObject private var paywallStore = PaywallStore()
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isBreathing = false
 
@@ -76,10 +78,21 @@ struct OnboardingView: View {
                     reduceMotion: reduceMotion,
                     onEnable: {
                         _ = await notificationManager.enableRemindersAndRequestAuthorization()
-                        store.complete()
+                        store.advance()
                     },
                     onSkip: {
                         notificationManager.setReminderEnabled(false)
+                        store.advance()
+                    }
+                )
+                .transition(.opacity)
+            } else if page.id == .paywall {
+                OnboardingPaywallView(
+                    paywallStore: paywallStore,
+                    stepIndex: store.currentPage,
+                    stepCount: store.pages.count,
+                    reduceMotion: reduceMotion,
+                    onComplete: {
                         store.complete()
                     }
                 )
@@ -197,6 +210,8 @@ struct OnboardingView: View {
                 detail: reminderStatusDetail,
                 isActive: notificationManager.isReminderEnabled
             )
+        case .paywall:
+            EmptyView()
         }
     }
 
@@ -275,6 +290,8 @@ struct OnboardingView: View {
             store.advance()
         case .reminders:
             notificationManager.setReminderEnabled(true)
+            store.advance()
+        case .paywall:
             store.complete()
         }
     }
@@ -285,6 +302,8 @@ struct OnboardingView: View {
             store.advance()
         case .reminders:
             notificationManager.setReminderEnabled(false)
+            store.advance()
+        case .paywall:
             store.complete()
         case .arrival, .gathering, .placement, .anonymousSaf:
             store.advance()
@@ -398,6 +417,8 @@ private struct OnboardingHorizonScene: View {
             return 7
         case .reminders:
             return 11
+        case .paywall:
+            return 13
         }
     }
 }
