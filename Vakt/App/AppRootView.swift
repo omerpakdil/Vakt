@@ -2,7 +2,10 @@ import SwiftUI
 
 struct AppRootView: View {
     @State private var selectedTab: VaktTab = .home
+    @State private var hasStartedAppServices = false
+    @State private var hasPendingSafDeepLink = false
     @StateObject private var onboardingStore = OnboardingStore()
+    @StateObject private var subscriptionStore = SubscriptionStore()
     @StateObject private var presenceStore: LiveSafPresenceStore
     @StateObject private var prayerStore = PrayerScheduleStore()
     @StateObject private var notificationManager = NotificationManager()
@@ -20,35 +23,46 @@ struct AppRootView: View {
 
     var body: some View {
         ZStack {
-            if onboardingStore.hasCompletedOnboarding {
-                mainTabs
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
-            } else if !onboardingStore.hasPassedSplash {
+            if !onboardingStore.hasCompletedOnboarding && !onboardingStore.hasPassedSplash {
                 VaktSplashView {
                     onboardingStore.passSplash()
                 }
                 .transition(.opacity)
-            } else {
+            } else if !onboardingStore.hasCompletedOnboarding {
                 OnboardingView(
                     store: onboardingStore,
                     prayerStore: prayerStore,
                     notificationManager: notificationManager
                 )
                 .transition(.opacity.combined(with: .move(edge: .leading)))
+            } else {
+                subscriptionGate
             }
         }
         .preferredColorScheme(.dark)
         .task {
             notificationManager.start()
             updatePrayerCalculationSettings()
-
-            if onboardingStore.hasCompletedOnboarding {
-                startAppServices()
-            }
+            await subscriptionStore.prepare()
+            startAppServicesIfAllowed()
         }
         .onChange(of: onboardingStore.hasCompletedOnboarding) { _, hasCompleted in
             guard hasCompleted else { return }
-            startAppServices()
+            startAppServicesIfAllowed()
+        }
+        .onChange(of: subscriptionStore.entitlement) { _, entitlement in
+            guard entitlement == .active else {
+                presenceStore.leave()
+                hasStartedAppServices = false
+                return
+            }
+
+            startAppServicesIfAllowed()
+
+            if hasPendingSafDeepLink {
+                hasPendingSafDeepLink = false
+                selectedTab = .safs
+            }
         }
         .onChange(of: selectedTab) { _, tab in
             if tab != .safs {
@@ -81,12 +95,32 @@ struct AppRootView: View {
             guard let deepLink else { return }
             switch deepLink {
             case .saf:
-                onboardingStore.complete()
-                selectedTab = .safs
+                if onboardingStore.hasCompletedOnboarding,
+                   subscriptionStore.entitlement == .active {
+                    selectedTab = .safs
+                } else {
+                    hasPendingSafDeepLink = true
+                }
             }
         }
         .animation(.easeInOut(duration: 0.35), value: onboardingStore.hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.35), value: onboardingStore.hasPassedSplash)
+        .animation(.easeInOut(duration: 0.35), value: subscriptionStore.entitlement)
+    }
+
+    @ViewBuilder
+    private var subscriptionGate: some View {
+        switch subscriptionStore.entitlement {
+        case .checking:
+            SubscriptionLaunchView()
+                .transition(.opacity)
+        case .inactive:
+            PaywallView(store: subscriptionStore)
+                .transition(.opacity)
+        case .active:
+            mainTabs
+                .transition(.opacity.combined(with: .move(edge: .trailing)))
+        }
     }
 
     private var mainTabs: some View {
@@ -135,7 +169,14 @@ struct AppRootView: View {
         .tint(.vaktPrimary)
     }
 
-    private func startAppServices() {
+    private func startAppServicesIfAllowed() {
+        guard onboardingStore.hasCompletedOnboarding,
+              subscriptionStore.entitlement == .active,
+              !hasStartedAppServices else {
+            return
+        }
+
+        hasStartedAppServices = true
         updatePrayerCalculationSettings()
         presenceStore.start()
         prayerStore.start()
@@ -148,13 +189,15 @@ struct AppRootView: View {
     }
 
     private func updatePresencePrayerContext() {
-        guard onboardingStore.hasCompletedOnboarding else { return }
+        guard onboardingStore.hasCompletedOnboarding,
+              subscriptionStore.entitlement == .active else { return }
 
         presenceStore.updatePrayerContext(prayerStore.nextPrayer)
     }
 
     private func schedulePrayerNotifications() {
-        guard onboardingStore.hasCompletedOnboarding else { return }
+        guard onboardingStore.hasCompletedOnboarding,
+              subscriptionStore.entitlement == .active else { return }
 
         notificationManager.schedulePrayerNotifications(
             prayers: prayerStore.upcomingPrayers,
@@ -162,6 +205,23 @@ struct AppRootView: View {
             liveMemberCount: presenceStore.displayMemberCount,
             quietSoundEnabled: profileSettingsStore.quietNotificationSoundEnabled
         )
+    }
+}
+
+private struct SubscriptionLaunchView: View {
+    var body: some View {
+        ZStack {
+            Color.vaktDeep.ignoresSafeArea()
+
+            VStack(spacing: VaktSpace.md) {
+                ProgressView()
+                    .tint(Color.vaktGlow)
+
+                Text("Preparing your Vakt…")
+                    .font(VaktFont.body(13))
+                    .foregroundStyle(Color.vaktMuted)
+            }
+        }
     }
 }
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0A100000000000000000001 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A100000000000000000011 /* SubscriptionStore.swift */; };
+		C0A100000000000000000002 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A100000000000000000012 /* PaywallView.swift */; };
 		D20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */; };
 		D20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */; };
 		D20B0C0D0E0F100000000003 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000004 /* XCTest.framework */; };
@@ -65,6 +67,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C0A100000000000000000011 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		C0A100000000000000000012 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepositoryTests.swift; sourceTree = "<group>"; };
 		E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinatorTests.swift; sourceTree = "<group>"; };
 		E20B0C0D0E0F100000000003 /* VaktTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -167,6 +171,7 @@
 				473663DB23DC56F1195CC533 /* DesignSystem */,
 				A99A0A24AC8771B0495F8BDD /* Models */,
 				1E4ECC9F7521C3A2BD64F3D5 /* Notifications */,
+				C0A100000000000000000021 /* Subscription */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -264,10 +269,27 @@
 				F29F78781C0F306CFDF85219 /* Home */,
 				FD374C8DDE51EA6B06C0AE80 /* Insights */,
 				134F7721F45ED133987D24E9 /* Onboarding */,
+				C0A100000000000000000022 /* Paywall */,
 				547D397658BD3C59ABCDDB08 /* Profile */,
 				41BD06D30B9C13D53C98F71F /* Safs */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		C0A100000000000000000021 /* Subscription */ = {
+			isa = PBXGroup;
+			children = (
+				C0A100000000000000000011 /* SubscriptionStore.swift */,
+			);
+			path = Subscription;
+			sourceTree = "<group>";
+		};
+		C0A100000000000000000022 /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				C0A100000000000000000012 /* PaywallView.swift */,
+			);
+			path = Paywall;
 			sourceTree = "<group>";
 		};
 		A99A0A24AC8771B0495F8BDD /* Models */ = {
@@ -428,6 +450,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0A100000000000000000001 /* SubscriptionStore.swift in Sources */,
+				C0A100000000000000000002 /* PaywallView.swift in Sources */,
 				A10B0C0D0E0F100000000011 /* BackendComposition.swift in Sources */,
 				A10B0C0D0E0F100000000002 /* BackendContracts.swift in Sources */,
 				A10B0C0D0E0F100000000001 /* BackendDomain.swift in Sources */,
