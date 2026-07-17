@@ -1,8 +1,20 @@
 import Foundation
-import StoreKit
+import RevenueCat
 
 @MainActor
 final class SubscriptionStore: ObservableObject {
+    struct Summary: Equatable {
+        enum Period: Equatable { case normal, trial, introductory, prepaid, unknown }
+
+        let productID: String
+        let cadence: Plan.Cadence
+        let expirationDate: Date?
+        let willRenew: Bool
+        let period: Period
+        let billingIssueDetectedAt: Date?
+        let managementURL: URL?
+        let isSandbox: Bool
+    }
     enum Entitlement: Equatable {
         case checking
         case active
@@ -33,33 +45,37 @@ final class SubscriptionStore: ObservableObject {
 
         var title: String {
             switch cadence {
-            case .monthly: "Monthly"
-            case .yearly: "Yearly"
+            case .monthly: L10n.string("paywall.plan.monthly")
+            case .yearly: L10n.string("paywall.plan.yearly")
             }
         }
     }
 
-    static let monthlyProductID = "com.vakt.app.subscription.monthly"
-    static let yearlyProductID = "com.vakt.app.subscription.yearly"
+    static let monthlyProductID = RevenueCatConfiguration.monthlyProductID
+    static let yearlyProductID = RevenueCatConfiguration.yearlyProductID
 
     @Published private(set) var entitlement: Entitlement = .checking
     @Published private(set) var plans: [Plan] = []
     @Published private(set) var purchaseState: PurchaseState = .idle
     @Published private(set) var isLoadingProducts = false
-    /// True when there are no real StoreKit products to sell (e.g. no StoreKit
-    /// Configuration attached to the run scheme) and the store has fallen back
-    /// to local plans so the purchase flow can still be exercised in DEBUG.
-    /// Always false in release builds.
+    /// True when RevenueCat cannot return live Offering packages in DEBUG and
+    /// the store falls back to local plans so the paywall can still be previewed.
+    /// This path is never enabled in release builds.
     @Published private(set) var isUsingDeveloperFallback = false
+    @Published private(set) var summary: Summary?
 
-    private let productIDs: Set<String>
+    private let entitlementID: String
+    private let offeringID: String
     private let isPreviewMode: Bool
-    private var productsByID: [String: Product] = [:]
-    private var transactionListener: Task<Void, Never>?
+    private var packagesByPlanID: [String: RevenueCat.Package] = [:]
     private var hasPrepared = false
 
-    init(productIDs: Set<String>? = nil) {
-        self.productIDs = productIDs ?? [Self.monthlyProductID, Self.yearlyProductID]
+    init(
+        entitlementID: String = RevenueCatConfiguration.entitlementID,
+        offeringID: String = RevenueCatConfiguration.offeringID
+    ) {
+        self.entitlementID = entitlementID
+        self.offeringID = offeringID
 
         #if DEBUG
         isPreviewMode = ProcessInfo.processInfo.arguments.contains("--vakt-paywall-preview")
@@ -72,14 +88,7 @@ final class SubscriptionStore: ObservableObject {
             isUsingDeveloperFallback = true
             entitlement = .inactive
             hasPrepared = true
-            return
         }
-
-        transactionListener = listenForTransactions()
-    }
-
-    deinit {
-        transactionListener?.cancel()
     }
 
     func prepare() async {
@@ -95,55 +104,70 @@ final class SubscriptionStore: ObservableObject {
         await loadProducts()
     }
 
+    func refreshSubscription() async {
+        guard !isPreviewMode else { return }
+        await refreshEntitlement()
+        if plans.isEmpty { await loadProducts() }
+    }
+
     func purchase(planID: String) async {
+        #if DEBUG
+        if Self.shouldBypassPurchasesBeforeStoreSheet {
+            await simulateDeveloperPurchase()
+            return
+        }
+        #endif
+
         guard !isUsingDeveloperFallback else {
             await simulateDeveloperPurchase()
             return
         }
 
-        guard let product = productsByID[planID] else {
-            purchaseState = .failed("The App Store could not load this plan. Please try again.")
+        guard let package = packagesByPlanID[planID] else {
+            purchaseState = .failed(L10n.string("paywall.error.plan_unavailable"))
             return
         }
 
         purchaseState = .purchasing
 
         do {
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                let transaction = try verified(verification)
-                await transaction.finish()
-                await refreshEntitlement()
-                purchaseState = .idle
-            case .pending:
-                purchaseState = .pending
-            case .userCancelled:
-                purchaseState = .idle
-            @unknown default:
-                purchaseState = .failed("The purchase could not be completed.")
-            }
+            let customerInfo = try await purchase(package: package)
+            apply(customerInfo: customerInfo)
+            purchaseState = entitlement == .active
+                ? .idle
+                : .failed(L10n.string("paywall.error.activation_failed"))
+        } catch RevenueCatPurchaseError.cancelled {
+            purchaseState = .idle
         } catch {
-            purchaseState = .failed("The purchase could not be completed. Please try again.")
+            #if DEBUG
+            if Self.allowsDeveloperPurchaseBypass {
+                await simulateDeveloperPurchase()
+                return
+            }
+            #endif
+
+            purchaseState = .failed(L10n.string("paywall.error.purchase_failed"))
         }
     }
 
     func restorePurchases() async {
         guard !isUsingDeveloperFallback else {
-            await simulateDeveloperPurchase()
+            purchaseState = entitlement == .active
+                ? .idle
+                : .failed(L10n.string("paywall.error.no_active_subscription"))
             return
         }
 
         purchaseState = .purchasing
 
         do {
-            try await AppStore.sync()
-            await refreshEntitlement()
+            let customerInfo = try await restoreCustomerInfo()
+            apply(customerInfo: customerInfo)
             purchaseState = entitlement == .active
                 ? .idle
-                : .failed("No active subscription was found for this Apple ID.")
+                : .failed(L10n.string("paywall.error.no_active_subscription"))
         } catch {
-            purchaseState = .failed("Purchases could not be restored. Please try again.")
+            purchaseState = .failed(L10n.string("paywall.error.restore_failed"))
         }
     }
 
@@ -157,11 +181,17 @@ final class SubscriptionStore: ObservableObject {
         defer { isLoadingProducts = false }
 
         do {
-            let products = try await Product.products(for: productIDs)
-            productsByID = Dictionary(uniqueKeysWithValues: products.map { ($0.id, $0) })
-            plans = products.compactMap(makePlan).sorted { $0.cadence < $1.cadence }
+            let offerings = try await fetchOfferings()
+            let offering = offerings.offering(identifier: offeringID) ?? offerings.current
+            let packages = offering?.availablePackages ?? []
+
+            packagesByPlanID = Dictionary(uniqueKeysWithValues: packages.compactMap { package in
+                guard let plan = makePlan(package: package) else { return nil }
+                return (plan.id, package)
+            })
+            plans = packages.compactMap(makePlan).sorted { $0.cadence < $1.cadence }
         } catch {
-            productsByID = [:]
+            packagesByPlanID = [:]
             plans = []
         }
 
@@ -170,9 +200,9 @@ final class SubscriptionStore: ObservableObject {
             isUsingDeveloperFallback = true
             plans = Self.developerFallbackPlans
             purchaseState = .idle
-            print("⚠️ SubscriptionStore: the App Store returned no products, so local developer plans are being used. Attach a StoreKit Configuration file to the scheme (Product > Scheme > Edit Scheme > Run > Options) to test the real purchase flow.")
+            print("⚠️ SubscriptionStore: RevenueCat returned no Offering packages, so local developer plans are being used. Check the RevenueCat Offering, App Store products, bundle ID, and sandbox configuration.")
             #else
-            purchaseState = .failed("Subscriptions are not available from the App Store right now.")
+            purchaseState = .failed(L10n.string("paywall.error.subscriptions_unavailable"))
             #endif
             return
         }
@@ -181,10 +211,6 @@ final class SubscriptionStore: ObservableObject {
         purchaseState = .idle
     }
 
-    /// Skips real StoreKit entirely and simulates a successful purchase.
-    /// Only ever reachable when `isUsingDeveloperFallback` is true, which is
-    /// itself only ever set to true in DEBUG builds — so this can't run in
-    /// production regardless of build configuration.
     private func simulateDeveloperPurchase() async {
         purchaseState = .purchasing
         try? await Task.sleep(for: .seconds(0.6))
@@ -193,76 +219,141 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func refreshEntitlement() async {
-        var hasActiveSubscription = false
-
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result,
-                  productIDs.contains(transaction.productID),
-                  transaction.revocationDate == nil,
-                  !transaction.isUpgraded else {
-                continue
-            }
-
-            if let expirationDate = transaction.expirationDate,
-               expirationDate <= Date() {
-                continue
-            }
-
-            hasActiveSubscription = true
-            break
-        }
-
-        entitlement = hasActiveSubscription ? .active : .inactive
-    }
-
-    private func listenForTransactions() -> Task<Void, Never> {
-        Task { [weak self] in
-            for await result in Transaction.updates {
-                guard let self else { return }
-
-                if case .verified(let transaction) = result {
-                    await transaction.finish()
-                }
-
-                await self.refreshEntitlement()
-            }
+        do {
+            let customerInfo = try await fetchCustomerInfo()
+            apply(customerInfo: customerInfo)
+        } catch {
+            entitlement = .inactive
         }
     }
 
-    private func makePlan(product: Product) -> Plan? {
-        guard let subscription = product.subscription else { return nil }
+    private func apply(customerInfo: CustomerInfo) {
+        guard let info = customerInfo.entitlements[entitlementID] else {
+            entitlement = .inactive
+            summary = nil
+            return
+        }
+        entitlement = info.isActive ? .active : .inactive
+        let cadence: Plan.Cadence = info.productIdentifier == Self.yearlyProductID ? .yearly : .monthly
+        let period: Summary.Period = switch info.periodType {
+        case .normal: .normal
+        case .trial: .trial
+        case .intro: .introductory
+        case .prepaid: .prepaid
+        @unknown default: .unknown
+        }
+        summary = Summary(
+            productID: info.productIdentifier,
+            cadence: cadence,
+            expirationDate: info.expirationDate,
+            willRenew: info.willRenew,
+            period: period,
+            billingIssueDetectedAt: info.billingIssueDetectedAt,
+            managementURL: customerInfo.managementURL,
+            isSandbox: info.isSandbox
+        )
+    }
+
+    func redeemReferralReward(productID: String, offerID: String) async throws {
+        guard let package = packagesByPlanID[productID] else {
+            throw ReferralPurchaseError.productUnavailable
+        }
+        guard let discount = package.storeProduct.discounts.first(where: {
+            $0.offerIdentifier == offerID && $0.type == .promotional
+        }) else {
+            throw ReferralPurchaseError.offerUnavailable
+        }
+
+        let offer = try await Purchases.shared.promotionalOffer(
+            forProductDiscount: discount,
+            product: package.storeProduct
+        )
+        let result = try await Purchases.shared.purchase(package: package, promotionalOffer: offer)
+        apply(customerInfo: result.customerInfo)
+    }
+
+    private func makePlan(package: RevenueCat.Package) -> Plan? {
+        let productID = package.storeProduct.productIdentifier
 
         let cadence: Plan.Cadence
-        switch subscription.subscriptionPeriod.unit {
-        case .month where subscription.subscriptionPeriod.value == 1:
+        switch productID {
+        case Self.monthlyProductID:
             cadence = .monthly
-        case .year where subscription.subscriptionPeriod.value == 1:
+        case Self.yearlyProductID:
             cadence = .yearly
         default:
-            return nil
+            switch package.packageType {
+            case .monthly:
+                cadence = .monthly
+            case .annual:
+                cadence = .yearly
+            default:
+                return nil
+            }
         }
 
         return Plan(
-            id: product.id,
+            id: productID,
             cadence: cadence,
-            displayPrice: product.displayPrice,
+            displayPrice: package.storeProduct.localizedPriceString,
             billingDescription: billingDescription(for: cadence)
         )
     }
 
     private func billingDescription(for cadence: Plan.Cadence) -> String {
         switch cadence {
-        case .monthly: "billed each month"
-        case .yearly: "billed once a year"
+        case .monthly: L10n.string("paywall.billing.monthly")
+        case .yearly: L10n.string("paywall.billing.yearly")
         }
     }
 
-    private func verified<T>(_ result: VerificationResult<T>) throws -> T {
-        switch result {
-        case .verified(let value):
-            return value
-        case .unverified:
-            throw StoreError.failedVerification
+    private func fetchOfferings() async throws -> Offerings {
+        try await withCheckedThrowingContinuation { continuation in
+            Purchases.shared.getOfferings { offerings, error in
+                if let offerings {
+                    continuation.resume(returning: offerings)
+                } else {
+                    continuation.resume(throwing: error ?? RevenueCatStoreError.missingOfferings)
+                }
+            }
+        }
+    }
+
+    private func fetchCustomerInfo() async throws -> CustomerInfo {
+        try await withCheckedThrowingContinuation { continuation in
+            Purchases.shared.getCustomerInfo { customerInfo, error in
+                if let customerInfo {
+                    continuation.resume(returning: customerInfo)
+                } else {
+                    continuation.resume(throwing: error ?? RevenueCatStoreError.missingCustomerInfo)
+                }
+            }
+        }
+    }
+
+    private func purchase(package: RevenueCat.Package) async throws -> CustomerInfo {
+        try await withCheckedThrowingContinuation { continuation in
+            Purchases.shared.purchase(package: package) { _, customerInfo, error, userCancelled in
+                if userCancelled {
+                    continuation.resume(throwing: RevenueCatPurchaseError.cancelled)
+                } else if let customerInfo {
+                    continuation.resume(returning: customerInfo)
+                } else {
+                    continuation.resume(throwing: error ?? RevenueCatStoreError.missingCustomerInfo)
+                }
+            }
+        }
+    }
+
+    private func restoreCustomerInfo() async throws -> CustomerInfo {
+        try await withCheckedThrowingContinuation { continuation in
+            Purchases.shared.restorePurchases { customerInfo, error in
+                if let customerInfo {
+                    continuation.resume(returning: customerInfo)
+                } else {
+                    continuation.resume(throwing: error ?? RevenueCatStoreError.missingCustomerInfo)
+                }
+            }
         }
     }
 
@@ -271,17 +362,48 @@ final class SubscriptionStore: ObservableObject {
             id: SubscriptionStore.monthlyProductID,
             cadence: .monthly,
             displayPrice: "$19.99",
-            billingDescription: "billed each month"
+            billingDescription: L10n.string("paywall.billing.monthly")
         ),
         Plan(
             id: SubscriptionStore.yearlyProductID,
             cadence: .yearly,
             displayPrice: "$99.99",
-            billingDescription: "billed once a year"
+            billingDescription: L10n.string("paywall.billing.yearly")
         )
     ]
+
+    #if DEBUG
+    private static var allowsDeveloperPurchaseBypass: Bool {
+        ProcessInfo.processInfo.environment["VAKT_DISABLE_PURCHASE_BYPASS"] != "1"
+    }
+
+    private static var shouldBypassPurchasesBeforeStoreSheet: Bool {
+        #if targetEnvironment(simulator)
+        return allowsDeveloperPurchaseBypass
+        #else
+        return false
+        #endif
+    }
+    #endif
 }
 
-private enum StoreError: Error {
-    case failedVerification
+private enum RevenueCatStoreError: Error {
+    case missingOfferings
+    case missingCustomerInfo
+}
+
+private enum RevenueCatPurchaseError: Error {
+    case cancelled
+}
+
+private enum ReferralPurchaseError: LocalizedError {
+    case productUnavailable
+    case offerUnavailable
+
+    var errorDescription: String? {
+        switch self {
+        case .productUnavailable: L10n.string("paywall.error.referral_product_unavailable")
+        case .offerUnavailable: L10n.string("paywall.error.referral_offer_unavailable")
+        }
+    }
 }

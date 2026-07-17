@@ -7,57 +7,96 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C0A100000000000000000001 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A100000000000000000011 /* SubscriptionStore.swift */; };
-		C0A100000000000000000002 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A100000000000000000012 /* PaywallView.swift */; };
-		D20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */; };
-		D20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */; };
-		D20B0C0D0E0F100000000003 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000004 /* XCTest.framework */; };
-		D20B0C0D0E0F10000000000C /* SupabaseBackendConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */; };
-		D20B0C0D0E0F10000000000D /* SupabaseRealtimeIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */; };
-		D20B0C0D0E0F10000000000E /* VaktTimeFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */; };
-		A10B0C0D0E0F100000000001 /* BackendDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000001 /* BackendDomain.swift */; };
-		A10B0C0D0E0F100000000002 /* BackendContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000002 /* BackendContracts.swift */; };
-		A10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */; };
-		A10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */; };
-		A10B0C0D0E0F100000000005 /* PresenceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */; };
-		A10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */; };
-		A10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */; };
-		A10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */; };
-		A10B0C0D0E0F100000000009 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A10B0C0D0E0F10000000000B /* Supabase */; };
-		A10B0C0D0E0F10000000000D /* SupabaseClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */; };
-		A10B0C0D0E0F10000000000E /* SupabaseBackendErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */; };
-		A10B0C0D0E0F10000000000F /* SupabasePrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */; };
-		A10B0C0D0E0F100000000010 /* SupabasePresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */; };
-		A10B0C0D0E0F100000000011 /* BackendComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000E /* BackendComposition.swift */; };
-		A10B0C0D0E0F100000000012 /* VaktTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */; };
+		0538FA7E5E0608BD98C668D1 /* PrayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C270C6B45B8BD661343C55 /* PrayerView.swift */; };
+		0828EEED4558CC454F582017 /* BackendComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3305E5D718CEC978BEDB71A /* BackendComposition.swift */; };
+		0A0EB4C127E8BF371E082E7C /* InMemoryPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8081F97783F6D49AF274BFB /* InMemoryPresenceRepository.swift */; };
+		0ABFE2AF6AD0170F1D244600 /* Backend.xcconfig.example in Resources */ = {isa = PBXBuildFile; fileRef = F47FFE0D15BB1D356D9C5BF6 /* Backend.xcconfig.example */; };
 		0ED94935949120E7B1170581 /* VaktModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831B1BB56790783DFD52F1B9 /* VaktModels.swift */; };
+		10C04294DAC4CA245EB99D9A /* VaktLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571CEF3096D7A5FDB544075D /* VaktLocalization.swift */; };
+		1492160C910BDA922A314E9E /* SupabasePrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABF37E3D71745AD6D4C9BA1 /* SupabasePrayerSessionRepository.swift */; };
+		1D68935CE4AD58C3C2F5CE9B /* QuietSalahView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD28DC96A364344F2FFCADF4 /* QuietSalahView.swift */; };
+		1FE341561FB1F3FF24F6E4D3 /* OnboardingClosingReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67B13F3E16E70F4C02F3DB83 /* OnboardingClosingReminderView.swift */; };
 		21A6B3413F0615FF22E054B9 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B30E44D4A40A93E7009743 /* ProfileView.swift */; };
+		270A9464A0838308C0A400CB /* MakeupPrayerCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */; };
+		2C106C9D2BBFB370FA81DB9F /* OnboardingPrayerMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261328762E2C056816F4FC5D /* OnboardingPrayerMarkView.swift */; };
+		2C13DA2900EA8D29B13231CD /* VaktTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A9A097A462914DC6C3907F /* VaktTimeFormatter.swift */; };
+		2C19F24CF88DD7FF1D2A1F56 /* SocialCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571468A1D11774C4B6D413E /* SocialCircleView.swift */; };
+		2DEFEC737F5CAD4BD543FFBC /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 143C704B261DFC555B2D2E2A /* InfoPlist.xcstrings */; };
+		2E03A93D0EAB7104BF0980FD /* QiblaDirectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2F157A59D9741417B7C848 /* QiblaDirectionCalculator.swift */; };
+		303E87B4EE9424140E006CDD /* RateVaktView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065DC1B549909ECB4432C38A /* RateVaktView.swift */; };
 		38F66ECBE58CB757BFE58B99 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14EF9F8240E2014699F60B23 /* HomeView.swift */; };
-		41B70FD3DB9C139D7ED59E08 /* QuietSalahView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142C12801A6EBF788BFF6221 /* QuietSalahView.swift */; };
-		4E8F7A0D42C91F38A1B5D602 /* SafPlacementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */; };
+		3F6C0E5E57A678B86007A582 /* ReferralRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E61BDD55F6FF71FADC317DC /* ReferralRepository.swift */; };
+		57F073D9AF71E8C2846E5DBE /* AppleSocialAuthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231734BCF33586EB2749B937 /* AppleSocialAuthRepository.swift */; };
+		5810BB9D474F351D7F9E4FB2 /* PresenceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD32B0D7AC4BFFD76B4D3150 /* PresenceCoordinator.swift */; };
+		58E42876130AEA696756DE1F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 018669BAEE0758185FE80315 /* Localizable.xcstrings */; };
+		591CF11D20E0C66BB37A36B5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = FC18B7CA9C2A8F6BFD1E7216 /* Supabase */; };
 		5F4311165A0043551C314031 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */; };
+		61268F8ADD452702EDAA2B05 /* OnboardingPromiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EA27FB382E700908CEDF071 /* OnboardingPromiseView.swift */; };
+		62DD004E8EBB42CEDA1F008F /* VaktTimeFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBA8B6E4BB4088FB7D4699AF /* VaktTimeFormatterTests.swift */; };
+		63FFFD95CAB57328DB1AD989 /* ReferralStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 997611447861CC177C352650 /* ReferralStore.swift */; };
 		66367E44AB830D26ECC0E0EF /* VaktSplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */; };
 		6CA23CE595CBD57BD5B5B27B /* VaktTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280312D402C0838C19CBB66B /* VaktTokens.swift */; };
+		6D3C5BA960453BCBEC93DC81 /* SpiritualContentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E37245E2BE4FFC458562E08 /* SpiritualContentRepository.swift */; };
 		6F4F235F08012C1A9F102A69 /* OnboardingRemindersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */; };
+		74C47978D19D9DFF009B606A /* SupabaseBackendErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1080FBA4BAE39EC8B24ECF5 /* SupabaseBackendErrorMapper.swift */; };
+		751E8772419A715919EBA14F /* RevenueCatConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000B67223D0ADBE985088C5C /* RevenueCatConfiguration.swift */; };
+		772CC328D2B1EEBFACB89213 /* LocalPrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B5019984A90E84DC6760FC /* LocalPrayerSessionRepository.swift */; };
 		789E75009CEEB1AE0241DBA4 /* OnboardingArrivalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */; };
-		A4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */; };
-		A5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */; };
+		7A893515529D84AC09251D91 /* SupabaseRealtimeIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9487FBEC4DCF2B962920B19 /* SupabaseRealtimeIntegrationTests.swift */; };
+		7A9285377303C9AA4C2D3E05 /* OnboardingMakeupCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1062B98D75B2AF9CBE9C10B7 /* OnboardingMakeupCalendarView.swift */; };
+		7B02D7E77AC3F4A274ED7E79 /* SpiritualContentSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158BF3AE6DEDD823A870968B /* SpiritualContentSelector.swift */; };
 		7EC99F95868F2AA1B1F9A439 /* OnboardingLocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */; };
+		837807A96B3F47D7DB996DC8 /* SupabaseClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F8C0040C5331AE7042C800 /* SupabaseClientFactory.swift */; };
 		84D110A302C3213B7C1150F7 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939C690BE9751661252F8E29 /* InsightsView.swift */; };
 		85DF1682F2B9F4AD03CC863F /* VaktApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313155176F6E9E6E78CF30ED /* VaktApp.swift */; };
+		863A58ADFCB1DCEB8E55A44C /* QiblaSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEC01475E8AF52B6E6B4A4D /* QiblaSheet.swift */; };
+		86C82B7482EFC0DD916CD1A9 /* SpiritualContentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430FC702DC87FFAB26BE0401 /* SpiritualContentStore.swift */; };
+		8715A06F238C544895EFD18B /* SupabaseAnonymousIdentityRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF368C0197D9FE0A7A811FD /* SupabaseAnonymousIdentityRepository.swift */; };
 		883155141CB8B94B11F0778C /* HorizonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8763A820A239FF8A5803F0E0 /* HorizonView.swift */; };
+		89BBA2787D635AA555E7F01B /* ReviewPromptStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5964175C18F338316BAA816 /* ReviewPromptStore.swift */; };
 		941B2CA7996F4BDEB347CC98 /* StatusSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032A724DC6B7B26396FAA10D /* StatusSelector.swift */; };
 		969F021541F880CA853403C3 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D506030A2900076C7FF7266 /* NotificationManager.swift */; };
 		970D7B70B84F1CB1948B9920 /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */; };
+		9C449932FD9D64AB4140A7D8 /* SupabaseSocialRepositories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A31C4E119F4C6F70B17EAF /* SupabaseSocialRepositories.swift */; };
+		9D24F2FC1E5D5FB037B85691 /* OnboardingSafPlacementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4389C1552B9EB8F4BFA004BC /* OnboardingSafPlacementView.swift */; };
+		9D636A91750ABBEF77099F95 /* SupabaseBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7020B74051C12DA6C946FC28 /* SupabaseBackendConfiguration.swift */; };
+		9EFFD5391FDC9BC4AAE707E2 /* SocialPrayerContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8134B67152A53E3D5F74BCF /* SocialPrayerContracts.swift */; };
+		9FB12C1882A395B74B87D92E /* SpiritualContentSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4962CDC92E06BF11B42041B3 /* SpiritualContentSelectorTests.swift */; };
+		A0048BDE2954DBD9CBA41AAE /* PrayerDeadlineBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE5367EA1D733CEC1637393 /* PrayerDeadlineBuilderTests.swift */; };
+		A1B1DC88392000BE18B12365 /* OnboardingFriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45C61D04290A80A666383F26 /* OnboardingFriendsView.swift */; };
+		A1C67447B8BD6037925CC229 /* PresenceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE9A731DAC597B8088DC594 /* PresenceCoordinatorTests.swift */; };
+		AA51AD875048325E5B4862DF /* QiblaCompassStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9203BDA996A4666BB08F12 /* QiblaCompassStore.swift */; };
+		B00431FDC635520BE20DBE15 /* SimulatedPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AB1D53FDEB926BA8ADAF38 /* SimulatedPresenceRepository.swift */; };
+		B9A7EE0D201FFF75CD85578E /* SocialPrayerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B5D7A8A6FB4261F37D7073 /* SocialPrayerStore.swift */; };
+		BDBE20BEA6776B3AEA909798 /* SocialPrayerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5232BD4A10A9EF12491E3CB5 /* SocialPrayerModels.swift */; };
+		BE6858ED346F63C86FDE330E /* BackendContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB3F27F8B88CAE6A0916983 /* BackendContracts.swift */; };
+		BEAD326DBDB5EE164E3DF6EA /* ReviewPromptPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7D562C7C1ECB3B11326FC7 /* ReviewPromptPolicyTests.swift */; };
+		BFCDAE48DE309B981F147CCC /* QiblaDirectionCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6F17E8884BF9A543153262 /* QiblaDirectionCalculatorTests.swift */; };
+		C91F8A47F3103890282B967B /* PrayerNotificationSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF040BBB92E2E0AAB5DEC65 /* PrayerNotificationSchedulerTests.swift */; };
+		CD20E24FEF23E5A8AE1EAEC6 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C391D53CFE7569F8BFB7D7D1 /* SubscriptionStore.swift */; };
+		CF64C21687A07EBE6007FD5E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7784F3611879DAB7584552D3 /* Assets.xcassets */; };
+		D09B457F4E52F1A25A8B8B98 /* MakeupPrayerCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD43C6F6A09C32F0AC310357 /* MakeupPrayerCenterView.swift */; };
 		D4F35621112AD5FBFB2AE2FB /* VaktComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84854BCF88B44578C1D3B388 /* VaktComponents.swift */; };
 		D9B0D8000BC15E3B4E5AEA39 /* PresenceHorizonLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E193DD3DFC4C18F9D6DB4E /* PresenceHorizonLayout.swift */; };
+		D9E0498150CC7EC046247FC7 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5C7CA2966E2B241E9A9048 /* PaywallView.swift */; };
+		DBE77A3F87E49B5B421491E4 /* BackendDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9F57B82427CD2470078F8 /* BackendDomain.swift */; };
+		DFACCC2FD85875A068185C94 /* SpiritualContentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B635F5AA7433CA7AA777DA9 /* SpiritualContentModels.swift */; };
+		E0A96C2CD78F2EA337F1E2BE /* SocialSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */; };
+		E5CFD58E2F00CABC8309D216 /* InMemoryPresenceRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE1BB69715CF1A2B42280E3 /* InMemoryPresenceRepositoryTests.swift */; };
+		E9F41F9BC42C85D26A0F25C3 /* VaktExternalLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 976A9D621BE06B4490C4BB75 /* VaktExternalLinks.swift */; };
+		EF6BB903E28F7B559941CBFE /* OnboardingSafGatheringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CC99598E53524F7CFD08E1 /* OnboardingSafGatheringView.swift */; };
 		EFB2CC9D1861E59A90427911 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E3F8520CB87A94974C984D /* AppRootView.swift */; };
-		F14280CF7FE9412CBF8A81D4 /* SafLobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */; };
+		F0328D220A387B21517107A3 /* SupabasePresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9095EA5598D784B99EC077C4 /* SupabasePresenceRepository.swift */; };
 		F51A99813245014E89D21419 /* OnboardingAnonymousSafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */; };
+		F9058268220E926BEF4B801A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 51093F0381793DF3DE585118 /* RevenueCat */; };
+		F92EA2E811285EF26CD75B4D /* SupabaseBackendConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6900D1E0B30F7C5DA5E53A7D /* SupabaseBackendConfigurationTests.swift */; };
+		FB83416DAD5422E904EE5DEA /* ReferralStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB24B20426DF5DF65036B972 /* ReferralStoreTests.swift */; };
+		FC787C64665C351925C54E2B /* ReferralModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 435E4E0A677AD2DA4A3F56A7 /* ReferralModels.swift */; };
+		FD6D861B71C3909D38E8BFB7 /* ReferralCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02CD0A40D9BD60A3E1D619B0 /* ReferralCenterView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D20B0C0D0E0F100000000004 /* PBXContainerItemProxy */ = {
+		74A56D98D9FE1C54986E8241 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B77786EB422C14541F7F27A6 /* Project object */;
 			proxyType = 1;
@@ -67,92 +106,159 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C0A100000000000000000011 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
-		C0A100000000000000000012 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
-		E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepositoryTests.swift; sourceTree = "<group>"; };
-		E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinatorTests.swift; sourceTree = "<group>"; };
-		E20B0C0D0E0F100000000003 /* VaktTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E20B0C0D0E0F100000000004 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
-		E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfigurationTests.swift; sourceTree = "<group>"; };
-		E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRealtimeIntegrationTests.swift; sourceTree = "<group>"; };
-		E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatterTests.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000001 /* BackendDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendDomain.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000002 /* BackendContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendContracts.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPrayerSessionRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinator.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedPresenceRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfiguration.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAnonymousIdentityRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientFactory.swift; sourceTree = "<group>"; };
+		000B67223D0ADBE985088C5C /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
+		00AB1D53FDEB926BA8ADAF38 /* SimulatedPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedPresenceRepository.swift; sourceTree = "<group>"; };
+		018669BAEE0758185FE80315 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		02CD0A40D9BD60A3E1D619B0 /* ReferralCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCenterView.swift; sourceTree = "<group>"; };
 		032A724DC6B7B26396FAA10D /* StatusSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusSelector.swift; sourceTree = "<group>"; };
-		0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafLobbyView.swift; sourceTree = "<group>"; };
-		142C12801A6EBF788BFF6221 /* QuietSalahView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietSalahView.swift; sourceTree = "<group>"; };
+		03A31C4E119F4C6F70B17EAF /* SupabaseSocialRepositories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseSocialRepositories.swift; sourceTree = "<group>"; };
+		065DC1B549909ECB4432C38A /* RateVaktView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateVaktView.swift; sourceTree = "<group>"; };
+		0DE9A731DAC597B8088DC594 /* PresenceCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinatorTests.swift; sourceTree = "<group>"; };
+		1062B98D75B2AF9CBE9C10B7 /* OnboardingMakeupCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMakeupCalendarView.swift; sourceTree = "<group>"; };
+		143C704B261DFC555B2D2E2A /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		14EF9F8240E2014699F60B23 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		158BF3AE6DEDD823A870968B /* SpiritualContentSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpiritualContentSelector.swift; sourceTree = "<group>"; };
+		17CC99598E53524F7CFD08E1 /* OnboardingSafGatheringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafGatheringView.swift; sourceTree = "<group>"; };
 		1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingArrivalView.swift; sourceTree = "<group>"; };
-		B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafGatheringView.swift; sourceTree = "<group>"; };
-		B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafPlacementView.swift; sourceTree = "<group>"; };
 		1EAAE208CF4BE03243528013 /* Vakt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Vakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		231734BCF33586EB2749B937 /* AppleSocialAuthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSocialAuthRepository.swift; sourceTree = "<group>"; };
+		261328762E2C056816F4FC5D /* OnboardingPrayerMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPrayerMarkView.swift; sourceTree = "<group>"; };
 		280312D402C0838C19CBB66B /* VaktTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTokens.swift; sourceTree = "<group>"; };
 		2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktSplashView.swift; sourceTree = "<group>"; };
 		2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
+		2CB3F27F8B88CAE6A0916983 /* BackendContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendContracts.swift; sourceTree = "<group>"; };
 		313155176F6E9E6E78CF30ED /* VaktApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktApp.swift; sourceTree = "<group>"; };
+		3817D567DBD75088B8D01D86 /* Vakt.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vakt.entitlements; sourceTree = "<group>"; };
 		38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLocationView.swift; sourceTree = "<group>"; };
 		3D506030A2900076C7FF7266 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		430FC702DC87FFAB26BE0401 /* SpiritualContentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpiritualContentStore.swift; sourceTree = "<group>"; };
+		435E4E0A677AD2DA4A3F56A7 /* ReferralModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralModels.swift; sourceTree = "<group>"; };
+		4389C1552B9EB8F4BFA004BC /* OnboardingSafPlacementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSafPlacementView.swift; sourceTree = "<group>"; };
+		45C61D04290A80A666383F26 /* OnboardingFriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFriendsView.swift; sourceTree = "<group>"; };
+		4962CDC92E06BF11B42041B3 /* SpiritualContentSelectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpiritualContentSelectorTests.swift; sourceTree = "<group>"; };
 		4A2F87FA3C38918AB70A601B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000A /* Vakt.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Vakt.xcconfig; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendErrorMapper.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerSessionRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePresenceRepository.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000E /* BackendComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendComposition.swift; sourceTree = "<group>"; };
-		B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatter.swift; sourceTree = "<group>"; };
+		4C7D562C7C1ECB3B11326FC7 /* ReviewPromptPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptPolicyTests.swift; sourceTree = "<group>"; };
+		4DF040BBB92E2E0AAB5DEC65 /* PrayerNotificationSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerNotificationSchedulerTests.swift; sourceTree = "<group>"; };
+		5232BD4A10A9EF12491E3CB5 /* SocialPrayerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPrayerModels.swift; sourceTree = "<group>"; };
 		53B30E44D4A40A93E7009743 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		571CEF3096D7A5FDB544075D /* VaktLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktLocalization.swift; sourceTree = "<group>"; };
 		5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRemindersView.swift; sourceTree = "<group>"; };
 		5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingAnonymousSafView.swift; sourceTree = "<group>"; };
+		5E37245E2BE4FFC458562E08 /* SpiritualContentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpiritualContentRepository.swift; sourceTree = "<group>"; };
+		5F9203BDA996A4666BB08F12 /* QiblaCompassStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QiblaCompassStore.swift; sourceTree = "<group>"; };
+		62B359A98F7A1DE469037619 /* VaktTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		67B13F3E16E70F4C02F3DB83 /* OnboardingClosingReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingClosingReminderView.swift; sourceTree = "<group>"; };
+		6900D1E0B30F7C5DA5E53A7D /* SupabaseBackendConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfigurationTests.swift; sourceTree = "<group>"; };
+		6B635F5AA7433CA7AA777DA9 /* SpiritualContentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpiritualContentModels.swift; sourceTree = "<group>"; };
+		7020B74051C12DA6C946FC28 /* SupabaseBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendConfiguration.swift; sourceTree = "<group>"; };
+		7784F3611879DAB7584552D3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7EA27FB382E700908CEDF071 /* OnboardingPromiseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPromiseView.swift; sourceTree = "<group>"; };
+		7FD9F19AFF4F46705E95E3A5 /* Backend.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Backend.xcconfig; sourceTree = "<group>"; };
 		831B1BB56790783DFD52F1B9 /* VaktModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktModels.swift; sourceTree = "<group>"; };
 		84854BCF88B44578C1D3B388 /* VaktComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktComponents.swift; sourceTree = "<group>"; };
 		8763A820A239FF8A5803F0E0 /* HorizonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonView.swift; sourceTree = "<group>"; };
+		87F8C0040C5331AE7042C800 /* SupabaseClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientFactory.swift; sourceTree = "<group>"; };
+		8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeupPrayerCalendarTests.swift; sourceTree = "<group>"; };
+		8DE5367EA1D733CEC1637393 /* PrayerDeadlineBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerDeadlineBuilderTests.swift; sourceTree = "<group>"; };
+		9095EA5598D784B99EC077C4 /* SupabasePresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePresenceRepository.swift; sourceTree = "<group>"; };
 		939C690BE9751661252F8E29 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
-		9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafPlacementView.swift; sourceTree = "<group>"; };
+		976A9D621BE06B4490C4BB75 /* VaktExternalLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktExternalLinks.swift; sourceTree = "<group>"; };
+		997611447861CC177C352650 /* ReferralStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralStore.swift; sourceTree = "<group>"; };
+		9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialSignInView.swift; sourceTree = "<group>"; };
+		9E61BDD55F6FF71FADC317DC /* ReferralRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralRepository.swift; sourceTree = "<group>"; };
 		9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A2A9A097A462914DC6C3907F /* VaktTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatter.swift; sourceTree = "<group>"; };
+		A571468A1D11774C4B6D413E /* SocialCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialCircleView.swift; sourceTree = "<group>"; };
+		AD32B0D7AC4BFFD76B4D3150 /* PresenceCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCoordinator.swift; sourceTree = "<group>"; };
+		B5964175C18F338316BAA816 /* ReviewPromptStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptStore.swift; sourceTree = "<group>"; };
+		BABF37E3D71745AD6D4C9BA1 /* SupabasePrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerSessionRepository.swift; sourceTree = "<group>"; };
+		BB6F17E8884BF9A543153262 /* QiblaDirectionCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QiblaDirectionCalculatorTests.swift; sourceTree = "<group>"; };
+		C391D53CFE7569F8BFB7D7D1 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		C3B5D7A8A6FB4261F37D7073 /* SocialPrayerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPrayerStore.swift; sourceTree = "<group>"; };
 		C5E193DD3DFC4C18F9D6DB4E /* PresenceHorizonLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceHorizonLayout.swift; sourceTree = "<group>"; };
+		C9487FBEC4DCF2B962920B19 /* SupabaseRealtimeIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRealtimeIntegrationTests.swift; sourceTree = "<group>"; };
+		CBA8B6E4BB4088FB7D4699AF /* VaktTimeFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatterTests.swift; sourceTree = "<group>"; };
+		CC2F157A59D9741417B7C848 /* QiblaDirectionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QiblaDirectionCalculator.swift; sourceTree = "<group>"; };
+		CD43C6F6A09C32F0AC310357 /* MakeupPrayerCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeupPrayerCenterView.swift; sourceTree = "<group>"; };
+		D3C270C6B45B8BD661343C55 /* PrayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerView.swift; sourceTree = "<group>"; };
 		D7E3F8520CB87A94974C984D /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		DD28DC96A364344F2FFCADF4 /* QuietSalahView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietSalahView.swift; sourceTree = "<group>"; };
+		DE5C7CA2966E2B241E9A9048 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		DEE1BB69715CF1A2B42280E3 /* InMemoryPresenceRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepositoryTests.swift; sourceTree = "<group>"; };
+		DF58FB611ADF4D126886C055 /* Vakt.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Vakt.xcconfig; sourceTree = "<group>"; };
+		DFEC01475E8AF52B6E6B4A4D /* QiblaSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QiblaSheet.swift; sourceTree = "<group>"; };
+		DFF368C0197D9FE0A7A811FD /* SupabaseAnonymousIdentityRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAnonymousIdentityRepository.swift; sourceTree = "<group>"; };
+		E0C9F57B82427CD2470078F8 /* BackendDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendDomain.swift; sourceTree = "<group>"; };
+		E3305E5D718CEC978BEDB71A /* BackendComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendComposition.swift; sourceTree = "<group>"; };
+		E8081F97783F6D49AF274BFB /* InMemoryPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryPresenceRepository.swift; sourceTree = "<group>"; };
+		E8134B67152A53E3D5F74BCF /* SocialPrayerContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPrayerContracts.swift; sourceTree = "<group>"; };
+		EB24B20426DF5DF65036B972 /* ReferralStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralStoreTests.swift; sourceTree = "<group>"; };
+		F1080FBA4BAE39EC8B24ECF5 /* SupabaseBackendErrorMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBackendErrorMapper.swift; sourceTree = "<group>"; };
+		F1B5019984A90E84DC6760FC /* LocalPrayerSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPrayerSessionRepository.swift; sourceTree = "<group>"; };
+		F47FFE0D15BB1D356D9C5BF6 /* Backend.xcconfig.example */ = {isa = PBXFileReference; path = Backend.xcconfig.example; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A10B0C0D0E0F10000000000A /* Frameworks */ = {
+		CCA3531DFECAC2FADB6DE512 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10B0C0D0E0F100000000009 /* Supabase in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D20B0C0D0E0F100000000005 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D20B0C0D0E0F100000000003 /* XCTest.framework in Frameworks */,
+				591CF11D20E0C66BB37A36B5 /* Supabase in Frameworks */,
+				F9058268220E926BEF4B801A /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0EEC63957B3820F24EEF145E /* Prayer */ = {
+			isa = PBXGroup;
+			children = (
+				CD43C6F6A09C32F0AC310357 /* MakeupPrayerCenterView.swift */,
+				D3C270C6B45B8BD661343C55 /* PrayerView.swift */,
+				DD28DC96A364344F2FFCADF4 /* QuietSalahView.swift */,
+			);
+			path = Prayer;
+			sourceTree = "<group>";
+		};
+		12CC0A0425DEDFE7ECF7DBE5 /* SpiritualContent */ = {
+			isa = PBXGroup;
+			children = (
+				6B635F5AA7433CA7AA777DA9 /* SpiritualContentModels.swift */,
+				5E37245E2BE4FFC458562E08 /* SpiritualContentRepository.swift */,
+				158BF3AE6DEDD823A870968B /* SpiritualContentSelector.swift */,
+				430FC702DC87FFAB26BE0401 /* SpiritualContentStore.swift */,
+			);
+			path = SpiritualContent;
+			sourceTree = "<group>";
+		};
 		134F7721F45ED133987D24E9 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
 				5CAC2C47C8C3F38866226049 /* OnboardingAnonymousSafView.swift */,
 				1D0ED13813DC8B27F9DC0BD1 /* OnboardingArrivalView.swift */,
-				B4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift */,
-				B5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift */,
+				67B13F3E16E70F4C02F3DB83 /* OnboardingClosingReminderView.swift */,
+				45C61D04290A80A666383F26 /* OnboardingFriendsView.swift */,
 				38A4CBC974F46166EF334F53 /* OnboardingLocationView.swift */,
+				1062B98D75B2AF9CBE9C10B7 /* OnboardingMakeupCalendarView.swift */,
+				261328762E2C056816F4FC5D /* OnboardingPrayerMarkView.swift */,
+				7EA27FB382E700908CEDF071 /* OnboardingPromiseView.swift */,
 				5B8513084121AF22EEC9CE22 /* OnboardingRemindersView.swift */,
+				17CC99598E53524F7CFD08E1 /* OnboardingSafGatheringView.swift */,
+				4389C1552B9EB8F4BFA004BC /* OnboardingSafPlacementView.swift */,
 				2A39A06B57B41F68C5515DA6 /* OnboardingStore.swift */,
 				9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */,
 				2A068723F1EDDBCC76B4271E /* VaktSplashView.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		172AD5AB9BFAAA22C8C6D530 /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				065DC1B549909ECB4432C38A /* RateVaktView.swift */,
+			);
+			path = Review;
 			sourceTree = "<group>";
 		};
 		1E4ECC9F7521C3A2BD64F3D5 /* Notifications */ = {
@@ -163,53 +269,62 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
+		217EFB0F8042455B0CCE45DD /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				B5964175C18F338316BAA816 /* ReviewPromptStore.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
 		2C61110B63AE03265F053F50 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				C10B0C0D0E0F100000000001 /* Backend */,
+				B0D8311DC6CE311157C03B82 /* Backend */,
 				63951153D1EF2A0D9D7FD2AE /* Components */,
 				473663DB23DC56F1195CC533 /* DesignSystem */,
+				99D3CEA9690843F0E4513DED /* Localization */,
 				A99A0A24AC8771B0495F8BDD /* Models */,
 				1E4ECC9F7521C3A2BD64F3D5 /* Notifications */,
-				C0A100000000000000000021 /* Subscription */,
+				7A28733068CBBC47EB11216F /* Qibla */,
+				76C7992C5CFED6BC9138C991 /* Referral */,
+				217EFB0F8042455B0CCE45DD /* Review */,
+				74E608179B56C8DC579B6302 /* Social */,
+				12CC0A0425DEDFE7ECF7DBE5 /* SpiritualContent */,
+				FF19974E4759FBB09B6915E9 /* Subscription */,
+				C1794949DFB35A253E55809D /* Support */,
 			);
 			path = Core;
 			sourceTree = "<group>";
 		};
-		C10B0C0D0E0F100000000001 /* Backend */ = {
+		2D1697B90CD7228BC8C7C62E /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				B10B0C0D0E0F10000000000E /* BackendComposition.swift */,
-				B10B0C0D0E0F100000000002 /* BackendContracts.swift */,
-				B10B0C0D0E0F100000000001 /* BackendDomain.swift */,
-				B10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift */,
-				B10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift */,
-				B10B0C0D0E0F100000000005 /* PresenceCoordinator.swift */,
-				B10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift */,
-				B10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift */,
-				B10B0C0D0E0F10000000000B /* SupabaseBackendErrorMapper.swift */,
-				B10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift */,
-				B10B0C0D0E0F100000000009 /* SupabaseClientFactory.swift */,
-				B10B0C0D0E0F10000000000C /* SupabasePrayerSessionRepository.swift */,
-				B10B0C0D0E0F10000000000D /* SupabasePresenceRepository.swift */,
+				4DF040BBB92E2E0AAB5DEC65 /* PrayerNotificationSchedulerTests.swift */,
 			);
-			path = Backend;
+			path = Notifications;
 			sourceTree = "<group>";
 		};
-		41BD06D30B9C13D53C98F71F /* Safs */ = {
+		3B156A6191CFEA09F7056808 /* Qibla */ = {
 			isa = PBXGroup;
 			children = (
-				142C12801A6EBF788BFF6221 /* QuietSalahView.swift */,
-				0E9C19D7FAAB1D4D3691FF9B /* SafLobbyView.swift */,
-				9D32764C5B0E4D8A8F7041C3 /* SafPlacementView.swift */,
+				DFEC01475E8AF52B6E6B4A4D /* QiblaSheet.swift */,
 			);
-			path = Safs;
+			path = Qibla;
+			sourceTree = "<group>";
+		};
+		3C8EB7D9F1F44938F690A01E /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				DE5C7CA2966E2B241E9A9048 /* PaywallView.swift */,
+			);
+			path = Paywall;
 			sourceTree = "<group>";
 		};
 		473663DB23DC56F1195CC533 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
-				B10B0C0D0E0F10000000000F /* VaktTimeFormatter.swift */,
+				A2A9A097A462914DC6C3907F /* VaktTimeFormatter.swift */,
 				280312D402C0838C19CBB66B /* VaktTokens.swift */,
 			);
 			path = DesignSystem;
@@ -223,6 +338,14 @@
 			path = Profile;
 			sourceTree = "<group>";
 		};
+		55B35B60F164B2644A98C65F /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				A571468A1D11774C4B6D413E /* SocialCircleView.swift */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
 		63951153D1EF2A0D9D7FD2AE /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -234,6 +357,28 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		74E608179B56C8DC579B6302 /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				231734BCF33586EB2749B937 /* AppleSocialAuthRepository.swift */,
+				E8134B67152A53E3D5F74BCF /* SocialPrayerContracts.swift */,
+				5232BD4A10A9EF12491E3CB5 /* SocialPrayerModels.swift */,
+				C3B5D7A8A6FB4261F37D7073 /* SocialPrayerStore.swift */,
+				03A31C4E119F4C6F70B17EAF /* SupabaseSocialRepositories.swift */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
+		76C7992C5CFED6BC9138C991 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				435E4E0A677AD2DA4A3F56A7 /* ReferralModels.swift */,
+				9E61BDD55F6FF71FADC317DC /* ReferralRepository.swift */,
+				997611447861CC177C352650 /* ReferralStore.swift */,
+			);
+			path = Referral;
+			sourceTree = "<group>";
+		};
 		79B5CD8F189D9358F4E09065 /* Vakt */ = {
 			isa = PBXGroup;
 			children = (
@@ -243,6 +388,23 @@
 				91D9A1887341453B2D0CCC34 /* Resources */,
 			);
 			path = Vakt;
+			sourceTree = "<group>";
+		};
+		7A28733068CBBC47EB11216F /* Qibla */ = {
+			isa = PBXGroup;
+			children = (
+				5F9203BDA996A4666BB08F12 /* QiblaCompassStore.swift */,
+				CC2F157A59D9741417B7C848 /* QiblaDirectionCalculator.swift */,
+			);
+			path = Qibla;
+			sourceTree = "<group>";
+		};
+		7CB34EB5A13BCC41B8ED059C /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				4C7D562C7C1ECB3B11326FC7 /* ReviewPromptPolicyTests.swift */,
+			);
+			path = Review;
 			sourceTree = "<group>";
 		};
 		907CC5517B1CC166930199C6 /* App */ = {
@@ -257,8 +419,12 @@
 		91D9A1887341453B2D0CCC34 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7784F3611879DAB7584552D3 /* Assets.xcassets */,
+				7FD9F19AFF4F46705E95E3A5 /* Backend.xcconfig */,
+				F47FFE0D15BB1D356D9C5BF6 /* Backend.xcconfig.example */,
 				4A2F87FA3C38918AB70A601B /* Info.plist */,
-				B10B0C0D0E0F10000000000A /* Vakt.xcconfig */,
+				3817D567DBD75088B8D01D86 /* Vakt.entitlements */,
+				DF58FB611ADF4D126886C055 /* Vakt.xcconfig */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -266,30 +432,46 @@
 		96F4BC5495485F28401E7E33 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				A97CC2B6D0CF7D0546F75655 /* Auth */,
 				F29F78781C0F306CFDF85219 /* Home */,
 				FD374C8DDE51EA6B06C0AE80 /* Insights */,
 				134F7721F45ED133987D24E9 /* Onboarding */,
-				C0A100000000000000000022 /* Paywall */,
+				3C8EB7D9F1F44938F690A01E /* Paywall */,
+				0EEC63957B3820F24EEF145E /* Prayer */,
 				547D397658BD3C59ABCDDB08 /* Profile */,
-				41BD06D30B9C13D53C98F71F /* Safs */,
+				3B156A6191CFEA09F7056808 /* Qibla */,
+				AD3A88F8C8E104EB1363D720 /* Referral */,
+				172AD5AB9BFAAA22C8C6D530 /* Review */,
+				55B35B60F164B2644A98C65F /* Social */,
 			);
 			path = Features;
 			sourceTree = "<group>";
 		};
-		C0A100000000000000000021 /* Subscription */ = {
+		99D3CEA9690843F0E4513DED /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				C0A100000000000000000011 /* SubscriptionStore.swift */,
+				143C704B261DFC555B2D2E2A /* InfoPlist.xcstrings */,
+				018669BAEE0758185FE80315 /* Localizable.xcstrings */,
+				571CEF3096D7A5FDB544075D /* VaktLocalization.swift */,
 			);
-			path = Subscription;
+			path = Localization;
 			sourceTree = "<group>";
 		};
-		C0A100000000000000000022 /* Paywall */ = {
+		A05E32981EAA5998EF761B8F /* Social */ = {
 			isa = PBXGroup;
 			children = (
-				C0A100000000000000000012 /* PaywallView.swift */,
+				8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */,
+				8DE5367EA1D733CEC1637393 /* PrayerDeadlineBuilderTests.swift */,
 			);
-			path = Paywall;
+			path = Social;
+			sourceTree = "<group>";
+		};
+		A97CC2B6D0CF7D0546F75655 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		A99A0A24AC8771B0495F8BDD /* Models */ = {
@@ -300,13 +482,99 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		AD3A88F8C8E104EB1363D720 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				02CD0A40D9BD60A3E1D619B0 /* ReferralCenterView.swift */,
+			);
+			path = Referral;
+			sourceTree = "<group>";
+		};
+		AD6A3431CFA97E7997F8E6C6 /* VaktTests */ = {
+			isa = PBXGroup;
+			children = (
+				BB6F17E8884BF9A543153262 /* QiblaDirectionCalculatorTests.swift */,
+				C1CB5B0AFA79E3A8698E1644 /* Backend */,
+				C066EFCA28872376DEFE9265 /* Formatting */,
+				2D1697B90CD7228BC8C7C62E /* Notifications */,
+				E5F20BDA5568710841DF5E86 /* Referral */,
+				7CB34EB5A13BCC41B8ED059C /* Review */,
+				A05E32981EAA5998EF761B8F /* Social */,
+				C53BC85236A51D3FC019BA80 /* SpiritualContent */,
+			);
+			path = VaktTests;
+			sourceTree = "<group>";
+		};
+		B0D8311DC6CE311157C03B82 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				E3305E5D718CEC978BEDB71A /* BackendComposition.swift */,
+				2CB3F27F8B88CAE6A0916983 /* BackendContracts.swift */,
+				E0C9F57B82427CD2470078F8 /* BackendDomain.swift */,
+				E8081F97783F6D49AF274BFB /* InMemoryPresenceRepository.swift */,
+				F1B5019984A90E84DC6760FC /* LocalPrayerSessionRepository.swift */,
+				AD32B0D7AC4BFFD76B4D3150 /* PresenceCoordinator.swift */,
+				00AB1D53FDEB926BA8ADAF38 /* SimulatedPresenceRepository.swift */,
+				DFF368C0197D9FE0A7A811FD /* SupabaseAnonymousIdentityRepository.swift */,
+				7020B74051C12DA6C946FC28 /* SupabaseBackendConfiguration.swift */,
+				F1080FBA4BAE39EC8B24ECF5 /* SupabaseBackendErrorMapper.swift */,
+				87F8C0040C5331AE7042C800 /* SupabaseClientFactory.swift */,
+				BABF37E3D71745AD6D4C9BA1 /* SupabasePrayerSessionRepository.swift */,
+				9095EA5598D784B99EC077C4 /* SupabasePresenceRepository.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		C066EFCA28872376DEFE9265 /* Formatting */ = {
+			isa = PBXGroup;
+			children = (
+				CBA8B6E4BB4088FB7D4699AF /* VaktTimeFormatterTests.swift */,
+			);
+			path = Formatting;
+			sourceTree = "<group>";
+		};
+		C1794949DFB35A253E55809D /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				976A9D621BE06B4490C4BB75 /* VaktExternalLinks.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		C1CB5B0AFA79E3A8698E1644 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				DEE1BB69715CF1A2B42280E3 /* InMemoryPresenceRepositoryTests.swift */,
+				0DE9A731DAC597B8088DC594 /* PresenceCoordinatorTests.swift */,
+				6900D1E0B30F7C5DA5E53A7D /* SupabaseBackendConfigurationTests.swift */,
+				C9487FBEC4DCF2B962920B19 /* SupabaseRealtimeIntegrationTests.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		C53BC85236A51D3FC019BA80 /* SpiritualContent */ = {
+			isa = PBXGroup;
+			children = (
+				4962CDC92E06BF11B42041B3 /* SpiritualContentSelectorTests.swift */,
+			);
+			path = SpiritualContent;
+			sourceTree = "<group>";
+		};
 		DF9DD032B478211DF55B5C74 = {
 			isa = PBXGroup;
 			children = (
 				79B5CD8F189D9358F4E09065 /* Vakt */,
-				F20B0C0D0E0F100000000001 /* VaktTests */,
+				AD6A3431CFA97E7997F8E6C6 /* VaktTests */,
 				F3F96D6715363616DB1AEA7D /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		E5F20BDA5568710841DF5E86 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				EB24B20426DF5DF65036B972 /* ReferralStoreTests.swift */,
+			);
+			path = Referral;
 			sourceTree = "<group>";
 		};
 		F29F78781C0F306CFDF85219 /* Home */ = {
@@ -321,37 +589,9 @@
 			isa = PBXGroup;
 			children = (
 				1EAAE208CF4BE03243528013 /* Vakt.app */,
-				E20B0C0D0E0F100000000003 /* VaktTests.xctest */,
+				62B359A98F7A1DE469037619 /* VaktTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F20B0C0D0E0F100000000001 /* VaktTests */ = {
-			isa = PBXGroup;
-			children = (
-				F20B0C0D0E0F100000000002 /* Backend */,
-				F20B0C0D0E0F100000000003 /* Formatting */,
-			);
-			path = VaktTests;
-			sourceTree = "<group>";
-		};
-		F20B0C0D0E0F100000000002 /* Backend */ = {
-			isa = PBXGroup;
-			children = (
-				E20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift */,
-				E20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift */,
-				E20B0C0D0E0F100000000005 /* SupabaseBackendConfigurationTests.swift */,
-				E20B0C0D0E0F100000000006 /* SupabaseRealtimeIntegrationTests.swift */,
-			);
-			path = Backend;
-			sourceTree = "<group>";
-		};
-		F20B0C0D0E0F100000000003 /* Formatting */ = {
-			isa = PBXGroup;
-			children = (
-				E20B0C0D0E0F100000000007 /* VaktTimeFormatterTests.swift */,
-			);
-			path = Formatting;
 			sourceTree = "<group>";
 		};
 		FD374C8DDE51EA6B06C0AE80 /* Insights */ = {
@@ -362,24 +602,32 @@
 			path = Insights;
 			sourceTree = "<group>";
 		};
+		FF19974E4759FBB09B6915E9 /* Subscription */ = {
+			isa = PBXGroup;
+			children = (
+				000B67223D0ADBE985088C5C /* RevenueCatConfiguration.swift */,
+				C391D53CFE7569F8BFB7D7D1 /* SubscriptionStore.swift */,
+			);
+			path = Subscription;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D20B0C0D0E0F100000000006 /* VaktTests */ = {
+		26D51B452FD364E7AC0FCF23 /* VaktTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D20B0C0D0E0F100000000007 /* Build configuration list for PBXNativeTarget "VaktTests" */;
+			buildConfigurationList = 0D50E6FFD71ECB5226EAADA2 /* Build configuration list for PBXNativeTarget "VaktTests" */;
 			buildPhases = (
-				D20B0C0D0E0F100000000008 /* Sources */,
-				D20B0C0D0E0F100000000005 /* Frameworks */,
+				80F6C6E5B7A4F2706176AF74 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D20B0C0D0E0F100000000009 /* PBXTargetDependency */,
+				E3C094B4A61BF6BFAE941AF8 /* PBXTargetDependency */,
 			);
 			name = VaktTests;
 			productName = VaktTests;
-			productReference = E20B0C0D0E0F100000000003 /* VaktTests.xctest */;
+			productReference = 62B359A98F7A1DE469037619 /* VaktTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		F6AB8D5148E7A0FE20DAF0CE /* Vakt */ = {
@@ -387,7 +635,8 @@
 			buildConfigurationList = 738283A2F6203AEF2809FE14 /* Build configuration list for PBXNativeTarget "Vakt" */;
 			buildPhases = (
 				B76DBDDED3483A6300D0FA10 /* Sources */,
-				A10B0C0D0E0F10000000000A /* Frameworks */,
+				6CC0B2FD9E47045AE948A0CF /* Resources */,
+				CCA3531DFECAC2FADB6DE512 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -395,7 +644,8 @@
 			);
 			name = Vakt;
 			packageProductDependencies = (
-				A10B0C0D0E0F10000000000B /* Supabase */,
+				FC18B7CA9C2A8F6BFD1E7216 /* Supabase */,
+				51093F0381793DF3DE585118 /* RevenueCat */,
 			);
 			productName = Vakt;
 			productReference = 1EAAE208CF4BE03243528013 /* Vakt.app */;
@@ -410,6 +660,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					F6AB8D5148E7A0FE20DAF0CE = {
+						DevelopmentTeam = HJD426RPSC;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = CCA76CD174F5D58D59724306 /* Build configuration list for PBXProject "Vakt" */;
@@ -418,31 +672,64 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				ar,
+				de,
 				en,
+				es,
+				fr,
+				id,
+				it,
+				nl,
+				pt,
+				ru,
+				tr,
+				ur,
 			);
 			mainGroup = DF9DD032B478211DF55B5C74;
 			packageReferences = (
-				A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				908E729B353032F743939BAE /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				BB0032D01BC883C09CC64FC9 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				F6AB8D5148E7A0FE20DAF0CE /* Vakt */,
-				D20B0C0D0E0F100000000006 /* VaktTests */,
+				26D51B452FD364E7AC0FCF23 /* VaktTests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		6CC0B2FD9E47045AE948A0CF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF64C21687A07EBE6007FD5E /* Assets.xcassets in Resources */,
+				0ABFE2AF6AD0170F1D244600 /* Backend.xcconfig.example in Resources */,
+				2DEFEC737F5CAD4BD543FFBC /* InfoPlist.xcstrings in Resources */,
+				58E42876130AEA696756DE1F /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		D20B0C0D0E0F100000000008 /* Sources */ = {
+		80F6C6E5B7A4F2706176AF74 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D20B0C0D0E0F100000000001 /* InMemoryPresenceRepositoryTests.swift in Sources */,
-				D20B0C0D0E0F100000000002 /* PresenceCoordinatorTests.swift in Sources */,
-				D20B0C0D0E0F10000000000C /* SupabaseBackendConfigurationTests.swift in Sources */,
-				D20B0C0D0E0F10000000000D /* SupabaseRealtimeIntegrationTests.swift in Sources */,
-				D20B0C0D0E0F10000000000E /* VaktTimeFormatterTests.swift in Sources */,
+				E5CFD58E2F00CABC8309D216 /* InMemoryPresenceRepositoryTests.swift in Sources */,
+				270A9464A0838308C0A400CB /* MakeupPrayerCalendarTests.swift in Sources */,
+				A0048BDE2954DBD9CBA41AAE /* PrayerDeadlineBuilderTests.swift in Sources */,
+				C91F8A47F3103890282B967B /* PrayerNotificationSchedulerTests.swift in Sources */,
+				A1C67447B8BD6037925CC229 /* PresenceCoordinatorTests.swift in Sources */,
+				BFCDAE48DE309B981F147CCC /* QiblaDirectionCalculatorTests.swift in Sources */,
+				FB83416DAD5422E904EE5DEA /* ReferralStoreTests.swift in Sources */,
+				BEAD326DBDB5EE164E3DF6EA /* ReviewPromptPolicyTests.swift in Sources */,
+				9FB12C1882A395B74B87D92E /* SpiritualContentSelectorTests.swift in Sources */,
+				F92EA2E811285EF26CD75B4D /* SupabaseBackendConfigurationTests.swift in Sources */,
+				7A893515529D84AC09251D91 /* SupabaseRealtimeIntegrationTests.swift in Sources */,
+				62DD004E8EBB42CEDA1F008F /* VaktTimeFormatterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,89 +737,104 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0A100000000000000000001 /* SubscriptionStore.swift in Sources */,
-				C0A100000000000000000002 /* PaywallView.swift in Sources */,
-				A10B0C0D0E0F100000000011 /* BackendComposition.swift in Sources */,
-				A10B0C0D0E0F100000000002 /* BackendContracts.swift in Sources */,
-				A10B0C0D0E0F100000000001 /* BackendDomain.swift in Sources */,
 				EFB2CC9D1861E59A90427911 /* AppRootView.swift in Sources */,
+				57F073D9AF71E8C2846E5DBE /* AppleSocialAuthRepository.swift in Sources */,
+				0828EEED4558CC454F582017 /* BackendComposition.swift in Sources */,
+				BE6858ED346F63C86FDE330E /* BackendContracts.swift in Sources */,
+				DBE77A3F87E49B5B421491E4 /* BackendDomain.swift in Sources */,
 				38F66ECBE58CB757BFE58B99 /* HomeView.swift in Sources */,
 				883155141CB8B94B11F0778C /* HorizonView.swift in Sources */,
+				0A0EB4C127E8BF371E082E7C /* InMemoryPresenceRepository.swift in Sources */,
 				84D110A302C3213B7C1150F7 /* InsightsView.swift in Sources */,
+				772CC328D2B1EEBFACB89213 /* LocalPrayerSessionRepository.swift in Sources */,
+				D09B457F4E52F1A25A8B8B98 /* MakeupPrayerCenterView.swift in Sources */,
 				969F021541F880CA853403C3 /* NotificationManager.swift in Sources */,
 				F51A99813245014E89D21419 /* OnboardingAnonymousSafView.swift in Sources */,
 				789E75009CEEB1AE0241DBA4 /* OnboardingArrivalView.swift in Sources */,
-				A4F83C1E7A5B4E85A91C3201 /* OnboardingSafGatheringView.swift in Sources */,
-				A5F83C1E7A5B4E85A91C3202 /* OnboardingSafPlacementView.swift in Sources */,
+				1FE341561FB1F3FF24F6E4D3 /* OnboardingClosingReminderView.swift in Sources */,
+				A1B1DC88392000BE18B12365 /* OnboardingFriendsView.swift in Sources */,
 				7EC99F95868F2AA1B1F9A439 /* OnboardingLocationView.swift in Sources */,
+				7A9285377303C9AA4C2D3E05 /* OnboardingMakeupCalendarView.swift in Sources */,
+				2C106C9D2BBFB370FA81DB9F /* OnboardingPrayerMarkView.swift in Sources */,
+				61268F8ADD452702EDAA2B05 /* OnboardingPromiseView.swift in Sources */,
 				6F4F235F08012C1A9F102A69 /* OnboardingRemindersView.swift in Sources */,
+				EF6BB903E28F7B559941CBFE /* OnboardingSafGatheringView.swift in Sources */,
+				9D24F2FC1E5D5FB037B85691 /* OnboardingSafPlacementView.swift in Sources */,
 				970D7B70B84F1CB1948B9920 /* OnboardingStore.swift in Sources */,
 				5F4311165A0043551C314031 /* OnboardingView.swift in Sources */,
+				D9E0498150CC7EC046247FC7 /* PaywallView.swift in Sources */,
+				0538FA7E5E0608BD98C668D1 /* PrayerView.swift in Sources */,
+				5810BB9D474F351D7F9E4FB2 /* PresenceCoordinator.swift in Sources */,
 				D9B0D8000BC15E3B4E5AEA39 /* PresenceHorizonLayout.swift in Sources */,
-				A10B0C0D0E0F100000000003 /* InMemoryPresenceRepository.swift in Sources */,
-				A10B0C0D0E0F100000000004 /* LocalPrayerSessionRepository.swift in Sources */,
-				A10B0C0D0E0F100000000005 /* PresenceCoordinator.swift in Sources */,
-				A10B0C0D0E0F100000000006 /* SimulatedPresenceRepository.swift in Sources */,
-				A10B0C0D0E0F100000000008 /* SupabaseAnonymousIdentityRepository.swift in Sources */,
-				A10B0C0D0E0F100000000007 /* SupabaseBackendConfiguration.swift in Sources */,
-				A10B0C0D0E0F10000000000D /* SupabaseClientFactory.swift in Sources */,
-				A10B0C0D0E0F10000000000E /* SupabaseBackendErrorMapper.swift in Sources */,
-				A10B0C0D0E0F10000000000F /* SupabasePrayerSessionRepository.swift in Sources */,
-				A10B0C0D0E0F100000000010 /* SupabasePresenceRepository.swift in Sources */,
 				21A6B3413F0615FF22E054B9 /* ProfileView.swift in Sources */,
-				41B70FD3DB9C139D7ED59E08 /* QuietSalahView.swift in Sources */,
-				F14280CF7FE9412CBF8A81D4 /* SafLobbyView.swift in Sources */,
-				4E8F7A0D42C91F38A1B5D602 /* SafPlacementView.swift in Sources */,
+				AA51AD875048325E5B4862DF /* QiblaCompassStore.swift in Sources */,
+				2E03A93D0EAB7104BF0980FD /* QiblaDirectionCalculator.swift in Sources */,
+				863A58ADFCB1DCEB8E55A44C /* QiblaSheet.swift in Sources */,
+				1D68935CE4AD58C3C2F5CE9B /* QuietSalahView.swift in Sources */,
+				303E87B4EE9424140E006CDD /* RateVaktView.swift in Sources */,
+				FD6D861B71C3909D38E8BFB7 /* ReferralCenterView.swift in Sources */,
+				FC787C64665C351925C54E2B /* ReferralModels.swift in Sources */,
+				3F6C0E5E57A678B86007A582 /* ReferralRepository.swift in Sources */,
+				63FFFD95CAB57328DB1AD989 /* ReferralStore.swift in Sources */,
+				751E8772419A715919EBA14F /* RevenueCatConfiguration.swift in Sources */,
+				89BBA2787D635AA555E7F01B /* ReviewPromptStore.swift in Sources */,
+				B00431FDC635520BE20DBE15 /* SimulatedPresenceRepository.swift in Sources */,
+				2C19F24CF88DD7FF1D2A1F56 /* SocialCircleView.swift in Sources */,
+				9EFFD5391FDC9BC4AAE707E2 /* SocialPrayerContracts.swift in Sources */,
+				BDBE20BEA6776B3AEA909798 /* SocialPrayerModels.swift in Sources */,
+				B9A7EE0D201FFF75CD85578E /* SocialPrayerStore.swift in Sources */,
+				E0A96C2CD78F2EA337F1E2BE /* SocialSignInView.swift in Sources */,
+				DFACCC2FD85875A068185C94 /* SpiritualContentModels.swift in Sources */,
+				6D3C5BA960453BCBEC93DC81 /* SpiritualContentRepository.swift in Sources */,
+				7B02D7E77AC3F4A274ED7E79 /* SpiritualContentSelector.swift in Sources */,
+				86C82B7482EFC0DD916CD1A9 /* SpiritualContentStore.swift in Sources */,
 				941B2CA7996F4BDEB347CC98 /* StatusSelector.swift in Sources */,
+				CD20E24FEF23E5A8AE1EAEC6 /* SubscriptionStore.swift in Sources */,
+				8715A06F238C544895EFD18B /* SupabaseAnonymousIdentityRepository.swift in Sources */,
+				9D636A91750ABBEF77099F95 /* SupabaseBackendConfiguration.swift in Sources */,
+				74C47978D19D9DFF009B606A /* SupabaseBackendErrorMapper.swift in Sources */,
+				837807A96B3F47D7DB996DC8 /* SupabaseClientFactory.swift in Sources */,
+				1492160C910BDA922A314E9E /* SupabasePrayerSessionRepository.swift in Sources */,
+				F0328D220A387B21517107A3 /* SupabasePresenceRepository.swift in Sources */,
+				9C449932FD9D64AB4140A7D8 /* SupabaseSocialRepositories.swift in Sources */,
 				85DF1682F2B9F4AD03CC863F /* VaktApp.swift in Sources */,
 				D4F35621112AD5FBFB2AE2FB /* VaktComponents.swift in Sources */,
+				E9F41F9BC42C85D26A0F25C3 /* VaktExternalLinks.swift in Sources */,
+				10C04294DAC4CA245EB99D9A /* VaktLocalization.swift in Sources */,
 				0ED94935949120E7B1170581 /* VaktModels.swift in Sources */,
 				66367E44AB830D26ECC0E0EF /* VaktSplashView.swift in Sources */,
+				2C13DA2900EA8D29B13231CD /* VaktTimeFormatter.swift in Sources */,
 				6CA23CE595CBD57BD5B5B27B /* VaktTokens.swift in Sources */,
-				A10B0C0D0E0F100000000012 /* VaktTimeFormatter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D20B0C0D0E0F100000000009 /* PBXTargetDependency */ = {
+		E3C094B4A61BF6BFAE941AF8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = F6AB8D5148E7A0FE20DAF0CE /* Vakt */;
-			targetProxy = D20B0C0D0E0F100000000004 /* PBXContainerItemProxy */;
+			targetProxy = 74A56D98D9FE1C54986E8241 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		D20B0C0D0E0F100000000010 /* Debug */ = {
+		30C9B5B2BB49FD960A014DC5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.callousity.vakt.tests;
+				PRODUCT_NAME = VaktTests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Vakt";
-			};
-			name = Debug;
-		};
-		D20B0C0D0E0F100000000011 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.9;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Vakt";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/Vakt";
 			};
 			name = Release;
 		};
@@ -599,6 +901,25 @@
 			};
 			name = Debug;
 		};
+		76ED5EF21B4C22BBAF684D9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.callousity.vakt.tests;
+				PRODUCT_NAME = VaktTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vakt.app/Vakt";
+			};
+			name = Debug;
+		};
 		A82ECD2426A25AB84E48BE2F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -657,10 +978,15 @@
 		};
 		BACF0F5E2D52331D1FEB279C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B10B0C0D0E0F10000000000A /* Vakt.xcconfig */;
+			baseConfigurationReference = DF58FB611ADF4D126886C055 /* Vakt.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -668,7 +994,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.callousity.vakt;
 				PRODUCT_NAME = Vakt;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -677,10 +1004,15 @@
 		};
 		D520517D8C0A45B6F3527312 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B10B0C0D0E0F10000000000A /* Vakt.xcconfig */;
+			baseConfigurationReference = DF58FB611ADF4D126886C055 /* Vakt.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -688,7 +1020,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vakt.app;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.callousity.vakt;
 				PRODUCT_NAME = Vakt;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -698,11 +1031,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D20B0C0D0E0F100000000007 /* Build configuration list for PBXNativeTarget "VaktTests" */ = {
+		0D50E6FFD71ECB5226EAADA2 /* Build configuration list for PBXNativeTarget "VaktTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D20B0C0D0E0F100000000010 /* Debug */,
-				D20B0C0D0E0F100000000011 /* Release */,
+				76ED5EF21B4C22BBAF684D9A /* Debug */,
+				30C9B5B2BB49FD960A014DC5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -728,20 +1061,33 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+		908E729B353032F743939BAE /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.43.0;
+			};
+		};
+		BB0032D01BC883C09CC64FC9 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.46.0;
+				minimumVersion = 2.48.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A10B0C0D0E0F10000000000B /* Supabase */ = {
+		51093F0381793DF3DE585118 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A10B0C0D0E0F10000000000C /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 908E729B353032F743939BAE /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		FC18B7CA9C2A8F6BFD1E7216 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB0032D01BC883C09CC64FC9 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */

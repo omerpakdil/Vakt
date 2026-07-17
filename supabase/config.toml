@@ -58,3 +58,24 @@ otp_expiry = 3600
 [auth.mfa.totp]
 enroll_enabled = true
 verify_enabled = true
+
+[functions.ingest-spiritual-content]
+verify_jwt = false
+
+[functions.send-nudge]
+verify_jwt = true
+
+[functions.send-friend-event]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.sync-referral-subscription]
+verify_jwt = true
+
+[functions.revenuecat-webhook]
+verify_jwt = false
+
+[functions.finalize-referral-rewards]
+verify_jwt = false

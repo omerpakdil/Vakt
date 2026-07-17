@@ -34,10 +34,10 @@ struct InsightsView: View {
                     }
 
                     VStack(spacing: VaktSpace.sm) {
-                        InsightStat(label: "Marked", value: reflectedValue(summary))
-                        InsightStat(label: "Prayed", value: prayedValue(summary))
-                        InsightStat(label: "Prayed later", value: laterValue(summary))
-                        InsightStat(label: "Saf with you", value: withYouValue(summary))
+                        InsightStat(label: L10n.string("insights.stat.marked"), value: reflectedValue(summary))
+                        InsightStat(label: L10n.string("insights.stat.prayed"), value: prayedValue(summary))
+                        InsightStat(label: L10n.string("insights.stat.prayed_later"), value: laterValue(summary))
+                        InsightStat(label: L10n.string("insights.stat.missed"), value: missedValue(summary))
                     }
 
                     reflectionFooter
@@ -51,22 +51,22 @@ struct InsightsView: View {
     private var periodTitle: String {
         switch selectedPeriod {
         case .week:
-            return "This week"
+            return L10n.string("insights.title.week")
         case .month:
-            return "This month"
+            return L10n.string("insights.title.month")
         case .year:
-            return "This year"
+            return L10n.string("insights.title.year")
         }
     }
 
     private var periodSubtitle: String {
         switch selectedPeriod {
         case .week:
-            return "A private look at the prayers you marked this week."
+            return L10n.string("insights.subtitle.week")
         case .month:
-            return "A gentle view of your prayer rhythm this month."
+            return L10n.string("insights.subtitle.month")
         case .year:
-            return "A wider view of the months you came back to salah."
+            return L10n.string("insights.subtitle.year")
         }
     }
 
@@ -103,13 +103,13 @@ struct InsightsView: View {
     private var reflectionFooter: some View {
         VStack(spacing: 8) {
             if let latest = reflectionStore.latestEntry {
-                Text("Last entry · \(latest.prayer.displayName) · \(latest.outcome.title)")
+                Text(L10n.formatString("insights.latest_entry", latest.prayer.displayName, latest.outcome.title))
                     .font(VaktFont.caption(11))
                     .foregroundStyle(Color.vaktMuted)
                     .tracking(0.35)
             }
 
-            Text("Your entries stay private on this device.\nThey are here only to help you return.")
+            Text(L10n.string("insights.footer.private"))
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktShadow)
                 .multilineTextAlignment(.center)
@@ -121,22 +121,22 @@ struct InsightsView: View {
 
     private func reflectedValue(_ summary: ReflectionPeriodSummary) -> String {
         let count = summary.reflectedCount
-        return count == 0 ? "-" : "\(count)"
+        return count == 0 ? "-" : InsightsNumberFormatter.string(count)
     }
 
     private func prayedValue(_ summary: ReflectionPeriodSummary) -> String {
         let count = summary.startedTogetherCount
-        return count == 0 ? "-" : "\(count)"
+        return count == 0 ? "-" : InsightsNumberFormatter.string(count)
     }
 
     private func laterValue(_ summary: ReflectionPeriodSummary) -> String {
         let count = summary.laterCount
-        return count == 0 ? "-" : "\(count)"
+        return count == 0 ? "-" : InsightsNumberFormatter.string(count)
     }
 
-    private func withYouValue(_ summary: ReflectionPeriodSummary) -> String {
-        guard let count = summary.averageCompanionCount else { return "-" }
-        return "\(max(count - 1, 6)) others"
+    private func missedValue(_ summary: ReflectionPeriodSummary) -> String {
+        let count = summary.missedCount
+        return count == 0 ? "-" : InsightsNumberFormatter.string(count)
     }
 
     private func periodGrid(_ summary: ReflectionPeriodSummary) -> some View {
@@ -163,7 +163,7 @@ struct InsightsView: View {
                             .frame(height: max(isCurrent ? 8 : 4, barHeight * bucket.fillRatio))
                     }
 
-                    Text(bucket.rhythmCount == 0 ? "-" : "\(bucket.rhythmCount)")
+                    Text(bucket.rhythmCount == 0 ? "-" : InsightsNumberFormatter.string(bucket.rhythmCount))
                         .font(VaktFont.caption(selectedPeriod == .month ? 7 : 9))
                         .foregroundStyle(isCurrent ? Color.vaktPrimary : bucket.rhythmCount == 0 ? Color.vaktShadow : Color.vaktMuted)
                         .lineLimit(1)
@@ -210,6 +210,12 @@ struct InsightsView: View {
         case .year:
             return calendar.isDate(bucket.date, equalTo: Date(), toGranularity: .month)
         }
+    }
+}
+
+private enum InsightsNumberFormatter {
+    static func string(_ value: Int) -> String {
+        value.formatted(.number.locale(VaktLocalization.appLocale))
     }
 }
 

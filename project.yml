@@ -1,23 +1,56 @@
 name: Vakt
 options:
   minimumXcodeGenVersion: 2.42.0
+  developmentLanguage: en
+  knownRegions:
+    - Base
+    - en
+    - tr
+    - ar
+    - fr
+    - de
+    - es
+    - it
+    - nl
+    - pt
+    - ru
+    - id
+    - ur
 settings:
   base:
     SWIFT_VERSION: 5.9
     IPHONEOS_DEPLOYMENT_TARGET: 17.0
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift.git
+    from: 2.48.0
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios-spm.git
+    from: 5.43.0
 targets:
   Vakt:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
+    configFiles:
+      Debug: Vakt/Resources/Vakt.xcconfig
+      Release: Vakt/Resources/Vakt.xcconfig
     sources:
       - Vakt
+    dependencies:
+      - package: Supabase
+        product: Supabase
+      - package: RevenueCat
+        product: RevenueCat
     info:
       path: Vakt/Resources/Info.plist
       properties:
         CFBundleDisplayName: Vakt
-        CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+        VAKT_APP_STORE_ID: $(VAKT_APP_STORE_ID)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -26,8 +59,53 @@ targets:
         NSLocationWhenInUseUsageDescription: Vakt uses your approximate location to calculate prayer times.
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.vakt.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.callousity.vakt
         PRODUCT_NAME: Vakt
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: 1
+        DEVELOPMENT_TEAM: HJD426RPSC
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Vakt/Resources/Vakt.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_PREVIEWS: YES
-
+      configs:
+        Debug:
+          APS_ENVIRONMENT: development
+        Release:
+          APS_ENVIRONMENT: production
+  VaktTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - VaktTests
+    dependencies:
+      - target: Vakt
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.callousity.vakt.tests
+        PRODUCT_NAME: VaktTests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Vakt:
+    shared: true
+    build:
+      targets:
+        Vakt: all
+        VaktTests: [test]
+    run:
+      config: Debug
+      commandLineArguments:
+        "--vakt-cloud-integration=$(VAKT_RUN_CLOUD_INTEGRATION)": true
+      environmentVariables:
+        VAKT_RUN_CLOUD_INTEGRATION: "$(VAKT_RUN_CLOUD_INTEGRATION)"
+    test:
+      config: Debug
+      targets:
+        - VaktTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -19,9 +19,9 @@ struct OnboardingSafPlacementView: View {
                         .padding(.horizontal, VaktSpace.lg)
 
                     VStack(alignment: .leading, spacing: 15) {
-                        EyebrowLabel(text: "Join the Saf")
+                        EyebrowLabel(text: L10n.string("onboarding.placement.eyebrow"))
 
-                        Text(selectedSlot == nil ? "Choose where you will join." : "You are ready to begin.")
+                        Text(selectedSlot == nil ? L10n.string("onboarding.placement.title.choose") : L10n.string("onboarding.placement.title.ready"))
                             .font(VaktFont.title(30))
                             .foregroundStyle(Color.vaktPrimary)
                             .lineSpacing(3)
@@ -67,10 +67,10 @@ struct OnboardingSafPlacementView: View {
 
     private var bodyText: String {
         if selectedSlot == nil {
-            return "Open places are softly lit. Tap one to join this Saf for the moment."
+            return L10n.string("onboarding.placement.body.choose")
         }
 
-        return "Nothing has been reserved. When you are ready, hold to begin salah and put the phone away."
+        return L10n.string("onboarding.placement.body.ready")
     }
 
     private func select(_ slot: Int) {
@@ -97,7 +97,7 @@ private struct PlacementPageMark: View {
 
     var body: some View {
         HStack {
-            Text("0\(stepIndex + 1) / 0\(stepCount)")
+            Text(verbatim: "0\(stepIndex + 1) / 0\(stepCount)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktMuted)
                 .monospacedDigit()
@@ -105,7 +105,7 @@ private struct PlacementPageMark: View {
 
             Spacer()
         }
-        .accessibilityLabel("Onboarding step \(stepIndex + 1) of \(stepCount)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", stepIndex + 1, stepCount))
     }
 }
 
@@ -166,7 +166,7 @@ private struct PracticeSafBoard: View {
                 .font(.system(size: 8, weight: .semibold))
                 .foregroundStyle(Color.vaktAccent.opacity(0.54))
 
-            Text("QIBLA")
+            Text(L10n.string("placement.qibla"))
                 .font(VaktFont.eyebrow(8))
                 .foregroundStyle(Color.vaktAccent.opacity(0.48))
                 .tracking(1.5)
@@ -211,7 +211,7 @@ private struct PracticeSafPlace: View {
         .animation(reduceMotion ? .none : .spring(response: 0.38, dampingFraction: 0.82), value: isSelected)
         .animation(reduceMotion ? .none : .easeOut(duration: 0.2), value: isDimmed)
         .accessibilityLabel(accessibilityLabel)
-        .accessibilityHint(isOccupied ? "This place is already filled." : "Select this open place to join the Saf.")
+        .accessibilityHint(isOccupied ? L10n.string("onboarding.placement.slot.filled_hint") : L10n.string("onboarding.placement.slot.open_hint"))
     }
 
     private var backgroundColor: Color {
@@ -258,9 +258,13 @@ private struct PracticeSafPlace: View {
     private var accessibilityLabel: String {
         let row = index / 7 + 1
         let column = index % 7 + 1
-        if isSelected { return "Selected place, row \(row), position \(column)" }
-        if isOccupied { return "Filled place, row \(row), position \(column)" }
-        return "Open place, row \(row), position \(column)"
+        if isSelected {
+            return L10n.formatString("onboarding.placement.slot.selected_accessibility", row, column)
+        }
+        if isOccupied {
+            return L10n.formatString("onboarding.placement.slot.filled_accessibility", row, column)
+        }
+        return L10n.formatString("onboarding.placement.slot.open_accessibility", row, column)
     }
 }
 
@@ -286,14 +290,14 @@ private struct PlacementNextStep: View {
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktMuted)
 
-            Text(isSelected ? "Next, hold to begin salah" : "Open places are softly lit")
+            Text(isSelected ? L10n.string("onboarding.placement.next.ready") : L10n.string("onboarding.placement.next.open"))
                 .font(VaktFont.caption(11))
                 .foregroundStyle(isSelected ? Color.vaktSecondary : Color.vaktMuted)
                 .contentTransition(.opacity)
 
             Spacer()
         }
-        .accessibilityLabel(isSelected ? "Next, hold to begin salah" : "Open places are softly lit")
+        .accessibilityLabel(isSelected ? L10n.string("onboarding.placement.next.ready") : L10n.string("onboarding.placement.next.open"))
     }
 }
 
@@ -308,7 +312,7 @@ private struct PlacementContinueButton: View {
             onContinue()
         } label: {
             HStack(spacing: VaktSpace.sm) {
-                Text(isEnabled ? "Continue" : "Choose an open place")
+                Text(isEnabled ? L10n.string("action.continue") : L10n.string("onboarding.placement.action.choose_open_place"))
                     .font(VaktFont.button(15))
                     .foregroundStyle(isEnabled ? Color.vaktBg : Color.vaktMuted)
 
@@ -329,6 +333,6 @@ private struct PlacementContinueButton: View {
         }
         .buttonStyle(VaktPressStyle())
         .disabled(!isEnabled)
-        .accessibilityLabel(isEnabled ? "Continue" : "Choose an open place before continuing")
+        .accessibilityLabel(isEnabled ? L10n.string("action.continue") : L10n.string("onboarding.placement.action.choose_open_place_accessibility"))
     }
 }

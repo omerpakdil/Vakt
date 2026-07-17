@@ -38,6 +38,42 @@ final class PresenceCoordinatorTests: XCTestCase {
         )
     }
 
+    func testLocalSimulationSnapshotsDoNotPromoteHighMockCountsToRealPresence() async throws {
+        let store = LiveSafPresenceStore(
+            initialCount: 0,
+            sessions: LocalPrayerSessionRepository(),
+            presence: FixedSnapshotPresenceRepository(count: 90, source: .localSimulation),
+            minimumInitialCount: 0
+        )
+
+        store.start()
+        store.updatePrayerContext(prayerTime(prayer: .dhuhr))
+
+        try await waitUntil("local simulation snapshot is clamped") {
+            store.memberCount == SafPresenceDisplayPolicy.realCountThreshold
+        }
+        XCTAssertEqual(store.displayMemberCount, SafPresenceDisplayPolicy.initialAmbientCount)
+        store.stop()
+    }
+
+    func testRealtimeSnapshotsKeepHighObservedPresenceCounts() async throws {
+        let store = LiveSafPresenceStore(
+            initialCount: 0,
+            sessions: LocalPrayerSessionRepository(),
+            presence: FixedSnapshotPresenceRepository(count: 90, source: .realtime),
+            minimumInitialCount: 0
+        )
+
+        store.start()
+        store.updatePrayerContext(prayerTime(prayer: .dhuhr))
+
+        try await waitUntil("realtime snapshot is applied") {
+            store.memberCount == 90
+        }
+        XCTAssertEqual(store.displayMemberCount, 90)
+        store.stop()
+    }
+
     func testAmbientRandomWalkRemainsWithinRange() {
         var count = SafPresenceDisplayPolicy.initialAmbientCount
 
@@ -45,16 +81,6 @@ final class PresenceCoordinatorTests: XCTestCase {
             count = SafPresenceDisplayPolicy.nextAmbientCount(from: count, roll: roll % 100)
             XCTAssertTrue(SafPresenceDisplayPolicy.ambientRange.contains(count))
         }
-    }
-
-    func testSlotOccupancyTracksAmbientCountsAndCompressesLargeCounts() {
-        XCTAssertEqual(SafPlacementOccupancyPolicy.occupiedCount(for: 5), 5)
-        XCTAssertEqual(SafPlacementOccupancyPolicy.occupiedCount(for: 10), 10)
-        XCTAssertGreaterThan(
-            SafPlacementOccupancyPolicy.occupiedCount(for: 85),
-            SafPlacementOccupancyPolicy.occupiedCount(for: 10)
-        )
-        XCTAssertEqual(SafPlacementOccupancyPolicy.occupiedCount(for: 500), 30)
     }
 
     func testObserveDoesNotJoinUntilExplicitJoin() async throws {
@@ -149,4 +175,89 @@ final class PresenceCoordinatorTests: XCTestCase {
             expectedPrayerTime: prayerTime
         )
     }
+
+    private func prayerTime(prayer: Prayer) -> PrayerTime {
+        PrayerTime(
+            prayer: prayer,
+            time: Date(timeIntervalSince1970: 1_750_000_000),
+            countdown: 600,
+            timeZoneIdentifier: "UTC"
+        )
+    }
+
+    private func waitUntil(
+        _ description: String,
+        timeout: TimeInterval = 1,
+        condition: @escaping @MainActor () -> Bool
+    ) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+
+        while Date() < deadline {
+            if condition() {
+                return
+            }
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+
+        XCTFail("Timed out waiting for \(description)")
+    }
+}
+
+private actor FixedSnapshotPresenceRepository: PresenceRepository {
+    let count: Int
+    let source: PresenceSnapshotSource
+
+    init(count: Int, source: PresenceSnapshotSource) {
+        self.count = count
+        self.source = source
+    }
+
+    nonisolated func snapshots(
+        for sessionID: PrayerSessionID
+    ) async -> AsyncThrowingStream<PresenceSnapshot, Error> {
+        let count = count
+        let source = source
+
+        return AsyncThrowingStream { continuation in
+            continuation.yield(
+                PresenceSnapshot(
+                    sessionID: sessionID,
+                    counts: PresenceCounts(
+                        gettingUp: 0,
+                        makingWudu: 0,
+                        joiningSaf: 0,
+                        ready: count,
+                        praying: 0
+                    ),
+                    observedAt: Date(),
+                    source: source,
+                    isStale: false
+                )
+            )
+        }
+    }
+
+    func upsertPresence(_ mutation: PresenceMutation) async throws -> PresenceLease {
+        PresenceLease(
+            id: PresenceLeaseID(rawValue: UUID()),
+            sessionID: mutation.sessionID,
+            status: mutation.status,
+            expiresAt: mutation.createdAt.addingTimeInterval(900)
+        )
+    }
+
+    func refreshPresence(
+        leaseID: PresenceLeaseID,
+        status: BackendPresenceStatus,
+        at date: Date
+    ) async throws -> PresenceLease {
+        PresenceLease(
+            id: leaseID,
+            sessionID: PrayerSessionID(rawValue: UUID()),
+            status: status,
+            expiresAt: date.addingTimeInterval(900)
+        )
+    }
+
+    func leave(leaseID _: PresenceLeaseID) async {}
 }

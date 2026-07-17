@@ -1,0 +1,36 @@
+{
+  "source": "manual_reviewed",
+  "approve": false,
+  "items": [
+    {
+      "content_type": "reflection",
+      "language_code": "en",
+      "text": "May Allah accept this prayer and keep your heart close to Him.",
+      "source_title": "Vakt reflection",
+      "tags": ["salah", "after_salah", "acceptance", "gratitude"],
+      "weight": 90,
+      "external_id": "vakt-reflection-acceptance-001"
+    },
+    {
+      "content_type": "quran",
+      "language_code": "en",
+      "text": "Add only reviewed translation text here, with source and verse reference.",
+      "source_title": "Reviewed Quran translation",
+      "reference": "2:45",
+      "tags": ["salah", "after_salah", "patience", "quran"],
+      "weight": 180,
+      "external_id": "quran-2-45-reviewed-translation"
+    },
+    {
+      "content_type": "hadith",
+      "language_code": "en",
+      "text": "Add only reviewed hadith translation text here, with collection reference and grade.",
+      "source_title": "Reviewed hadith source",
+      "reference": "Collection name and hadith number",
+      "grade": "Sahih",
+      "tags": ["salah", "after_salah", "steadiness"],
+      "weight": 150,
+      "external_id": "hadith-reviewed-example"
+    }
+  ]
+}

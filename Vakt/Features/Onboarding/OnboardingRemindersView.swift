@@ -43,15 +43,15 @@ struct OnboardingRemindersView: View {
                 .background(Color.vaktBg)
 
                 VStack(alignment: .leading, spacing: 15) {
-                    EyebrowLabel(text: "Prayer Reminders")
+                    EyebrowLabel(text: L10n.string("onboarding.reminders.eyebrow"))
 
-                    Text("A gentle reminder before salah.")
+                    Text(L10n.string("onboarding.reminders.title.screen"))
                         .font(VaktFont.title(30))
                         .foregroundStyle(Color.vaktPrimary)
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text("Vakt can call your attention before prayer, then stay quiet when it is time to put the phone away.")
+                    Text(L10n.string("onboarding.reminders.body.screen"))
                         .font(VaktFont.body(14))
                         .foregroundStyle(Color.vaktMuted)
                         .lineSpacing(5)
@@ -106,7 +106,7 @@ private struct ReminderPageMark: View {
 
     var body: some View {
         HStack {
-            Text("0\(stepIndex + 1) / 0\(stepCount)")
+            Text(verbatim: "0\(stepIndex + 1) / 0\(stepCount)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktMuted)
                 .monospacedDigit()
@@ -114,7 +114,7 @@ private struct ReminderPageMark: View {
 
             Spacer()
         }
-        .accessibilityLabel("Onboarding step \(stepIndex + 1) of \(stepCount)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", stepIndex + 1, stepCount))
     }
 }
 
@@ -155,7 +155,7 @@ private struct ReminderSignalDial: View {
             }
         }
         .frame(width: dialSize, height: dialSize)
-        .accessibilityLabel("Prayer reminder signal")
+        .accessibilityLabel(L10n.string("onboarding.reminders.signal_accessibility"))
     }
 
     private var iconName: String {
@@ -193,9 +193,9 @@ private enum ReminderPetal: CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .before: "Before"
-        case .time: "Now"
-        case .fajr: "Wake"
+        case .before: L10n.string("onboarding.reminders.petal.before")
+        case .time: L10n.string("onboarding.reminders.petal.now")
+        case .fajr: L10n.string("onboarding.reminders.petal.wake")
         }
     }
 
@@ -233,7 +233,7 @@ private struct ReminderWhisperLine: View {
 
     var body: some View {
         HStack(spacing: VaktSpace.sm) {
-            Text("You can change this anytime.")
+            Text(L10n.string("onboarding.reminders.change_anytime"))
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktSecondary)
 
@@ -243,7 +243,7 @@ private struct ReminderWhisperLine: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 onSkip()
             } label: {
-                Text("Not now")
+                Text(L10n.string("action.not_now"))
                     .font(VaktFont.caption(11))
                     .foregroundStyle(Color.vaktMuted)
                     .padding(.horizontal, 6)
@@ -301,7 +301,7 @@ private struct ReminderActions: View {
     }
 
     private var primaryTitle: String {
-        authorizationStatus.allowsPrayerNotifications ? "Continue" : "Allow Prayer Reminders"
+        authorizationStatus.allowsPrayerNotifications ? L10n.string("action.continue") : L10n.string("action.allow_prayer_reminders")
     }
 
     private var primaryIcon: String {

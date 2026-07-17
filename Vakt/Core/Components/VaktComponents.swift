@@ -22,9 +22,11 @@ struct VaktButton: View {
             Text(title)
                 .font(style == .ghost ? VaktFont.body(15) : VaktFont.button())
                 .foregroundStyle(foreground)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
                 .frame(maxWidth: style == .ghost ? nil : .infinity)
                 .padding(.vertical, style == .ghost ? VaktSpace.sm : 18)
-                .padding(.horizontal, style == .ghost ? VaktSpace.md : 0)
+                .padding(.horizontal, VaktSpace.md)
                 .background(background)
                 .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
                 .overlay(
@@ -263,6 +265,8 @@ private struct VaktModalCard: View {
             Text(action.title)
                 .font(action.role == .secondary ? VaktFont.body(14) : VaktFont.button(15))
                 .foregroundStyle(buttonForeground(for: action.role))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
                 .frame(maxWidth: .infinity)
                 .frame(height: action.role == .secondary ? 42 : 52)
                 .background(buttonBackground(for: action.role))
@@ -392,7 +396,7 @@ struct CountdownLabel: View {
                     showsPulse: false
                 )
 
-                Text("h")
+                Text(L10n.text(.timeRemainingHourUnit))
                     .font(VaktFont.body(13))
                     .foregroundStyle(Color.vaktMuted)
 
@@ -406,7 +410,7 @@ struct CountdownLabel: View {
                     showsPulse: false
                 )
 
-                Text("m remaining")
+                Text(L10n.text(.timeRemainingMinuteRemainingUnit))
                     .font(VaktFont.body(13))
                     .foregroundStyle(Color.vaktMuted)
             } else {
@@ -420,25 +424,19 @@ struct CountdownLabel: View {
                     showsPulse: false
                 )
 
-                Text(totalMinutes == 1 ? "minute remaining" : "minutes remaining")
+                Text(totalMinutes == 1 ? L10n.text(.minuteRemainingSuffix) : L10n.text(.minutesRemainingSuffix))
                     .font(VaktFont.body(13))
                     .foregroundStyle(Color.vaktMuted)
             }
         }
         .monospacedDigit()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Time remaining: \(countdownText)")
+        .accessibilityLabel(L10n.format(.timeRemainingAccessibility, countdownText))
         .animation(.easeOut(duration: 0.22), value: totalSeconds)
     }
 
     private var countdownText: String {
-        let minutes = totalMinutes
-        if minutes >= 60 {
-            let hours = minutes / 60
-            let mins = minutes % 60
-            return "\(hours)h \(mins)m remaining"
-        }
-        return "\(max(1, minutes)) \(minutes == 1 ? "minute" : "minutes") remaining"
+        L10n.timeRemaining(minutes: totalMinutes)
     }
 }
 
@@ -539,11 +537,11 @@ struct HorizonEmpty: View {
             }
 
             VStack(spacing: VaktSpace.xs) {
-                Text("No one here yet")
+                Text(L10n.text(.noOneHereYet))
                     .font(VaktFont.body(16))
                     .foregroundStyle(Color.vaktMuted)
 
-                Text("When \(prayer.displayName) approaches,\nothers will begin to gather.")
+                Text(L10n.format(.horizonEmptyBody, prayer.displayName))
                     .font(VaktFont.caption(13))
                     .foregroundStyle(Color.vaktShadow)
                     .multilineTextAlignment(.center)
@@ -552,7 +550,7 @@ struct HorizonEmpty: View {
         }
         .padding(VaktSpace.xxxl)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("No one here yet. When \(prayer.displayName) approaches, others will begin to gather.")
+        .accessibilityLabel(L10n.format(.horizonEmptyAccessibility, prayer.displayName))
     }
 }
 
@@ -569,7 +567,7 @@ struct HorizonLoading: View {
                     opacity = 0.8
                 }
             }
-            .accessibilityLabel("Loading")
+            .accessibilityLabel(L10n.text(.loading))
     }
 }
 
@@ -591,7 +589,7 @@ struct OfflineBanner: View {
                 .fill(Color.vaktMuted)
                 .frame(width: 6, height: 6)
 
-            Text("Offline - Saf presence cannot update")
+            Text(L10n.text(.offlineSafPresence))
                 .font(VaktFont.caption(12))
                 .foregroundStyle(Color.vaktMuted)
         }
@@ -603,7 +601,7 @@ struct OfflineBanner: View {
             RoundedRectangle(cornerRadius: VaktRadius.sm, style: .continuous)
                 .strokeBorder(Color.vaktBorder, lineWidth: 0.5)
         )
-        .accessibilityLabel("You are offline. Saf presence cannot update.")
+        .accessibilityLabel(L10n.text(.offlineSafPresenceAccessibility))
     }
 }
 

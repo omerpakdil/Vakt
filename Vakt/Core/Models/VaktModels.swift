@@ -11,7 +11,11 @@ enum Prayer: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
-    var displayName: String { rawValue }
+    var displayName: String { localizedName }
+
+    var localizedName: String {
+        L10n.prayerName(self)
+    }
 }
 
 enum PrepStatus: String, CaseIterable, Identifiable, Codable {
@@ -19,7 +23,7 @@ enum PrepStatus: String, CaseIterable, Identifiable, Codable {
     case wudu = "Making wudu"
     case findingPlace = "Joining the Saf"
     case ready = "Ready"
-    case praying = "Praying"
+    case praying = "In Salah"
 
     var id: String { rawValue }
 
@@ -54,13 +58,11 @@ enum PrepStatus: String, CaseIterable, Identifiable, Codable {
     }
 
     var shortLabel: String {
-        switch self {
-        case .gettingUp: "Getting up"
-        case .wudu: "Wudu"
-        case .findingPlace: "Joining Saf"
-        case .ready: "Ready"
-        case .praying: "Praying"
-        }
+        L10n.prepStatusShortLabel(self)
+    }
+
+    var localizedTitle: String {
+        L10n.prepStatusTitle(self)
     }
 }
 
@@ -226,7 +228,10 @@ final class LiveSafPresenceStore: ObservableObject {
 
     private func receive(_ snapshot: PresenceSnapshot) {
         snapshotSource = snapshot.source
-        let nextCount = max(0, snapshot.participantCount)
+        let observedCount = max(0, snapshot.participantCount)
+        let nextCount = snapshot.source == .localSimulation
+            ? min(observedCount, SafPresenceDisplayPolicy.realCountThreshold)
+            : observedCount
         let resolvedChange = nextCount - memberCount
         guard resolvedChange != 0 else { return }
 
@@ -308,11 +313,11 @@ enum PrayerReflectionOutcome: String, CaseIterable, Codable, Identifiable {
     var title: String {
         switch self {
         case .prayed:
-            return "Prayed"
+            return L10n.string("reflection.outcome.prayed")
         case .later:
-            return "Prayed later"
+            return L10n.string("reflection.outcome.later")
         case .missed:
-            return "Not today"
+            return L10n.string("reflection.outcome.missed")
         }
     }
 
@@ -350,34 +355,34 @@ enum PrayerCalculationMethodPreference: String, CaseIterable, Codable, Identifia
     var title: String {
         switch self {
         case .automatic:
-            return "Auto"
+            return L10n.string("calculation.automatic.title")
         case .muslimWorldLeague:
-            return "MWL"
+            return L10n.string("calculation.global.title")
         case .ummAlQura:
-            return "Umm al-Qura"
+            return L10n.string("calculation.saudi.title")
         case .egyptian:
-            return "Egyptian"
+            return L10n.string("calculation.egypt.title")
         case .diyanet:
-            return "Diyanet"
+            return L10n.string("calculation.turkey.title")
         case .isna:
-            return "ISNA"
+            return L10n.string("calculation.north_america.title")
         }
     }
 
     var detail: String {
         switch self {
         case .automatic:
-            return "Best match for location"
+            return L10n.string("calculation.automatic.detail")
         case .muslimWorldLeague:
-            return "Muslim World League"
+            return L10n.string("calculation.global.detail")
         case .ummAlQura:
-            return "Saudi Arabia"
+            return L10n.string("calculation.saudi.detail")
         case .egyptian:
-            return "Egyptian authority"
+            return L10n.string("calculation.egypt.detail")
         case .diyanet:
-            return "Turkey"
+            return L10n.string("calculation.turkey.detail")
         case .isna:
-            return "North America"
+            return L10n.string("calculation.north_america.detail")
         }
     }
 }
@@ -391,9 +396,18 @@ enum AsrJuristicPreference: String, CaseIterable, Codable, Identifiable {
     var title: String {
         switch self {
         case .standard:
-            return "Standard"
+            return L10n.string("asr.standard.title")
         case .hanafi:
-            return "Hanafi"
+            return L10n.string("asr.hanafi.title")
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .standard:
+            return L10n.string("asr.standard.detail")
+        case .hanafi:
+            return L10n.string("asr.hanafi.detail")
         }
     }
 
@@ -550,7 +564,7 @@ struct PrayerReflectionEntry: Identifiable, Codable, Equatable {
         self.checkedInAt = checkedInAt
         self.quietStartedAt = quietStartedAt
         self.quietEndedAt = quietEndedAt
-        self.companionCount = max(companionCount, PresenceHorizonLayout.minimumDisplayedCount)
+        self.companionCount = max(0, companionCount)
         self.outcome = outcome
     }
 }
@@ -567,12 +581,6 @@ enum PrayerSessionReflectionState: String, Codable, Equatable {
     case notNeeded
 }
 
-struct SafPlacement: Codable, Equatable, Hashable {
-    let sectionIndex: Int
-    let row: Int
-    let column: Int
-}
-
 struct PrayerQuietSession: Identifiable, Codable, Equatable {
     let id: UUID
     let prayer: Prayer
@@ -582,7 +590,6 @@ struct PrayerQuietSession: Identifiable, Codable, Equatable {
     var companionCount: Int
     let role: PrayerSessionRole
     var reflectionState: PrayerSessionReflectionState
-    var placement: SafPlacement?
 
     init(
         id: UUID = UUID(),
@@ -592,18 +599,16 @@ struct PrayerQuietSession: Identifiable, Codable, Equatable {
         endedAt: Date? = nil,
         companionCount: Int,
         role: PrayerSessionRole,
-        reflectionState: PrayerSessionReflectionState? = nil,
-        placement: SafPlacement? = nil
+        reflectionState: PrayerSessionReflectionState? = nil
     ) {
         self.id = id
         self.prayer = prayer
         self.prayerDate = prayerDate
         self.startedAt = startedAt
         self.endedAt = endedAt
-        self.companionCount = max(companionCount, PresenceHorizonLayout.minimumDisplayedCount)
+        self.companionCount = max(0, companionCount)
         self.role = role
         self.reflectionState = reflectionState ?? (role == .primary ? .pending : .notNeeded)
-        self.placement = placement
     }
 
     var isOpen: Bool {
@@ -615,6 +620,14 @@ enum PrayerSessionStatus: Equatable {
     case ready
     case inProgress(startedAt: Date)
     case primaryCompleted(additionalCount: Int)
+}
+
+enum PrayerTrackingStatus: Equatable {
+    case ready
+    case inProgress(startedAt: Date)
+    case prayed
+    case later
+    case missed
 }
 
 @MainActor
@@ -654,7 +667,6 @@ final class PrayerSessionStore: ObservableObject {
     func beginSession(
         for prayerTime: PrayerTime,
         companionCount: Int,
-        placement: SafPlacement? = nil,
         startedAt: Date = Date()
     ) -> PrayerQuietSession {
         let key = occurrenceKey(for: prayerTime.prayer, on: prayerTime.time)
@@ -671,11 +683,56 @@ final class PrayerSessionStore: ObservableObject {
             prayerDate: prayerTime.time,
             startedAt: startedAt,
             companionCount: companionCount,
-            role: role,
-            placement: placement
+            role: role
         )
 
         var updatedSessions = sessions
+        updatedSessions.append(session)
+        updatedSessions.sort { $0.startedAt < $1.startedAt }
+        sessions = updatedSessions
+        persist()
+        return session
+    }
+
+    @discardableResult
+    func markPrayerCompleted(
+        for prayerTime: PrayerTime,
+        at date: Date = Date()
+    ) -> PrayerQuietSession {
+        let key = occurrenceKey(for: prayerTime.prayer, on: prayerTime.time)
+        var updatedSessions = sessions
+
+        if let completedPrimaryIndex = updatedSessions.lastIndex(where: { session in
+            occurrenceKey(for: session.prayer, on: session.prayerDate) == key &&
+            session.role == .primary &&
+            session.endedAt != nil
+        }) {
+            return updatedSessions[completedPrimaryIndex]
+        }
+
+        if let openPrimaryIndex = updatedSessions.lastIndex(where: { session in
+            occurrenceKey(for: session.prayer, on: session.prayerDate) == key &&
+            session.role == .primary &&
+            session.isOpen
+        }) {
+            updatedSessions[openPrimaryIndex].endedAt = date
+            updatedSessions[openPrimaryIndex].companionCount = 0
+            updatedSessions[openPrimaryIndex].reflectionState = .skipped
+            sessions = updatedSessions
+            persist()
+            return updatedSessions[openPrimaryIndex]
+        }
+
+        let session = PrayerQuietSession(
+            prayer: prayerTime.prayer,
+            prayerDate: prayerTime.time,
+            startedAt: date,
+            endedAt: date,
+            companionCount: 0,
+            role: .primary,
+            reflectionState: .skipped
+        )
+
         updatedSessions.append(session)
         updatedSessions.sort { $0.startedAt < $1.startedAt }
         sessions = updatedSessions
@@ -693,7 +750,7 @@ final class PrayerSessionStore: ObservableObject {
         guard let index = updatedSessions.firstIndex(where: { $0.id == id }) else { return nil }
 
         updatedSessions[index].endedAt = endedAt
-        updatedSessions[index].companionCount = max(companionCount, PresenceHorizonLayout.minimumDisplayedCount)
+        updatedSessions[index].companionCount = max(0, companionCount)
         sessions = updatedSessions
         persist()
         return sessions[index]
@@ -778,11 +835,11 @@ enum ReflectionPeriod: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .week:
-            return "Week"
+            return L10n.string("period.week")
         case .month:
-            return "Month"
+            return L10n.string("period.month")
         case .year:
-            return "Year"
+            return L10n.string("period.year")
         }
     }
 }
@@ -892,6 +949,55 @@ final class PrayerReflectionStore: ObservableObject {
         persist()
     }
 
+    func mark(
+        prayer: Prayer,
+        prayerDate: Date,
+        outcome: PrayerReflectionOutcome,
+        markedAt: Date = Date()
+    ) {
+        record(
+            prayer: prayer,
+            prayerDate: prayerDate,
+            outcome: outcome,
+            companionCount: 0,
+            quietStartedAt: markedAt,
+            quietEndedAt: markedAt,
+            checkedInAt: markedAt
+        )
+    }
+
+    func outcome(for prayerTime: PrayerTime) -> PrayerReflectionOutcome? {
+        let key = occurrenceKey(for: prayerTime.prayer, on: prayerTime.time)
+        return entries.last { entry in
+            occurrenceKey(for: entry.prayer, on: entry.prayerDate) == key
+        }?.outcome
+    }
+
+    func trackingStatus(
+        for prayerTime: PrayerTime,
+        sessionStatus: PrayerSessionStatus
+    ) -> PrayerTrackingStatus {
+        if let outcome = outcome(for: prayerTime) {
+            switch outcome {
+            case .prayed:
+                return .prayed
+            case .later:
+                return .later
+            case .missed:
+                return .missed
+            }
+        }
+
+        switch sessionStatus {
+        case .ready:
+            return .ready
+        case .inProgress(let startedAt):
+            return .inProgress(startedAt: startedAt)
+        case .primaryCompleted:
+            return .prayed
+        }
+    }
+
     func clear() {
         entries.removeAll()
         UserDefaults.standard.removeObject(forKey: Self.storageKey)
@@ -990,6 +1096,7 @@ final class PrayerReflectionStore: ObservableObject {
         let start = interval?.start ?? calendar.startOfDay(for: date)
         let today = calendar.startOfDay(for: date)
         let formatter = DateFormatter()
+        formatter.locale = VaktLocalization.appLocale
         formatter.dateFormat = "EEE"
 
         return (0..<7).compactMap { offset in
@@ -1019,7 +1126,7 @@ final class PrayerReflectionStore: ObservableObject {
             return ReflectionPeriodBucket(
                 id: day,
                 date: day,
-                label: "\(offset + 1)",
+                label: (offset + 1).formatted(.number.locale(VaktLocalization.appLocale)),
                 rhythmCount: 0,
                 totalCount: 0,
                 maxPossible: possible
@@ -1032,6 +1139,7 @@ final class PrayerReflectionStore: ObservableObject {
         let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date)) ?? calendar.startOfDay(for: date)
         let currentDay = calendar.component(.day, from: date)
         let formatter = DateFormatter()
+        formatter.locale = VaktLocalization.appLocale
         formatter.dateFormat = "MMM"
 
         return (0..<12).compactMap { offset in
@@ -1089,17 +1197,17 @@ enum PrayerScheduleStatus: Equatable {
     var message: String? {
         switch self {
         case .locating:
-            return "Finding prayer times near you"
+            return L10n.string("schedule.finding")
         case .loading:
-            return "Refreshing prayer times"
+            return L10n.string("schedule.refreshing")
         case .ready:
             return nil
         case .usingSavedTimes:
-            return "Using saved prayer times"
+            return L10n.string("schedule.saved")
         case .denied:
-            return "Location helps Vakt find local prayer times"
+            return L10n.string("schedule.location_needed")
         case .failed:
-            return "Could not refresh prayer times"
+            return L10n.string("schedule.failed")
         }
     }
 }
@@ -1321,12 +1429,37 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
             }
     }
 
+    var prayersForDeadlineSync: [PrayerTime] {
+        loadedPrayers.sorted { $0.time < $1.time }
+    }
+
     var nextPrayer: PrayerTime {
         upcomingPrayers.first ?? fallbackPrayerTime
     }
 
+    var activePrayer: PrayerTime? {
+        guard let prayer = loadedPrayers.last(where: { $0.time <= now }) else {
+            return nil
+        }
+
+        return PrayerTime(
+            prayer: prayer.prayer,
+            time: prayer.time,
+            countdown: 0,
+            timeZoneIdentifier: prayer.timeZoneIdentifier
+        )
+    }
+
     var nextCountdown: TimeInterval {
         max(0, nextPrayer.time.timeIntervalSince(now))
+    }
+
+    func prayerTime(for prayer: Prayer, on date: Date = Date()) -> PrayerTime? {
+        var calendar = Calendar.autoupdatingCurrent
+        calendar.timeZone = loadedPrayers.first?.timeZone ?? .autoupdatingCurrent
+        return loadedPrayers.first {
+            $0.prayer == prayer && calendar.isDate($0.time, inSameDayAs: date)
+        }
     }
 
     var statusMessage: String? {
@@ -1372,7 +1505,8 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
             guard let self else { return }
             let coordinateChanged = nextCoordinate != self.coordinate
             let needsTimeZoneMetadata = self.loadedPrayers.contains { $0.timeZoneIdentifier == nil }
-            guard coordinateChanged || needsTimeZoneMetadata || self.loadedPrayers.isEmpty else { return }
+            let needsSavedScheduleRefresh = self.status == .usingSavedTimes
+            guard coordinateChanged || needsTimeZoneMetadata || needsSavedScheduleRefresh || self.loadedPrayers.isEmpty else { return }
             self.coordinate = nextCoordinate
             self.refreshPrayerTimes(for: nextCoordinate)
         }
@@ -1397,12 +1531,14 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
                 locationManager.requestWhenInUseAuthorization()
             } else {
                 status = loadedPrayers.isEmpty ? .denied : .usingSavedTimes
+                refreshSavedCoordinateIfAvailable()
             }
         case .authorizedAlways, .authorizedWhenInUse:
             status = loadedPrayers.isEmpty ? .loading : .usingSavedTimes
             locationManager.requestLocation()
         case .denied, .restricted:
             status = loadedPrayers.isEmpty ? .denied : .usingSavedTimes
+            refreshSavedCoordinateIfAvailable()
         @unknown default:
             status = .failed("Unknown location authorization status")
         }
@@ -1437,6 +1573,11 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         if loadedPrayers.filter({ $0.time > now }).count < 2 {
             refreshPrayerTimes(for: coordinate)
         }
+    }
+
+    private func refreshSavedCoordinateIfAvailable() {
+        guard let coordinate, !loadedPrayers.isEmpty, status == .usingSavedTimes else { return }
+        refreshPrayerTimes(for: coordinate)
     }
 
     private func refreshPrayerTimes(for coordinate: Coordinate) {

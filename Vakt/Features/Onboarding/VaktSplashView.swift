@@ -4,323 +4,254 @@ struct VaktSplashView: View {
     let onComplete: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var holdProgress: CGFloat = 0
-    @State private var isHolding = false
-    @State private var didComplete = false
-    @State private var touchX: CGFloat = 0.5
-    @State private var holdTask: Task<Void, Never>?
+    @State private var revealProgress: CGFloat = 0
+    @State private var actionIsVisible = false
+    @State private var isLeaving = false
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Color.vaktDeep.ignoresSafeArea()
-
-                QuietSplashScene(
-                    progress: holdProgress,
-                    touchX: touchX,
-                    isHolding: isHolding,
+                CinematicLightSurface(
+                    revealProgress: revealProgress,
+                    isLeaving: isLeaving,
                     reduceMotion: reduceMotion
                 )
+
+                LinearGradient(
+                    colors: [
+                        Color.vaktDeep.opacity(0.12),
+                        .clear,
+                        Color.vaktDeep.opacity(0.28),
+                        Color.vaktDeep.opacity(0.78)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
                 .ignoresSafeArea()
-                .gesture(trackTouch(width: proxy.size.width))
+
+                Text(L10n.string("common.app_name"))
+                    .font(.system(size: 62, weight: .ultraLight, design: .serif))
+                    .tracking(1.8)
+                    .foregroundStyle(Color(hex: "#F2F0EA"))
+                    .opacity(isLeaving ? 0 : wordmarkOpacity)
+                    .blur(radius: wordmarkBlur)
+                    .scaleEffect(isLeaving ? 1.025 : 1)
+                    .position(
+                        x: proxy.size.width / 2,
+                        y: proxy.size.height * 0.44
+                    )
 
                 VStack(spacing: 0) {
-                    Spacer(minLength: 0)
+                    Spacer()
 
-                    VStack(spacing: 8) {
-                        Text("Vakt")
-                            .font(.system(size: 62, weight: .ultraLight, design: .default))
-                            .foregroundStyle(Color.vaktPrimary)
-                            .tracking(1.2)
-
-                        Text("Come to prayer gently")
-                            .font(VaktFont.body(14))
-                            .foregroundStyle(Color.vaktMuted)
-                            .tracking(0.6)
-                    }
-                    .padding(.bottom, 108)
-
-                    QuietSplashHoldButton(
-                        progress: holdProgress,
-                        isHolding: isHolding,
-                        onPressingChanged: setHolding
+                    SplashContinueControl(
+                        isVisible: actionIsVisible,
+                        isLeaving: isLeaving
                     )
                     .padding(.horizontal, VaktSpace.lg)
-                    .padding(.bottom, VaktSpace.xl)
+                    .padding(.bottom, max(24, proxy.safeAreaInsets.bottom + 18))
                 }
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .overlay {
+                OnboardingShellBackground()
+                    .opacity(isLeaving ? 1 : 0)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                leaveSplash()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.string("common.app_name"))
+            .accessibilityHint(
+                actionIsVisible
+                    ? L10n.string("splash.accessibility.tap_to_begin")
+                    : L10n.string("splash.accessibility.preparing")
+            )
+            .accessibilityAddTraits(actionIsVisible ? .isButton : [])
+            .accessibilityAction {
+                leaveSplash()
+            }
+        }
+        .background(Color.vaktDeep)
+        .task { await reveal() }
+    }
+
+    private var wordmarkOpacity: Double {
+        min(1, max(0, Double((revealProgress - 0.2) / 0.55)))
+    }
+
+    private var wordmarkBlur: CGFloat {
+        max(0, 8 * (1 - revealProgress * 1.4))
+    }
+
+    private func reveal() async {
+        guard revealProgress == 0 else { return }
+
+        withAnimation(reduceMotion ? .none : .easeInOut(duration: 1.55)) {
+            revealProgress = 1
+        }
+
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 80 : 1_250))
+        withAnimation(reduceMotion ? .none : .easeOut(duration: 0.45)) {
+            actionIsVisible = true
         }
     }
 
-    private func trackTouch(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { value in
-                guard width > 0 else { return }
-                touchX = min(1, max(0, value.location.x / width))
-            }
-    }
+    private func leaveSplash() {
+        guard actionIsVisible, !isLeaving else { return }
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
 
-    private func setHolding(_ holding: Bool) {
-        guard !didComplete, holding != isHolding else { return }
-
-        isHolding = holding
-        holdTask?.cancel()
-
-        if holding {
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-            startHoldProgress()
-        } else {
-            withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) {
-                holdProgress = 0
-            }
+        withAnimation(.easeInOut(duration: reduceMotion ? 0.16 : 0.82)) {
+            isLeaving = true
         }
-    }
-
-    private func startHoldProgress() {
-        holdTask = Task { @MainActor in
-            let steps = 36
-
-            for step in 1...steps {
-                try? await Task.sleep(nanoseconds: 34_000_000)
-                guard isHolding, !didComplete, !Task.isCancelled else { return }
-
-                withAnimation(.linear(duration: 0.034)) {
-                    holdProgress = CGFloat(step) / CGFloat(steps)
-                }
-            }
-
-            complete()
-        }
-    }
-
-    private func complete() {
-        guard !didComplete else { return }
-
-        didComplete = true
-        holdTask?.cancel()
-        holdProgress = 1
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
 
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 220_000_000)
+            try? await Task.sleep(for: .milliseconds(reduceMotion ? 100 : 760))
             onComplete()
         }
     }
 }
 
-private struct QuietSplashScene: View {
-    let progress: CGFloat
-    let touchX: CGFloat
-    let isHolding: Bool
+private struct CinematicLightSurface: View {
+    let revealProgress: CGFloat
+    let isLeaving: Bool
     let reduceMotion: Bool
 
     var body: some View {
-        TimelineView(.animation) { timeline in
-            Canvas { ctx, size in
+        GeometryReader { proxy in
+            TimelineView(.animation(paused: reduceMotion)) { timeline in
                 let time = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
-                let breath = CGFloat((sin(time * 0.65) + 1) / 2)
-                let lineY = size.height * 0.54
+                let driftX = reduceMotion ? 0 : CGFloat(sin(time * 0.13)) * 4
+                let driftY = reduceMotion ? 0 : CGFloat(cos(time * 0.11)) * 3
 
-                drawSky(ctx: ctx, size: size, breath: breath)
-                drawTouchGlow(ctx: ctx, size: size, lineY: lineY, breath: breath)
-                drawHorizon(ctx: ctx, size: size, lineY: lineY, breath: breath)
-                drawCompanions(ctx: ctx, size: size, lineY: lineY, breath: breath)
-                drawYou(ctx: ctx, size: size, lineY: lineY, breath: breath)
+                ZStack {
+                    Image("SplashArchitectureDark")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .scaleEffect(1.045 + revealProgress * 0.012)
+                        .offset(x: driftX, y: driftY)
+
+                    Canvas { context, size in
+                        drawMovingLight(context: context, size: size, time: time)
+                        drawTexture(context: context, size: size)
+                    }
+
+                    LinearGradient(
+                        colors: [
+                            Color.vaktDeep.opacity(0.16),
+                            Color.vaktDeep.opacity(0.08),
+                            Color.vaktDeep.opacity(0.32),
+                            Color.vaktDeep.opacity(0.68)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
             }
         }
+        .scaleEffect(isLeaving ? 1.018 : 1)
+        .clipped()
+        .ignoresSafeArea()
         .accessibilityHidden(true)
     }
 
-    private func drawSky(ctx: GraphicsContext, size: CGSize, breath: CGFloat) {
-        let upper = CGRect(x: 0, y: 0, width: size.width, height: size.height * 0.62)
-        ctx.fill(Path(upper), with: .color(.vaktBg.opacity(0.9)))
-
-        let lower = CGRect(x: 0, y: size.height * 0.54, width: size.width, height: size.height * 0.46)
-        ctx.fill(Path(lower), with: .color(.vaktDeep))
-
-        let glowWidth = size.width * (0.52 + progress * 0.18)
-        let glowHeight = size.height * (0.20 + progress * 0.08)
-        let glow = CGRect(
-            x: (size.width - glowWidth) / 2,
-            y: size.height * 0.30,
-            width: glowWidth,
-            height: glowHeight
+    private func drawMovingLight(
+        context: GraphicsContext,
+        size: CGSize,
+        time: TimeInterval
+    ) {
+        let drift = reduceMotion ? 0 : CGFloat(sin(time * 0.16)) * size.width * 0.035
+        let expansion = revealProgress * size.width * 0.06
+        let center = CGPoint(
+            x: size.width * 0.57 + drift,
+            y: size.height * 0.44
         )
-
-        ctx.fill(
-            Path(ellipseIn: glow),
-            with: .color(.vaktAccent.opacity(0.035 + Double(progress) * 0.055 + Double(breath) * 0.012))
+        let lightSize = CGSize(
+            width: size.width * 0.86 + expansion,
+            height: size.height * 0.58 + expansion
         )
-    }
-
-    private func drawTouchGlow(ctx: GraphicsContext, size: CGSize, lineY: CGFloat, breath: CGFloat) {
-        let x = size.width * touchX
-        let width = size.width * (0.16 + progress * 0.10)
         let rect = CGRect(
-            x: x - width / 2,
-            y: lineY - size.height * 0.24,
-            width: width,
-            height: size.height * 0.34
+            x: center.x - lightSize.width / 2,
+            y: center.y - lightSize.height / 2,
+            width: lightSize.width,
+            height: lightSize.height
         )
 
-        ctx.fill(
+        context.fill(
             Path(ellipseIn: rect),
-            with: .color(.vaktPrimary.opacity((isHolding ? 0.045 : 0.018) + Double(progress) * 0.03 + Double(breath) * 0.01))
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: Color(hex: "#F0DFC0").opacity(0.08 * Double(revealProgress)), location: 0),
+                    .init(color: Color.vaktGlow.opacity(0.035 * Double(revealProgress)), location: 0.42),
+                    .init(color: .clear, location: 1)
+                ]),
+                center: center,
+                startRadius: 4,
+                endRadius: max(rect.width, rect.height) * 0.5
+            )
         )
     }
 
-    private func drawHorizon(ctx: GraphicsContext, size: CGSize, lineY: CGFloat, breath: CGFloat) {
-        let start = size.width * 0.17
-        let end = size.width * 0.83
-
-        var base = Path()
-        base.move(to: CGPoint(x: start, y: lineY))
-        base.addLine(to: CGPoint(x: end, y: lineY))
-        ctx.stroke(
-            base,
-            with: .color(.vaktAccent.opacity(0.15 + Double(progress) * 0.22 + Double(breath) * 0.03)),
-            lineWidth: 0.6 + progress * 0.7
-        )
-
-        var near = Path()
-        near.move(to: CGPoint(x: size.width * 0.29, y: lineY + 18))
-        near.addLine(to: CGPoint(x: size.width * 0.71, y: lineY + 18))
-        ctx.stroke(
-            near,
-            with: .color(.vaktBorderStrong.opacity(0.32 + Double(progress) * 0.18)),
-            lineWidth: 0.5
-        )
-    }
-
-    private func drawCompanions(ctx: GraphicsContext, size: CGSize, lineY: CGFloat, breath: CGFloat) {
-        let dots: [(x: CGFloat, y: CGFloat)] = [
-            (0.24, -4),
-            (0.34, 7),
-            (0.43, -1),
-            (0.57, 2),
-            (0.66, -6),
-            (0.76, 6)
-        ]
-
-        for (index, dot) in dots.enumerated() {
-            let side: CGFloat = dot.x < 0.5 ? -1 : 1
-            let approach = progress * 0.035 * side
-            let float = reduceMotion ? 0 : CGFloat(sin(Double(index) + breath * 2.0)) * 1.6
-            let x = size.width * (dot.x - approach)
-            let y = lineY + dot.y + float
-            let radius = 2.5 + progress * 1.2
-            let opacity = 0.22 + Double(progress) * 0.38
-
-            ctx.fill(
-                Path(ellipseIn: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)),
-                with: .color(.vaktAccent.opacity(opacity))
+    private func drawTexture(context: GraphicsContext, size: CGSize) {
+        for index in 0..<34 {
+            let x = size.width * CGFloat((index * 43) % 107) / 107
+            let y = size.height * CGFloat((index * 67) % 127) / 127
+            let radius: CGFloat = index % 4 == 0 ? 1.1 : 0.65
+            context.fill(
+                Path(ellipseIn: CGRect(x: x, y: y, width: radius, height: radius)),
+                with: .color(Color.vaktPrimary.opacity(0.022 + Double(index % 3) * 0.008))
             )
         }
     }
-
-    private func drawYou(ctx: GraphicsContext, size: CGSize, lineY: CGFloat, breath: CGFloat) {
-        let center = CGPoint(x: size.width * 0.5, y: lineY)
-        let glowRadius = 14 + progress * 16 + breath * 3
-        let coreRadius = 5 + progress * 1.2
-
-        ctx.fill(
-            Path(ellipseIn: CGRect(
-                x: center.x - glowRadius,
-                y: center.y - glowRadius,
-                width: glowRadius * 2,
-                height: glowRadius * 2
-            )),
-            with: .color(.vaktPrimary.opacity(0.035 + Double(progress) * 0.10))
-        )
-
-        ctx.fill(
-            Path(ellipseIn: CGRect(
-                x: center.x - coreRadius,
-                y: center.y - coreRadius,
-                width: coreRadius * 2,
-                height: coreRadius * 2
-            )),
-            with: .color(.vaktPrimary.opacity(0.94))
-        )
-    }
 }
 
-private struct QuietSplashHoldButton: View {
-    let progress: CGFloat
-    let isHolding: Bool
-    let onPressingChanged: (Bool) -> Void
+private struct SplashContinueControl: View {
+    let isVisible: Bool
+    let isLeaving: Bool
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.vaktSurface)
+        TimelineView(.animation(paused: !isVisible || isLeaving)) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
+            let breath = (sin(time * 1.7) + 1) / 2
 
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.vaktPrimary.opacity(0.08 + Double(progress) * 0.13))
+            ZStack {
+                Ellipse()
+                    .fill(Color(hex: "#F0DFC0").opacity(0.03 + breath * 0.03))
+                    .frame(width: 170 + breath * 10, height: 48)
+                    .blur(radius: 12)
 
-            GeometryReader { proxy in
-                let width = proxy.size.width
-                let glowSize = width * (0.22 + progress * 0.16)
-                let x = max(glowSize / 2, min(width - glowSize / 2, width * (0.18 + progress * 0.64)))
+                VStack(spacing: 10) {
+                    Text(L10n.string("splash.action.tap_to_begin"))
+                        .font(VaktFont.body(12))
+                        .foregroundStyle(Color.vaktPrimary.opacity(0.66 + breath * 0.14))
 
-                Circle()
-                    .fill(Color.vaktPrimary.opacity(0.10 + Double(progress) * 0.22))
-                    .frame(width: glowSize, height: glowSize)
-                    .blur(radius: 16)
-                    .position(x: x, y: proxy.size.height / 2)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    ZStack {
+                        Capsule()
+                            .fill(Color.vaktPrimary.opacity(0.07))
+                            .frame(width: 72, height: 1)
 
-            HStack(spacing: 13) {
-                ZStack {
-                    Circle()
-                        .fill(Color.vaktDeep.opacity(0.72))
-                        .frame(width: 38, height: 38)
-
-                    Circle()
-                        .trim(from: 0, to: max(0.001, progress))
-                        .stroke(Color.vaktPrimary.opacity(isHolding ? 0.78 : 0.34), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 26, height: 26)
-
-                    Circle()
-                        .fill(isHolding ? Color.vaktPrimary : Color.vaktAccent)
-                        .frame(width: 6, height: 6)
-                        .shadow(color: Color.vaktPrimary.opacity(isHolding ? 0.42 : 0.16), radius: isHolding ? 8 : 4)
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.clear, Color(hex: "#F2E7D2"), .clear],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: 30 + breath * 28, height: 1.5)
+                            .shadow(color: Color(hex: "#F0DFC0").opacity(0.22), radius: 6)
+                    }
                 }
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(isHolding ? "Keep holding" : "Hold to begin")
-                        .font(VaktFont.button(15))
-                        .foregroundStyle(Color.vaktPrimary)
-                        .contentTransition(.opacity)
-
-                    Text(isHolding ? "Take a quiet breath" : "Begin with calm")
-                        .font(VaktFont.caption(11))
-                        .foregroundStyle(Color.vaktMuted)
-                        .contentTransition(.opacity)
-                }
-
-                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 13)
+            .frame(width: 188, height: 70)
         }
-        .frame(height: 70)
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(Color.vaktAccent.opacity(isHolding ? 0.50 : 0.24), lineWidth: 0.7)
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    onPressingChanged(true)
-                }
-                .onEnded { _ in
-                    onPressingChanged(false)
-                }
-        )
-        .accessibilityLabel("Hold to begin")
-        .accessibilityAddTraits(.isButton)
+        .opacity(isVisible && !isLeaving ? 1 : 0)
+        .offset(y: isVisible ? 0 : 10)
+        .accessibilityHidden(!isVisible)
+        .allowsHitTesting(false)
     }
 }

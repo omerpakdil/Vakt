@@ -1,0 +1,89 @@
+{
+  "sourceLanguage": "en",
+  "locales": {
+    "en": {
+      "name": "Vakt",
+      "subtitle": "Prayer Tracker with Friends",
+      "keywords": "prayer times,qibla,salah,prayer tracker,friends,reminders,makeup prayer,muslim",
+      "promotionalText": "Keep up with every prayer, encourage friends with gentle reminders, and return to missed prayers one by one.",
+      "description": "Vakt helps you follow your daily prayers with clarity and encouragement.\n\nMark each prayer as completed or missed, begin with a quiet prayer screen, and see your history without scores or pressure. Missed prayers are kept in a calendar so you can complete them one by one.\n\nAdd friends to see the prayer status they choose to share. Send a gentle reminder when someone may need encouragement. There is no messaging, only a simple way to help one another stay mindful.\n\nVakt also includes location-based prayer times, configurable reminders, a qibla finder, personal insights, and private post-prayer reflections."
+    },
+    "tr": {
+      "name": "Vakt",
+      "subtitle": "Arkadaşlarınla Namaz Takibi",
+      "keywords": "namaz vakitleri,kıble,namaz takibi,arkadaşlar,hatırlatıcı,kaza namazı,müslüman",
+      "promotionalText": "Her namazı takip et, arkadaşlarını nazikçe hatırlat ve kaçırdığın vakitlere tek tek geri dön.",
+      "description": "Vakt, günlük namazlarını açık ve destekleyici bir şekilde takip etmene yardımcı olur.\n\nHer vakti kıldım veya kılmadım olarak işaretle, istersen sakin namaz ekranıyla başla ve geçmişini puan baskısı olmadan gör. Kaçırdığın namazlar takvimde tutulur; kazalarını tek tek tamamlayabilirsin.\n\nArkadaşlarını ekleyerek paylaşmayı seçtikleri namaz durumlarını görebilirsin. Desteğe ihtiyaç duyduklarında nazik bir hatırlatma gönderebilirsin. Mesajlaşma yoktur; yalnızca birbirinize namazı hatırlatmanın sade bir yolu vardır.\n\nVakt ayrıca konumuna göre namaz vakitleri, ayarlanabilir bildirimler, kıble bulucu, kişisel istatistikler ve namaz sonrası özel tefekkürler sunar."
+    },
+    "ar": {
+      "name": "Vakt",
+      "subtitle": "تتبع الصلاة مع الأصدقاء",
+      "keywords": "مواقيت الصلاة,القبلة,تتبع الصلاة,أصدقاء,تذكير,قضاء الصلاة,مسلم,إسلام",
+      "promotionalText": "تابع كل صلاة، وشجّع أصدقاءك بتذكير لطيف، وعد إلى الصلوات الفائتة واحدة تلو الأخرى.",
+      "description": "يساعدك Vakt على متابعة صلواتك اليومية بوضوح وتشجيع.\n\nسجّل كل صلاة كمؤداة أو فائتة، وابدأ إن شئت بشاشة صلاة هادئة، وراجع سجلك بلا نقاط أو ضغط. تُحفظ الصلوات الفائتة في تقويم لتقضيها واحدة تلو الأخرى.\n\nأضف أصدقاءك لترى حالة الصلاة التي يختارون مشاركتها. يمكنك إرسال تذكير لطيف عندما يحتاج أحدهم إلى التشجيع. لا توجد رسائل؛ فقط وسيلة بسيطة لتعينوا بعضكم على المحافظة على الصلاة.\n\nيتضمن Vakt أيضًا مواقيت الصلاة حسب الموقع، وتذكيرات قابلة للتخصيص، وبوصلة للقبلة، وإحصاءات شخصية، وتأملات خاصة بعد الصلاة."
+    },
+    "fr": {
+      "name": "Vakt",
+      "subtitle": "Prières avec vos amis",
+      "keywords": "horaires de prière,qibla,suivi prière,amis,rappels,prières manquées,musulman,islam",
+      "promotionalText": "Suivez chaque prière, encouragez vos amis avec un rappel discret et rattrapez les prières manquées une à une.",
+      "description": "Vakt vous aide à suivre vos prières quotidiennes avec clarté et encouragement.\n\nIndiquez chaque prière comme accomplie ou manquée, commencez si vous le souhaitez avec un écran de prière apaisé et consultez votre historique sans score ni pression. Les prières manquées restent dans un calendrier pour être rattrapées une à une.\n\nAjoutez des amis pour voir le statut de prière qu’ils choisissent de partager. Envoyez un rappel discret lorsqu’un ami a besoin d’encouragement. Il n’y a pas de messagerie, seulement une façon simple de s’entraider.\n\nVakt comprend aussi les horaires selon votre position, des rappels réglables, une boussole de qibla, des statistiques personnelles et des réflexions privées après la prière."
+    },
+    "de": {
+      "name": "Vakt",
+      "subtitle": "Gebete mit Freunden",
+      "keywords": "gebetszeiten,qibla,gebetstracker,freunde,erinnerungen,nachholgebet,muslim,islam",
+      "promotionalText": "Behalte jedes Gebet im Blick, erinnere Freunde behutsam und hole versäumte Gebete Schritt für Schritt nach.",
+      "description": "Vakt hilft dir, deine täglichen Gebete klar und mit gegenseitiger Unterstützung zu verfolgen.\n\nMarkiere jedes Gebet als verrichtet oder versäumt, beginne auf Wunsch mit einem ruhigen Gebetsbildschirm und sieh deinen Verlauf ohne Punkte oder Druck. Versäumte Gebete bleiben in einem Kalender, damit du sie einzeln nachholen kannst.\n\nFüge Freunde hinzu und sieh den Gebetsstatus, den sie teilen möchten. Sende eine behutsame Erinnerung, wenn jemand Ermutigung braucht. Es gibt keine Nachrichtenfunktion, nur eine einfache Möglichkeit, einander zu unterstützen.\n\nVakt bietet außerdem standortbasierte Gebetszeiten, anpassbare Erinnerungen, einen Qibla-Kompass, persönliche Einblicke und private Gedanken nach dem Gebet."
+    },
+    "es": {
+      "name": "Vakt",
+      "subtitle": "Oración con amigos",
+      "keywords": "horarios de oración,qibla,seguimiento,amigos,recordatorios,oración pendiente,musulmán",
+      "promotionalText": "Sigue cada oración, anima a tus amigos con un recordatorio amable y recupera las oraciones pendientes una a una.",
+      "description": "Vakt te ayuda a seguir tus oraciones diarias con claridad y apoyo.\n\nMarca cada oración como realizada o pendiente, empieza si quieres con una pantalla de oración tranquila y consulta tu historial sin puntos ni presión. Las oraciones pendientes se guardan en un calendario para que puedas completarlas una a una.\n\nAñade amigos para ver el estado de oración que decidan compartir. Envía un recordatorio amable cuando alguien necesite ánimo. No hay mensajes, solo una forma sencilla de ayudarse mutuamente.\n\nVakt también incluye horarios según tu ubicación, recordatorios configurables, buscador de qibla, estadísticas personales y reflexiones privadas después de la oración."
+    },
+    "it": {
+      "name": "Vakt",
+      "subtitle": "Preghiera con gli amici",
+      "keywords": "orari preghiera,qibla,registro preghiere,amici,promemoria,preghiere perse,musulmano",
+      "promotionalText": "Segui ogni preghiera, incoraggia gli amici con un promemoria discreto e recupera le preghiere perse una alla volta.",
+      "description": "Vakt ti aiuta a seguire le preghiere quotidiane con chiarezza e incoraggiamento.\n\nSegna ogni preghiera come completata o persa, inizia se vuoi con una schermata di preghiera tranquilla e consulta la cronologia senza punteggi o pressioni. Le preghiere perse restano in un calendario per essere recuperate una alla volta.\n\nAggiungi gli amici per vedere lo stato di preghiera che scelgono di condividere. Invia un promemoria discreto quando qualcuno ha bisogno di incoraggiamento. Non ci sono messaggi, solo un modo semplice per sostenersi a vicenda.\n\nVakt include anche orari basati sulla posizione, promemoria configurabili, indicazione della qibla, statistiche personali e riflessioni private dopo la preghiera."
+    },
+    "nl": {
+      "name": "Vakt",
+      "subtitle": "Bidden met vrienden",
+      "keywords": "gebedstijden,qibla,gebed bijhouden,vrienden,herinneringen,gemiste gebeden,moslim",
+      "promotionalText": "Houd elk gebed bij, moedig vrienden aan met een rustige herinnering en haal gemiste gebeden één voor één in.",
+      "description": "Vakt helpt je dagelijkse gebeden duidelijk en met onderlinge steun bij te houden.\n\nMarkeer elk gebed als verricht of gemist, begin desgewenst met een rustig gebedsscherm en bekijk je geschiedenis zonder scores of druk. Gemiste gebeden blijven in een kalender staan, zodat je ze één voor één kunt inhalen.\n\nVoeg vrienden toe om de gebedsstatus te zien die zij willen delen. Stuur een rustige herinnering wanneer iemand aanmoediging kan gebruiken. Er is geen chat, alleen een eenvoudige manier om elkaar te helpen.\n\nVakt bevat ook lokale gebedstijden, instelbare herinneringen, een qibla-kompas, persoonlijke inzichten en privéreflecties na het gebed."
+    },
+    "pt": {
+      "name": "Vakt",
+      "subtitle": "Oração com amigos",
+      "keywords": "horários de oração,qibla,registro de oração,amigos,lembretes,orações perdidas,muçulmano",
+      "promotionalText": "Acompanhe cada oração, incentive amigos com um lembrete gentil e recupere as orações perdidas uma de cada vez.",
+      "description": "Vakt ajuda você a acompanhar suas orações diárias com clareza e incentivo.\n\nMarque cada oração como realizada ou perdida, comece se quiser com uma tela de oração tranquila e veja seu histórico sem pontuação ou pressão. As orações perdidas ficam em um calendário para serem recuperadas uma de cada vez.\n\nAdicione amigos para ver o status de oração que escolherem compartilhar. Envie um lembrete gentil quando alguém precisar de incentivo. Não há mensagens, apenas uma forma simples de apoiar uns aos outros.\n\nVakt também inclui horários conforme sua localização, lembretes configuráveis, bússola da qibla, estatísticas pessoais e reflexões privadas após a oração."
+    },
+    "ru": {
+      "name": "Vakt",
+      "subtitle": "Намаз вместе с друзьями",
+      "keywords": "время намаза,кибла,трекер намаза,друзья,напоминания,пропущенные намазы,ислам",
+      "promotionalText": "Отмечайте каждый намаз, поддерживайте друзей деликатными напоминаниями и постепенно восполняйте пропущенные молитвы.",
+      "description": "Vakt помогает следить за ежедневными намазами ясно и без давления.\n\nОтмечайте каждый намаз как совершённый или пропущенный, при желании начинайте с тихого экрана молитвы и просматривайте историю без баллов. Пропущенные намазы сохраняются в календаре, чтобы вы могли восполнять их по одному.\n\nДобавляйте друзей и смотрите статус намаза, которым они решили поделиться. Отправляйте деликатное напоминание, когда другу нужна поддержка. В приложении нет сообщений, только простой способ помогать друг другу.\n\nVakt также включает время намаза по местоположению, настраиваемые уведомления, направление киблы, личную статистику и приватные размышления после молитвы."
+    },
+    "id": {
+      "name": "Vakt",
+      "subtitle": "Salat bersama teman",
+      "keywords": "waktu salat,kiblat,pelacak salat,teman,pengingat,qada salat,muslim,islam",
+      "promotionalText": "Pantau setiap salat, dukung teman dengan pengingat lembut, dan selesaikan salat yang terlewat satu per satu.",
+      "description": "Vakt membantumu memantau salat harian dengan jelas dan saling mendukung.\n\nTandai setiap salat sebagai selesai atau terlewat, mulai dengan layar salat yang tenang bila diinginkan, dan lihat riwayat tanpa skor atau tekanan. Salat yang terlewat disimpan dalam kalender agar dapat diselesaikan satu per satu.\n\nTambahkan teman untuk melihat status salat yang mereka pilih untuk dibagikan. Kirim pengingat lembut saat seseorang membutuhkan dukungan. Tidak ada pesan, hanya cara sederhana untuk saling membantu.\n\nVakt juga menyediakan waktu salat sesuai lokasi, pengingat yang dapat diatur, pencari kiblat, wawasan pribadi, dan refleksi privat setelah salat."
+    },
+    "ur": {
+      "name": "Vakt",
+      "subtitle": "دوستوں کے ساتھ نماز",
+      "keywords": "نماز کے اوقات,قبلہ,نماز ٹریکر,دوست,یاد دہانی,قضا نماز,مسلمان,اسلام",
+      "promotionalText": "ہر نماز کا حساب رکھیں، دوستوں کو نرمی سے یاد دلائیں اور رہ جانے والی نمازیں ایک ایک کر کے ادا کریں۔",
+      "description": "Vakt روزانہ کی نمازوں کو واضح اور باہمی حوصلہ افزائی کے ساتھ یاد رکھنے میں مدد دیتا ہے۔\n\nہر نماز کو ادا شدہ یا رہ گئی کے طور پر نشان زد کریں، چاہیں تو پرسکون نماز اسکرین سے آغاز کریں اور بغیر اسکور یا دباؤ کے اپنی تاریخ دیکھیں۔ رہ جانے والی نمازیں تقویم میں محفوظ رہتی ہیں تاکہ آپ انہیں ایک ایک کر کے ادا کر سکیں۔\n\nدوست شامل کریں اور وہ نماز کی جو حالت شیئر کرنا چاہیں اسے دیکھیں۔ کسی کو حوصلے کی ضرورت ہو تو نرم یاد دہانی بھیجیں۔ پیغام رسانی نہیں ہے، صرف ایک دوسرے کی مدد کا سادہ طریقہ ہے۔\n\nVakt میں مقام کے مطابق نماز کے اوقات، قابل ترتیب یاد دہانیاں، قبلہ نما، ذاتی معلومات اور نماز کے بعد نجی غور و فکر بھی شامل ہیں۔"
+    }
+  }
+}

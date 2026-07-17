@@ -1,5 +1,6 @@
 .DS_Store
 .derivedData/
+.derivedData-release/
 DerivedData/
 build/
 Vakt/Resources/Backend.xcconfig
@@ -12,3 +13,6 @@ xcuserdata/
 # Figma Make generated web bundle dependencies
 node_modules/
 dist/
+
+# Generated localization QA screenshots
+LocalizationQA/

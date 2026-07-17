@@ -20,16 +20,61 @@ struct OnboardingView: View {
             if page.id == .arrival {
                 OnboardingArrivalView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     reduceMotion: reduceMotion
                 ) {
                     store.advance()
                 }
                 .transition(.opacity)
+            } else if page.id == .markPrayer {
+                OnboardingPrayerMarkView(
+                    stepIndex: store.currentPage,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: reduceMotion
+                ) {
+                    store.advance()
+                }
+                .transition(.opacity)
+            } else if page.id == .friends {
+                OnboardingFriendsView(
+                    stepIndex: store.currentPage,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: reduceMotion
+                ) {
+                    store.advance()
+                }
+                .transition(.opacity)
+            } else if page.id == .makeupCalendar {
+                OnboardingMakeupCalendarView(
+                    stepIndex: store.currentPage,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: reduceMotion
+                ) {
+                    store.advance()
+                }
+                .transition(.opacity)
+            } else if page.id == .closingReminder {
+                OnboardingClosingReminderView(
+                    stepIndex: store.currentPage,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: reduceMotion
+                ) {
+                    store.advance()
+                }
+                .transition(.opacity)
+            } else if page.id == .promise {
+                OnboardingPromiseView(
+                    stepIndex: store.currentPage,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: reduceMotion
+                ) {
+                    store.complete()
+                }
+                .transition(.opacity)
             } else if page.id == .gathering {
                 OnboardingSafGatheringView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     reduceMotion: reduceMotion
                 ) {
                     store.advance()
@@ -38,7 +83,7 @@ struct OnboardingView: View {
             } else if page.id == .placement {
                 OnboardingSafPlacementView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     reduceMotion: reduceMotion
                 ) {
                     store.advance()
@@ -47,7 +92,7 @@ struct OnboardingView: View {
             } else if page.id == .anonymousSaf {
                 OnboardingAnonymousSafView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     reduceMotion: reduceMotion
                 ) {
                     store.advance()
@@ -56,7 +101,7 @@ struct OnboardingView: View {
             } else if page.id == .location {
                 OnboardingLocationView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     prayerStore: prayerStore,
                     reduceMotion: reduceMotion,
                     onContinue: {
@@ -71,7 +116,7 @@ struct OnboardingView: View {
             } else if page.id == .reminders {
                 OnboardingRemindersView(
                     stepIndex: store.currentPage,
-                    stepCount: store.pages.count,
+                    stepCount: OnboardingStore.plannedPageCount,
                     notificationManager: notificationManager,
                     reduceMotion: reduceMotion,
                     onEnable: {
@@ -152,7 +197,7 @@ struct OnboardingView: View {
             }
         }
         .padding(.horizontal, VaktSpace.lg)
-        .accessibilityLabel("Onboarding step \(store.currentPage + 1) of \(store.pages.count)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", store.currentPage + 1, store.pages.count))
     }
 
     @ViewBuilder
@@ -160,21 +205,31 @@ struct OnboardingView: View {
         switch page.id {
         case .arrival:
             OnboardingSignalRow(items: [
-                ("Asr", "12 min"),
-                ("Saf", "gathering"),
-                ("You", "ready")
+                (Prayer.asr.displayName, "12 \(L10n.string("onboarding.arrival.minute_short"))"),
+                (L10n.string("common.saf"), L10n.string("onboarding.arrival.signal.gathering")),
+                (L10n.string("onboarding.arrival.signal.you"), L10n.string("onboarding.gathering.status.ready"))
             ])
+        case .markPrayer:
+            EmptyView()
+        case .friends:
+            EmptyView()
+        case .makeupCalendar:
+            EmptyView()
+        case .closingReminder:
+            EmptyView()
+        case .promise:
+            EmptyView()
         case .gathering:
             EmptyView()
         case .placement:
             EmptyView()
         case .anonymousSaf:
             VStack(spacing: 0) {
-                OnboardingPrivacyRow(title: "Your name", value: "Hidden")
+                OnboardingPrivacyRow(title: L10n.string("onboarding.privacy.row.name"), value: L10n.string("onboarding.privacy.row.hidden"))
                 VaktDivider()
-                OnboardingPrivacyRow(title: "Exact location", value: "Not shown")
+                OnboardingPrivacyRow(title: L10n.string("onboarding.privacy.row.location"), value: L10n.string("onboarding.privacy.row.not_shown"))
                 VaktDivider()
-                OnboardingPrivacyRow(title: "Saf presence", value: "Private")
+                OnboardingPrivacyRow(title: L10n.string("onboarding.privacy.row.saf_presence"), value: L10n.string("onboarding.privacy.row.private"))
             }
             .padding(.horizontal, VaktSpace.md)
             .background(Color.vaktSurface)
@@ -187,7 +242,7 @@ struct OnboardingView: View {
             OnboardingPermissionStatus(
                 icon: "location.fill",
                 title: locationStatusTitle,
-                detail: prayerStore.statusMessage ?? "Ready to find prayer times near you",
+                detail: prayerStore.statusMessage ?? L10n.string("onboarding.location.fallback"),
                 isActive: locationStatusIsActive
             )
         case .reminders:
@@ -229,13 +284,13 @@ struct OnboardingView: View {
     private var locationStatusTitle: String {
         switch prayerStore.status {
         case .ready, .usingSavedTimes:
-            return "Prayer times are ready"
+            return L10n.string("onboarding.location.ready")
         case .denied:
-            return "Location is off"
+            return L10n.string("onboarding.location.off")
         case .failed:
-            return "Could not refresh yet"
+            return L10n.string("onboarding.location.failed")
         case .locating, .loading:
-            return "Finding prayer times near you"
+            return L10n.string("onboarding.location.finding")
         }
     }
 
@@ -250,25 +305,25 @@ struct OnboardingView: View {
 
     private var reminderStatusTitle: String {
         if notificationManager.authorizationStatus == .denied {
-            return "Reminders are off"
+            return L10n.string("onboarding.reminders.off")
         }
 
-        return notificationManager.isReminderEnabled ? "Prayer reminders are on" : "Reminders are paused"
+        return notificationManager.isReminderEnabled ? L10n.string("onboarding.reminders.on") : L10n.string("onboarding.reminders.paused")
     }
 
     private var reminderStatusDetail: String {
         if notificationManager.authorizationStatus == .denied {
-            return "You can allow them later from My Vakt."
+            return L10n.string("onboarding.reminders.denied_detail")
         }
 
         return notificationManager.isReminderEnabled
-            ? "Before salah, at the time, and for Fajr."
-            : "You can turn them back on from My Vakt."
+            ? L10n.string("onboarding.reminders.on_detail")
+            : L10n.string("onboarding.reminders.paused_detail")
     }
 
     private func handlePrimaryAction() {
         switch page.id {
-        case .arrival, .gathering, .placement, .anonymousSaf:
+        case .arrival, .markPrayer, .friends, .makeupCalendar, .closingReminder, .promise, .gathering, .placement, .anonymousSaf:
             store.advance()
         case .location:
             prayerStore.requestLocationPermission()
@@ -286,7 +341,7 @@ struct OnboardingView: View {
         case .reminders:
             notificationManager.setReminderEnabled(false)
             store.complete()
-        case .arrival, .gathering, .placement, .anonymousSaf:
+        case .arrival, .markPrayer, .friends, .makeupCalendar, .closingReminder, .promise, .gathering, .placement, .anonymousSaf:
             store.advance()
         }
     }
@@ -388,6 +443,16 @@ private struct OnboardingHorizonScene: View {
         switch kind {
         case .arrival:
             return 9
+        case .markPrayer:
+            return 9
+        case .friends:
+            return 7
+        case .makeupCalendar:
+            return 5
+        case .closingReminder:
+            return 6
+        case .promise:
+            return 4
         case .gathering:
             return 9
         case .placement:

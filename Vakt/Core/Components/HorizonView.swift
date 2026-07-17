@@ -173,16 +173,20 @@ struct HorizonView: View {
 
     private var horizonLegend: some View {
         HStack(spacing: VaktSpace.md) {
-            LegendItem(color: .vaktSurface, borderColor: .vaktAccent, label: "Preparing")
-            LegendItem(color: .vaktAccent, borderColor: nil, label: "Ready")
-            LegendItem(color: .vaktPrimary, borderColor: nil, label: "You", glowing: true)
+            LegendItem(color: .vaktSurface, borderColor: .vaktAccent, label: L10n.text(.horizonLegendPreparing))
+            LegendItem(color: .vaktAccent, borderColor: nil, label: L10n.text(.horizonLegendReady))
+            LegendItem(color: .vaktPrimary, borderColor: nil, label: L10n.text(.horizonLegendYou), glowing: true)
             Spacer()
         }
     }
 
     private var accessibilityDescription: String {
         let ready = members.filter { $0.status == .ready || $0.status == .praying }.count
-        return "\(max(representedMemberCount, PresenceHorizonLayout.minimumDisplayedCount)) people in the Saf, \(ready) ready for salah"
+        return L10n.format(
+            .horizonPresenceAccessibility,
+            max(representedMemberCount, PresenceHorizonLayout.minimumDisplayedCount),
+            ready
+        )
     }
 }
 

@@ -54,6 +54,12 @@ struct LocalPrayerDay: Codable, Hashable, Sendable {
         day = components.day ?? 0
     }
 
+    init(year: Int, month: Int, day: Int) {
+        self.year = year
+        self.month = month
+        self.day = day
+    }
+
     var databaseValue: String {
         String(format: "%04d-%02d-%02d", year, month, day)
     }
@@ -219,7 +225,7 @@ extension BackendError: LocalizedError {
         case .offline: "The network is unavailable."
         case .rateLimited: "Please wait before trying again."
         case .conflict: "The request conflicts with an existing operation."
-        case .sessionUnavailable: "The prayer session is not available."
+        case .sessionUnavailable: "The salah session is not available."
         case .invalidResponse: "The server returned an invalid response."
         case let .server(message): message
         case .cancelled: "The request was cancelled."

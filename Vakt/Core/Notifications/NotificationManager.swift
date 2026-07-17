@@ -6,11 +6,13 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
     @Published private(set) var isReminderEnabled: Bool
     @Published private(set) var authorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published private(set) var lastDeepLink: NotificationDeepLink?
+    @Published private(set) var lastPrayerAction: PrayerNotificationAction?
+    @Published private(set) var preferences: NotificationPreferences
 
     private static let reminderEnabledKey = "vakt.notifications.remindersEnabled.v1"
+    private static let preferencesKey = "vakt.notifications.preferences.v2"
 
     private let center: UNUserNotificationCenter
-    private var preferences: NotificationPreferences
     private let scheduler = PrayerNotificationScheduler()
 
     init(
@@ -18,10 +20,17 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         preferences: NotificationPreferences = .default
     ) {
         self.center = center
+        let storedPreferences = UserDefaults.standard.data(forKey: Self.preferencesKey)
+            .flatMap { try? JSONDecoder().decode(NotificationPreferences.self, from: $0) }
+        var resolvedPreferences = storedPreferences ?? preferences
+        if resolvedPreferences.checkInMinutesBeforeNextPrayer == 15 {
+            resolvedPreferences.checkInMinutesBeforeNextPrayer = 20
+        }
         let storedEnabled = UserDefaults.standard.object(forKey: Self.reminderEnabledKey) as? Bool
-        self.isReminderEnabled = storedEnabled ?? preferences.enabled
-        self.preferences = preferences
-        self.preferences.enabled = storedEnabled ?? preferences.enabled
+        let resolvedEnabled = storedEnabled ?? resolvedPreferences.enabled
+        resolvedPreferences.enabled = resolvedEnabled
+        self.preferences = resolvedPreferences
+        self.isReminderEnabled = resolvedEnabled
         super.init()
     }
 
@@ -84,10 +93,37 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         }
     }
 
+    func setPrayerOpeningEnabled(_ isEnabled: Bool) {
+        updatePreferences { $0.prayerOpeningEnabled = isEnabled }
+    }
+
+    func setPrayerTimeEnabled(_ isEnabled: Bool) {
+        updatePreferences { $0.prayerTimeEnabled = isEnabled }
+    }
+
+    func setFajrWakeEnabled(_ isEnabled: Bool) {
+        updatePreferences { $0.fajrWakeEnabled = isEnabled }
+    }
+
+    func setCheckInEnabled(_ isEnabled: Bool) {
+        updatePreferences { $0.checkInEnabled = isEnabled }
+    }
+
     private func updateReminderPreference(_ isEnabled: Bool) {
         isReminderEnabled = isEnabled
         preferences.enabled = isEnabled
         UserDefaults.standard.set(isEnabled, forKey: Self.reminderEnabledKey)
+        persistPreferences()
+    }
+
+    private func updatePreferences(_ update: (inout NotificationPreferences) -> Void) {
+        update(&preferences)
+        persistPreferences()
+    }
+
+    private func persistPreferences() {
+        guard let data = try? JSONEncoder().encode(preferences) else { return }
+        UserDefaults.standard.set(data, forKey: Self.preferencesKey)
     }
 
     func refreshAuthorizationStatus() {
@@ -121,20 +157,39 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
     }
 
     private func registerNotificationCategories() {
-        let joinSafAction = UNNotificationAction(
-            identifier: PrayerNotificationScheduler.joinSafActionIdentifier,
-            title: "Join the Saf",
+        let openPrayerAction = UNNotificationAction(
+            identifier: PrayerNotificationScheduler.openPrayerActionIdentifier,
+            title: L10n.string("notification.action.open_prayer"),
             options: [.foreground]
         )
 
-        let category = UNNotificationCategory(
+        let prayedAction = UNNotificationAction(
+            identifier: PrayerNotificationScheduler.markPrayedActionIdentifier,
+            title: L10n.string("notification.action.prayed"),
+            options: []
+        )
+
+        let missedAction = UNNotificationAction(
+            identifier: PrayerNotificationScheduler.markMissedActionIdentifier,
+            title: L10n.string("notification.action.missed"),
+            options: []
+        )
+
+        let prayerCategory = UNNotificationCategory(
             identifier: PrayerNotificationScheduler.categoryIdentifier,
-            actions: [joinSafAction],
+            actions: [openPrayerAction],
             intentIdentifiers: [],
             options: []
         )
 
-        center.setNotificationCategories([category])
+        let checkInCategory = UNNotificationCategory(
+            identifier: PrayerNotificationScheduler.checkInCategoryIdentifier,
+            actions: [prayedAction, missedAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        center.setNotificationCategories([prayerCategory, checkInCategory])
     }
 
     private func replaceScheduledPrayerNotifications(with requests: [UNNotificationRequest]) async {
@@ -184,6 +239,21 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         didReceive response: UNNotificationResponse
     ) async {
         let userInfo = response.notification.request.content.userInfo
+
+        if userInfo["deep_link"] as? String == "circle" {
+            await MainActor.run {
+                lastDeepLink = .circle
+            }
+            return
+        }
+
+        if userInfo["deep_link"] as? String == "profile" {
+            await MainActor.run {
+                lastDeepLink = .profile
+            }
+            return
+        }
+
         guard
             let rawPrayer = userInfo["prayer"] as? String,
             let prayer = Prayer(rawValue: rawPrayer)
@@ -191,8 +261,27 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
             return
         }
 
+        let prayerDate = (userInfo["prayerTime"] as? TimeInterval).map {
+            Date(timeIntervalSince1970: $0)
+        }
+
         await MainActor.run {
-            lastDeepLink = .saf(prayer)
+            switch response.actionIdentifier {
+            case PrayerNotificationScheduler.markPrayedActionIdentifier:
+                lastPrayerAction = PrayerNotificationAction(
+                    prayer: prayer,
+                    prayerDate: prayerDate,
+                    outcome: .prayed
+                )
+            case PrayerNotificationScheduler.markMissedActionIdentifier:
+                lastPrayerAction = PrayerNotificationAction(
+                    prayer: prayer,
+                    prayerDate: prayerDate,
+                    outcome: .missed
+                )
+            default:
+                lastDeepLink = .prayer(prayer)
+            }
         }
     }
 }
@@ -211,25 +300,38 @@ extension UNAuthorizationStatus {
 }
 
 enum NotificationDeepLink: Equatable {
-    case saf(Prayer)
+    case prayer(Prayer)
+    case circle
+    case profile
 }
 
-struct NotificationPreferences {
+struct PrayerNotificationAction: Equatable {
+    let id = UUID()
+    let prayer: Prayer
+    let prayerDate: Date?
+    let outcome: PrayerReflectionOutcome
+}
+
+struct NotificationPreferences: Codable, Equatable {
     var enabled: Bool
-    var safOpeningEnabled: Bool
+    var prayerOpeningEnabled: Bool
     var prayerTimeEnabled: Bool
     var fajrWakeEnabled: Bool
+    var checkInEnabled: Bool
     var minutesBeforePrayer: Int
     var fajrWakeMinutesBefore: Int
+    var checkInMinutesBeforeNextPrayer: Int
     var enabledPrayers: Set<Prayer>
 
     static let `default` = NotificationPreferences(
         enabled: true,
-        safOpeningEnabled: true,
+        prayerOpeningEnabled: true,
         prayerTimeEnabled: true,
         fajrWakeEnabled: true,
+        checkInEnabled: true,
         minutesBeforePrayer: 10,
         fajrWakeMinutesBefore: 30,
+        checkInMinutesBeforeNextPrayer: 20,
         enabledPrayers: Set(Prayer.allCases)
     )
 }
@@ -237,7 +339,10 @@ struct NotificationPreferences {
 struct PrayerNotificationScheduler {
     static let identifierPrefix = "vakt.prayer."
     static let categoryIdentifier = "VAKT_PRAYER"
-    static let joinSafActionIdentifier = "VAKT_JOIN_SAF"
+    static let checkInCategoryIdentifier = "VAKT_PRAYER_CHECK_IN"
+    static let openPrayerActionIdentifier = "VAKT_OPEN_PRAYER"
+    static let markPrayedActionIdentifier = "VAKT_MARK_PRAYED"
+    static let markMissedActionIdentifier = "VAKT_MARK_MISSED"
 
     func requests(
         prayers: [PrayerTime],
@@ -246,14 +351,17 @@ struct PrayerNotificationScheduler {
         preferences: NotificationPreferences,
         quietSoundEnabled: Bool
     ) -> [UNNotificationRequest] {
-        let futurePrayers = prayers
-            .filter { $0.time > now }
-            .sorted { $0.time < $1.time }
-            .prefix(5)
+        let sortedPrayers = prayers.sorted { $0.time < $1.time }
+        let firstFutureIndex = sortedPrayers.firstIndex { $0.time > now } ?? sortedPrayers.endIndex
+        let startIndex = firstFutureIndex > sortedPrayers.startIndex
+            ? sortedPrayers.index(before: firstFutureIndex)
+            : firstFutureIndex
+        let futurePrayers = Array(sortedPrayers[startIndex...].prefix(7))
 
-        return futurePrayers.flatMap { prayerTime in
+        return futurePrayers.enumerated().flatMap { index, prayerTime in
             requests(
                 for: prayerTime,
+                nextPrayerTime: futurePrayers.indices.contains(index + 1) ? futurePrayers[index + 1] : nil,
                 now: now,
                 liveMemberCount: liveMemberCount,
                 preferences: preferences,
@@ -264,6 +372,7 @@ struct PrayerNotificationScheduler {
 
     private func requests(
         for prayerTime: PrayerTime,
+        nextPrayerTime: PrayerTime?,
         now: Date,
         liveMemberCount: Int,
         preferences: NotificationPreferences,
@@ -273,10 +382,10 @@ struct PrayerNotificationScheduler {
 
         var requests: [UNNotificationRequest] = []
 
-        if preferences.safOpeningEnabled {
+        if preferences.prayerOpeningEnabled {
             let openDate = prayerTime.time.addingTimeInterval(TimeInterval(-preferences.minutesBeforePrayer * 60))
             if let request = request(
-                type: .safOpening,
+                type: .prayerOpening,
                 prayerTime: prayerTime,
                 fireDate: openDate,
                 now: now,
@@ -317,6 +426,22 @@ struct PrayerNotificationScheduler {
             }
         }
 
+        if preferences.checkInEnabled, let nextPrayerTime {
+            let checkInDate = nextPrayerTime.time.addingTimeInterval(TimeInterval(-preferences.checkInMinutesBeforeNextPrayer * 60))
+            if checkInDate > prayerTime.time,
+               let request = request(
+                type: .prayerCheckIn,
+                prayerTime: prayerTime,
+                fireDate: checkInDate,
+                now: now,
+                liveMemberCount: liveMemberCount,
+                minutesBefore: preferences.checkInMinutesBeforeNextPrayer,
+                quietSoundEnabled: quietSoundEnabled
+               ) {
+                requests.append(request)
+            }
+        }
+
         return requests
     }
 
@@ -336,12 +461,15 @@ struct PrayerNotificationScheduler {
         content.body = type.body(for: prayerTime.prayer, liveMemberCount: liveMemberCount, minutesBefore: minutesBefore)
         let sound = type.sound(quietSoundEnabled: quietSoundEnabled)
         content.sound = sound
-        content.categoryIdentifier = Self.categoryIdentifier
+        content.categoryIdentifier = type == .prayerCheckIn
+            ? Self.checkInCategoryIdentifier
+            : Self.categoryIdentifier
         content.threadIdentifier = "vakt.prayer.\(prayerTime.prayer.rawValue)"
         content.userInfo = [
-            "deepLink": "saf",
+            "deepLink": "prayer",
             "type": type.rawValue,
             "prayer": prayerTime.prayer.rawValue,
+            "prayerTime": prayerTime.time.timeIntervalSince1970,
             "fireDate": fireDate.timeIntervalSince1970,
             "playsSound": sound != nil
         ]
@@ -366,18 +494,21 @@ struct PrayerNotificationScheduler {
 }
 
 private enum PrayerNotificationType: String {
-    case safOpening
+    case prayerOpening
     case prayerTime
     case fajrWake
+    case prayerCheckIn
 
     func title(for prayer: Prayer, minutesBefore: Int) -> String {
         switch self {
-        case .safOpening:
-            return "\(prayer.displayName) is near"
+        case .prayerOpening:
+            return L10n.notificationTitle(type: .prayerOpening, prayer: prayer, minutesBefore: minutesBefore)
         case .prayerTime:
-            return "\(prayer.displayName) has entered"
+            return L10n.notificationTitle(type: .prayerTime, prayer: prayer, minutesBefore: minutesBefore)
         case .fajrWake:
-            return "Fajr is near"
+            return L10n.notificationTitle(type: .fajrWake, prayer: prayer, minutesBefore: minutesBefore)
+        case .prayerCheckIn:
+            return L10n.formatString("notification.checkin.title", prayer.localizedName)
         }
     }
 
@@ -385,12 +516,29 @@ private enum PrayerNotificationType: String {
         let companionCount = max(liveMemberCount - 1, 6)
 
         switch self {
-        case .safOpening:
-            return "\(companionCount) others are preparing for \(prayer.displayName). Join the Saf when you are ready."
+        case .prayerOpening:
+            return L10n.notificationBody(
+                type: .prayerOpening,
+                prayer: prayer,
+                companionCount: companionCount,
+                minutesBefore: minutesBefore
+            )
         case .prayerTime:
-            return "It is time for salah. Put the phone away when you are ready."
+            return L10n.notificationBody(
+                type: .prayerTime,
+                prayer: prayer,
+                companionCount: companionCount,
+                minutesBefore: minutesBefore
+            )
         case .fajrWake:
-            return "\(companionCount) others are waking for Fajr. The Saf gathers in \(minutesBefore) minutes."
+            return L10n.notificationBody(
+                type: .fajrWake,
+                prayer: prayer,
+                companionCount: companionCount,
+                minutesBefore: minutesBefore
+            )
+        case .prayerCheckIn:
+            return L10n.formatString("notification.checkin.body", prayer.localizedName)
         }
     }
 
@@ -398,9 +546,9 @@ private enum PrayerNotificationType: String {
         guard quietSoundEnabled else { return nil }
 
         switch self {
-        case .safOpening, .fajrWake:
+        case .prayerOpening, .fajrWake:
             return .default
-        case .prayerTime:
+        case .prayerTime, .prayerCheckIn:
             return nil
         }
     }

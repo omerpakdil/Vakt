@@ -2,3 +2,4 @@
 // $() prevents xcconfig from treating // as the start of a comment.
 SUPABASE_URL = https:/$()/YOUR_PROJECT_REF.supabase.co
 SUPABASE_PUBLISHABLE_KEY = sb_publishable_YOUR_KEY
+VAKT_APP_STORE_ID = YOUR_APPLE_APP_ID

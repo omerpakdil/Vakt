@@ -34,15 +34,15 @@ struct OnboardingAnonymousSafView: View {
                     Spacer(minLength: 0)
 
                     VStack(alignment: .leading, spacing: 15) {
-                        EyebrowLabel(text: "Saf Privacy")
+                        EyebrowLabel(text: L10n.string("onboarding.privacy.eyebrow"))
 
-                        Text("Join without showing your name.")
+                        Text(L10n.string("onboarding.privacy.title.anonymous"))
                             .font(VaktFont.title(31))
                             .foregroundStyle(Color.vaktPrimary)
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text("You’re here with the Saf, while your name and profile stay with you.")
+                        Text(L10n.string("onboarding.privacy.body.anonymous"))
                             .font(VaktFont.body(14))
                             .foregroundStyle(Color.vaktMuted)
                             .lineSpacing(5)
@@ -97,7 +97,7 @@ private struct AnonymousHeader: View {
 
     var body: some View {
         HStack(spacing: VaktSpace.sm) {
-            Text("0\(stepIndex + 1)")
+            Text(verbatim: "0\(stepIndex + 1)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktPrimary)
                 .monospacedDigit()
@@ -111,12 +111,12 @@ private struct AnonymousHeader: View {
                 }
             }
 
-            Text("0\(stepCount)")
+            Text(verbatim: "0\(stepCount)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktMuted)
                 .monospacedDigit()
         }
-        .accessibilityLabel("Onboarding step \(stepIndex + 1) of \(stepCount)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", stepIndex + 1, stepCount))
     }
 }
 
@@ -176,10 +176,10 @@ private struct AnonymousPresenceField: View {
 
     private func drawIdentityTraces(ctx: GraphicsContext, size: CGSize, center: CGPoint, breath: CGFloat) {
         let traces: [(String, CGFloat, CGFloat)] = [
-            ("name", 0.22, 0.24),
-            ("profile", 0.70, 0.22),
-            ("location", 0.27, 0.47),
-            ("proof", 0.66, 0.48)
+            (L10n.string("onboarding.privacy.trace.name"), 0.22, 0.24),
+            (L10n.string("onboarding.privacy.trace.profile"), 0.70, 0.22),
+            (L10n.string("onboarding.privacy.trace.location"), 0.27, 0.47),
+            (L10n.string("onboarding.privacy.trace.proof"), 0.66, 0.48)
         ]
 
         for (index, trace) in traces.enumerated() {
@@ -278,7 +278,7 @@ private struct AnonymousQuietLine: View {
     let dissolve: CGFloat
 
     var body: some View {
-        Text("Your worship stays between you and Allah.")
+        Text(L10n.string("onboarding.privacy.quiet_line"))
             .font(VaktFont.caption(11))
             .foregroundStyle(Color.vaktSecondary)
             .lineLimit(1)
@@ -302,7 +302,7 @@ private struct AnonymousGlassContinue: View {
                     .fill(Color.vaktPrimary)
 
                 HStack(spacing: VaktSpace.sm) {
-                    Text("Continue")
+                    Text(L10n.string("action.continue"))
                         .font(VaktFont.button(15))
                         .foregroundStyle(Color.vaktBg)
 
@@ -323,6 +323,6 @@ private struct AnonymousGlassContinue: View {
             .frame(height: 56)
         }
         .buttonStyle(VaktPressStyle())
-        .accessibilityLabel("Continue")
+        .accessibilityLabel(L10n.string("action.continue"))
     }
 }

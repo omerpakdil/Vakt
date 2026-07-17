@@ -37,15 +37,15 @@ struct OnboardingLocationView: View {
                     Spacer(minLength: proxy.size.height * 0.44)
 
                     VStack(alignment: .leading, spacing: 15) {
-                        EyebrowLabel(text: "Local Time")
+                        EyebrowLabel(text: L10n.string("onboarding.location.eyebrow"))
 
-                        Text("Let Vakt find your prayer times.")
+                        Text(L10n.string("onboarding.location.title.find"))
                             .font(VaktFont.title(31))
                             .foregroundStyle(Color.vaktPrimary)
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text("Approximate location is used only for local salah times. Your exact location is not shown.")
+                        Text(L10n.string("onboarding.location.body.approx"))
                             .font(VaktFont.body(14))
                             .foregroundStyle(Color.vaktMuted)
                             .lineSpacing(5)
@@ -97,7 +97,7 @@ private struct LocationPageMark: View {
 
     var body: some View {
         HStack {
-            Text("0\(stepIndex + 1) / 0\(stepCount)")
+            Text(verbatim: "0\(stepIndex + 1) / 0\(stepCount)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktMuted)
                 .monospacedDigit()
@@ -105,7 +105,7 @@ private struct LocationPageMark: View {
 
             Spacer()
         }
-        .accessibilityLabel("Onboarding step \(stepIndex + 1) of \(stepCount)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", stepIndex + 1, stepCount))
     }
 }
 
@@ -226,17 +226,17 @@ private struct LocationDayArcScene: View {
     }
 
     private func drawPrayerMarks(ctx: GraphicsContext, size: CGSize, breath: CGFloat) {
-        let marks: [(label: String, t: CGFloat)] = [
-            ("Fajr", 0.08),
-            ("Dhuhr", 0.42),
-            ("Asr", 0.58),
-            ("Maghrib", 0.76),
-            ("Isha", 0.92)
+        let marks: [(prayer: Prayer, t: CGFloat)] = [
+            (.fajr, 0.08),
+            (.dhuhr, 0.42),
+            (.asr, 0.58),
+            (.maghrib, 0.76),
+            (.isha, 0.92)
         ]
 
         for mark in marks {
             let p = point(on: size, at: mark.t)
-            let isCurrent = mark.label == "Asr"
+            let isCurrent = mark.prayer == .asr
             let distance = abs(mark.t - dayPosition)
             let near = max(0, 1 - distance * 8)
             let radius = isCurrent ? CGFloat(4.8 + near * 1.4) : CGFloat(2.8 + near)
@@ -248,7 +248,7 @@ private struct LocationDayArcScene: View {
 
             if isDragging || isCurrent {
                 let resolved = ctx.resolve(
-                    Text(mark.label)
+                    Text(mark.prayer.displayName)
                         .font(VaktFont.caption(isCurrent ? 10 : 9))
                         .foregroundStyle((isCurrent ? Color.vaktPrimary : Color.vaktMuted).opacity(isCurrent ? 0.92 : 0.62))
                 )
@@ -275,12 +275,12 @@ private struct LocationDayArcScene: View {
 
     private func drawLabels(ctx: GraphicsContext, size: CGSize) {
         let dawn = ctx.resolve(
-            Text("Dawn")
+            Text(L10n.string("onboarding.location.arc.dawn"))
                 .font(VaktFont.caption(10))
                 .foregroundStyle(Color.vaktShadow)
         )
         let night = ctx.resolve(
-            Text("Night")
+            Text(L10n.string("onboarding.location.arc.night"))
                 .font(VaktFont.caption(10))
                 .foregroundStyle(Color.vaktShadow)
         )
@@ -306,7 +306,7 @@ private struct LocationQuietFact: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 onSkip()
             } label: {
-                Text("Not now")
+                Text(L10n.string("action.not_now"))
                     .font(VaktFont.caption(11))
                     .foregroundStyle(Color.vaktMuted)
                     .padding(.horizontal, 6)
@@ -319,13 +319,13 @@ private struct LocationQuietFact: View {
     private var statusText: String {
         switch status {
         case .ready, .usingSavedTimes:
-            return "Your prayer times are ready."
+            return L10n.string("onboarding.location.status.ready")
         case .denied:
-            return "You can set this later."
+            return L10n.string("onboarding.location.status.later")
         case .failed:
-            return "You can try again later."
+            return L10n.string("onboarding.location.status.retry")
         case .locating, .loading:
-            return "Finding your local prayer times."
+            return L10n.string("onboarding.location.status.finding")
         }
     }
 }
@@ -366,9 +366,9 @@ private struct LocationPrimaryActions: View {
     private var primaryTitle: String {
         switch status {
         case .ready, .usingSavedTimes:
-            return "Continue"
+            return L10n.string("action.continue")
         default:
-            return "Use Location"
+            return L10n.string("action.use_location")
         }
     }
 

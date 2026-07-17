@@ -26,15 +26,15 @@ struct OnboardingSafGatheringView: View {
                         .padding(.top, 8)
 
                     VStack(alignment: .leading, spacing: 15) {
-                        EyebrowLabel(text: "Before Salah")
+                        EyebrowLabel(text: L10n.string("onboarding.gathering.eyebrow"))
 
-                        Text("The Saf gathers as prayer draws near.")
+                        Text(L10n.string("onboarding.gathering.title"))
                             .font(VaktFont.title(30))
                             .foregroundStyle(Color.vaktPrimary)
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text("See others preparing, making wudu, and becoming ready. When it is time, you can quietly join them.")
+                        Text(L10n.string("onboarding.gathering.body"))
                             .font(VaktFont.body(14))
                             .foregroundStyle(Color.vaktMuted)
                             .lineSpacing(5)
@@ -93,7 +93,7 @@ private struct GatheringPageMark: View {
 
     var body: some View {
         HStack(spacing: VaktSpace.sm) {
-            Text("0\(stepIndex + 1)")
+            Text(verbatim: "0\(stepIndex + 1)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktPrimary)
                 .monospacedDigit()
@@ -107,12 +107,12 @@ private struct GatheringPageMark: View {
                 }
             }
 
-            Text("0\(stepCount)")
+            Text(verbatim: "0\(stepCount)")
                 .font(VaktFont.caption(11))
                 .foregroundStyle(Color.vaktMuted)
                 .monospacedDigit()
         }
-        .accessibilityLabel("Onboarding step \(stepIndex + 1) of \(stepCount)")
+        .accessibilityLabel(L10n.formatString("onboarding.step_accessibility", stepIndex + 1, stepCount))
     }
 }
 
@@ -154,22 +154,22 @@ private struct MiniSafScene: View {
                 .frame(height: 0.5)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("A five row Saf slowly gathering before Asr")
+        .accessibilityLabel(L10n.formatString("onboarding.gathering.scene_accessibility", Prayer.asr.displayName))
     }
 
     private var sceneHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: 7) {
-            Text("Asr Saf")
+            Text(L10n.formatString("onboarding.gathering.scene_title", Prayer.asr.displayName))
                 .font(VaktFont.title(20))
                 .foregroundStyle(Color.vaktPrimary)
 
-            Text("is gathering")
+            Text(L10n.string("onboarding.gathering.scene_status"))
                 .font(VaktFont.body(12))
                 .foregroundStyle(Color.vaktMuted)
 
             Spacer()
 
-            Text("\(occupiedSlots.count)")
+            Text(verbatim: "\(occupiedSlots.count)")
                 .font(VaktFont.timeDisplay(20))
                 .foregroundStyle(Color.vaktSecondary)
                 .monospacedDigit()
@@ -183,7 +183,7 @@ private struct MiniSafScene: View {
                 .fill(Color.vaktAccent.opacity(0.18))
                 .frame(height: 0.5)
 
-            Text("QIBLA")
+            Text(L10n.string("placement.qibla"))
                 .font(VaktFont.eyebrow(8))
                 .foregroundStyle(Color.vaktAccent.opacity(0.46))
                 .tracking(1.5)
@@ -254,13 +254,13 @@ private struct MiniSafRowGuides: View {
 private struct GatheringStatusLine: View {
     var body: some View {
         HStack(spacing: 10) {
-            status("Getting ready")
+            status(L10n.string("onboarding.gathering.status.getting_ready"))
             divider
-            status("Wudu")
+            status(L10n.string("onboarding.gathering.status.wudu"))
             divider
-            status("Ready")
+            status(L10n.string("onboarding.gathering.status.ready"))
         }
-        .accessibilityLabel("Statuses include getting ready, making wudu, and ready for salah")
+        .accessibilityLabel(L10n.string("onboarding.gathering.status_accessibility"))
     }
 
     private func status(_ title: String) -> some View {
@@ -287,7 +287,7 @@ private struct GatheringContinueButton: View {
             onContinue()
         } label: {
             HStack(spacing: VaktSpace.sm) {
-                Text("Continue")
+                Text(L10n.string("action.continue"))
                     .font(VaktFont.button(15))
                     .foregroundStyle(Color.vaktBg)
 
@@ -303,6 +303,6 @@ private struct GatheringContinueButton: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(VaktPressStyle())
-        .accessibilityLabel("Continue")
+        .accessibilityLabel(L10n.string("action.continue"))
     }
 }

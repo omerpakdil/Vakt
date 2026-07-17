@@ -2,6 +2,8 @@ import Foundation
 
 @MainActor
 final class OnboardingStore: ObservableObject {
+    static let plannedPageCount = 6
+
     @Published private(set) var hasCompletedOnboarding: Bool
     @Published private(set) var hasPassedSplash = false
     @Published var currentPage: Int = 0
@@ -14,6 +16,13 @@ final class OnboardingStore: ObservableObject {
         self.hasCompletedOnboarding = defaults.bool(forKey: Self.completionKey)
 
         #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--vakt-preview-splash") {
+            hasCompletedOnboarding = false
+            hasPassedSplash = false
+            currentPage = 0
+            return
+        }
+
         if let pageArgument = ProcessInfo.processInfo.arguments.first(where: {
             $0.hasPrefix("--vakt-onboarding-page=")
         }), let requestedPage = Int(pageArgument.split(separator: "=").last ?? "") {
@@ -57,6 +66,11 @@ final class OnboardingStore: ObservableObject {
 struct OnboardingPage: Identifiable, Equatable {
     enum Kind {
         case arrival
+        case markPrayer
+        case friends
+        case makeupCalendar
+        case closingReminder
+        case promise
         case gathering
         case placement
         case anonymousSaf
@@ -74,51 +88,51 @@ struct OnboardingPage: Identifiable, Equatable {
     static let all: [OnboardingPage] = [
         OnboardingPage(
             id: .arrival,
-            eyebrow: "Vakt",
-            title: "Keep the next salah close.",
-            body: "See the time, notice the Saf gathering, and come to prayer with a little more ease.",
-            primaryAction: "Continue",
+            eyebrow: L10n.string("onboarding.arrival.eyebrow"),
+            title: L10n.string("onboarding.arrival.title"),
+            body: L10n.string("onboarding.arrival.body"),
+            primaryAction: L10n.string("action.continue"),
             secondaryAction: nil
         ),
         OnboardingPage(
-            id: .gathering,
-            eyebrow: "Before Salah",
-            title: "The Saf gathers in its own time.",
-            body: "Share where you are as salah draws near, without conversation or interruption.",
-            primaryAction: "Continue",
+            id: .markPrayer,
+            eyebrow: L10n.string("onboarding.mark_prayer.eyebrow"),
+            title: L10n.string("onboarding.mark_prayer.title"),
+            body: L10n.string("onboarding.mark_prayer.body"),
+            primaryAction: L10n.string("action.continue"),
             secondaryAction: nil
         ),
         OnboardingPage(
-            id: .placement,
-            eyebrow: "Join the Saf",
-            title: "Choose where you will join.",
-            body: "Select an open place, then continue toward salah.",
-            primaryAction: "Continue",
+            id: .friends,
+            eyebrow: L10n.string("onboarding.friends.eyebrow"),
+            title: L10n.string("onboarding.friends.title"),
+            body: L10n.string("onboarding.friends.body"),
+            primaryAction: L10n.string("action.continue"),
             secondaryAction: nil
         ),
         OnboardingPage(
-            id: .anonymousSaf,
-            eyebrow: "Saf Privacy",
-            title: "Stand together, stay private.",
-            body: "You’re here with the Saf, while your name and profile stay with you. Your worship stays between you and Allah.",
-            primaryAction: "Continue",
+            id: .closingReminder,
+            eyebrow: L10n.string("onboarding.closing_reminder.eyebrow"),
+            title: L10n.string("onboarding.closing_reminder.title"),
+            body: L10n.string("onboarding.closing_reminder.body"),
+            primaryAction: L10n.string("action.continue"),
             secondaryAction: nil
         ),
         OnboardingPage(
-            id: .location,
-            eyebrow: "Local Time",
-            title: "Let prayer times meet your day.",
-            body: "Approximate location helps Vakt find your local salah times. Your exact location is never shown.",
-            primaryAction: "Use Location",
-            secondaryAction: "Not Now"
+            id: .makeupCalendar,
+            eyebrow: L10n.string("onboarding.makeup_calendar.eyebrow"),
+            title: L10n.string("onboarding.makeup_calendar.title"),
+            body: L10n.string("onboarding.makeup_calendar.body"),
+            primaryAction: L10n.string("action.continue"),
+            secondaryAction: nil
         ),
         OnboardingPage(
-            id: .reminders,
-            eyebrow: "Prayer reminders",
-            title: "A gentle reminder, then quiet.",
-            body: "Vakt can remind you before salah and stay silent when it is time to pray. You can pause reminders anytime from My Vakt.",
-            primaryAction: "Allow Prayer Reminders",
-            secondaryAction: "Continue for now"
+            id: .promise,
+            eyebrow: L10n.string("onboarding.promise.eyebrow"),
+            title: L10n.string("onboarding.promise.title"),
+            body: L10n.string("onboarding.promise.body"),
+            primaryAction: L10n.string("onboarding.promise.action.continue"),
+            secondaryAction: nil
         )
     ]
 }
