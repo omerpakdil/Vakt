@@ -426,8 +426,9 @@ struct PrayerNotificationScheduler {
             }
         }
 
-        if preferences.checkInEnabled, let nextPrayerTime {
-            let checkInDate = nextPrayerTime.time.addingTimeInterval(TimeInterval(-preferences.checkInMinutesBeforeNextPrayer * 60))
+        if preferences.checkInEnabled,
+           let closesAt = prayerTime.endsAt ?? nextPrayerTime?.time {
+            let checkInDate = closesAt.addingTimeInterval(TimeInterval(-preferences.checkInMinutesBeforeNextPrayer * 60))
             if checkInDate > prayerTime.time,
                let request = request(
                 type: .prayerCheckIn,

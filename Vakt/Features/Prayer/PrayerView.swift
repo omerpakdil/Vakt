@@ -12,20 +12,55 @@ struct PrayerView: View {
     @State private var makeupSheetPresented = false
 
     var body: some View {
-        let prayerTime = prayerStore.activePrayer ?? prayerStore.nextPrayer
+        let activeWindow = prayerStore.activePrayerWindow
+
+        Group {
+            if let activeWindow {
+                activePrayerContent(activeWindow)
+            } else {
+                PrayerBetweenTimesView(
+                    nextPrayer: prayerStore.nextPrayer,
+                    now: prayerStore.now
+                )
+            }
+        }
+        .navigationDestination(isPresented: $makeupSheetPresented) {
+            MakeupPrayerCenterView(store: socialPrayerStore)
+        }
+        .fullScreenCover(item: $activeSession, onDismiss: {
+            onReviewOpportunity(reflectionStore.startedTogetherCount)
+        }) { session in
+            QuietSalahView(
+                session: session,
+                reflectionStore: reflectionStore,
+                sessionStore: sessionStore,
+                socialPrayerStore: socialPrayerStore,
+                spiritualContentStore: spiritualContentStore
+            )
+        }
+        .onAppear {
+            refreshSocialPrayer(for: activeWindow?.prayerTime)
+        }
+        .onChange(of: activeWindow?.prayerTime.time) { _, _ in
+            refreshSocialPrayer(for: prayerStore.activePrayer)
+        }
+    }
+
+    private func activePrayerContent(_ window: ActivePrayerWindow) -> some View {
+        let prayerTime = window.prayerTime
         let trackingStatus = reflectionStore.trackingStatus(
             for: prayerTime,
             sessionStatus: sessionStore.status(for: prayerTime)
         )
 
-        GeometryReader { geometry in
+        return GeometryReader { geometry in
             ZStack {
                 PrayerPreparationAtmosphere()
 
                 VStack(alignment: .leading, spacing: 0) {
                     PrayerPreparationHeader(
                         prayerTime: prayerTime,
-                        countdown: prayerStore.nextCountdown,
+                        countdown: window.remaining(at: prayerStore.now),
                         status: trackingStatus
                     )
 
@@ -57,31 +92,73 @@ struct PrayerView: View {
                 .frame(width: geometry.size.width, height: geometry.size.height)
             }
         }
-        .navigationDestination(isPresented: $makeupSheetPresented) {
-            MakeupPrayerCenterView(store: socialPrayerStore)
-        }
-        .fullScreenCover(item: $activeSession, onDismiss: {
-            onReviewOpportunity(reflectionStore.startedTogetherCount)
-        }) { session in
-            QuietSalahView(
-                session: session,
-                reflectionStore: reflectionStore,
-                sessionStore: sessionStore,
-                socialPrayerStore: socialPrayerStore,
-                spiritualContentStore: spiritualContentStore
-            )
-        }
-        .onAppear {
-            socialPrayerStore.refresh(for: prayerTime.time, timeZone: prayerTime.timeZone)
-        }
-        .onChange(of: prayerTime.prayer) { _, _ in
-            socialPrayerStore.refresh(for: prayerTime.time, timeZone: prayerTime.timeZone)
-        }
+    }
+
+    private func refreshSocialPrayer(for prayerTime: PrayerTime?) {
+        guard let prayerTime else { return }
+        socialPrayerStore.refresh(for: prayerTime.time, timeZone: prayerTime.timeZone)
     }
 
     private func beginQuietPrayer(prayerTime: PrayerTime) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         activeSession = sessionStore.beginSession(for: prayerTime, companionCount: 0)
+    }
+}
+
+private struct PrayerBetweenTimesView: View {
+    let nextPrayer: PrayerTime
+    let now: Date
+
+    var body: some View {
+        ZStack {
+            PrayerPreparationAtmosphere()
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(L10n.string("home.next_prayer")
+                    .uppercased(with: VaktLocalization.appLocale))
+                    .font(VaktFont.eyebrow(9))
+                    .foregroundStyle(Color.vaktMuted)
+                    .tracking(1.8)
+
+                Text(nextPrayer.prayer.displayName)
+                    .font(VaktFont.prayerDisplay(54))
+                    .foregroundStyle(Color.vaktPrimary)
+                    .padding(.top, 8)
+
+                Text(VaktTimeFormatter.string(from: nextPrayer.time, timeZone: nextPrayer.timeZone))
+                    .font(VaktFont.timeDisplay(20))
+                    .foregroundStyle(Color.vaktGlow)
+                    .monospacedDigit()
+                    .padding(.top, 5)
+
+                CountdownLabel(
+                    seconds: max(0, nextPrayer.time.timeIntervalSince(now)),
+                    fontSize: 12,
+                    digitWidth: 7.5,
+                    digitHeight: 16
+                )
+                .padding(.top, 9)
+
+                Spacer()
+
+                VStack(spacing: 18) {
+                    Image(systemName: "sun.horizon")
+                        .font(.system(size: 30, weight: .ultraLight))
+                        .foregroundStyle(Color.vaktGlow)
+
+                    Text(L10n.string("home.between_prayers"))
+                        .font(VaktFont.body(13))
+                        .foregroundStyle(Color.vaktSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+
+                Spacer()
+            }
+            .padding(.horizontal, VaktSpace.lg)
+            .padding(.top, 36)
+            .padding(.bottom, 88)
+        }
     }
 }
 

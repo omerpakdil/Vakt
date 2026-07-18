@@ -283,17 +283,20 @@ struct PrayerTime: Identifiable, Codable {
     let time: Date
     let countdown: TimeInterval
     let timeZoneIdentifier: String?
+    let endsAt: Date?
 
     init(
         prayer: Prayer,
         time: Date,
         countdown: TimeInterval,
-        timeZoneIdentifier: String? = nil
+        timeZoneIdentifier: String? = nil,
+        endsAt: Date? = nil
     ) {
         self.prayer = prayer
         self.time = time
         self.countdown = countdown
         self.timeZoneIdentifier = timeZoneIdentifier
+        self.endsAt = endsAt
     }
 
     var id: Prayer { prayer }
@@ -1407,6 +1410,7 @@ private struct AlAdhanMeta: Decodable {
 
 private struct AlAdhanTimings: Decodable {
     let Fajr: String
+    let Sunrise: String
     let Dhuhr: String
     let Asr: String
     let Maghrib: String
@@ -1415,6 +1419,7 @@ private struct AlAdhanTimings: Decodable {
     var requiresReferenceLatitude: Bool {
         guard
             let fajr = clockMinutes(Fajr),
+            let sunrise = clockMinutes(Sunrise),
             let dhuhr = clockMinutes(Dhuhr),
             let asr = clockMinutes(Asr),
             let maghrib = clockMinutes(Maghrib)
@@ -1422,12 +1427,13 @@ private struct AlAdhanTimings: Decodable {
             return true
         }
 
-        return !(fajr < dhuhr && dhuhr < asr && asr < maghrib)
+        return !(fajr < sunrise && sunrise < dhuhr && dhuhr < asr && asr < maghrib)
     }
 
     func prayerTimes(for date: Date, timeZone: TimeZone) throws -> [PrayerTime] {
+        let sunrise = try dateTime(value: Sunrise, date: date, timeZone: timeZone)
         var prayers = [
-            try prayerTime(.fajr, value: Fajr, date: date, timeZone: timeZone),
+            try prayerTime(.fajr, value: Fajr, date: date, timeZone: timeZone, endsAt: sunrise),
             try prayerTime(.dhuhr, value: Dhuhr, date: date, timeZone: timeZone),
             try prayerTime(.asr, value: Asr, date: date, timeZone: timeZone),
             try prayerTime(.maghrib, value: Maghrib, date: date, timeZone: timeZone),
@@ -1451,7 +1457,24 @@ private struct AlAdhanTimings: Decodable {
         return prayers
     }
 
-    private func prayerTime(_ prayer: Prayer, value: String, date: Date, timeZone: TimeZone) throws -> PrayerTime {
+    private func prayerTime(
+        _ prayer: Prayer,
+        value: String,
+        date: Date,
+        timeZone: TimeZone,
+        endsAt: Date? = nil
+    ) throws -> PrayerTime {
+        let time = try dateTime(value: value, date: date, timeZone: timeZone)
+        return PrayerTime(
+            prayer: prayer,
+            time: time,
+            countdown: max(0, time.timeIntervalSince(Date())),
+            timeZoneIdentifier: timeZone.identifier,
+            endsAt: endsAt
+        )
+    }
+
+    private func dateTime(value: String, date: Date, timeZone: TimeZone) throws -> Date {
         let clock = value.split(separator: " ").first.map(String.init) ?? value
         let parts = clock.split(separator: ":").compactMap { Int($0) }
         guard parts.count >= 2 else {
@@ -1475,12 +1498,7 @@ private struct AlAdhanTimings: Decodable {
             throw URLError(.cannotParseResponse)
         }
 
-        return PrayerTime(
-            prayer: prayer,
-            time: time,
-            countdown: max(0, time.timeIntervalSince(Date())),
-            timeZoneIdentifier: timeZone.identifier
-        )
+        return time
     }
 
     private func clockMinutes(_ value: String) -> Int? {
@@ -1488,6 +1506,40 @@ private struct AlAdhanTimings: Decodable {
         let parts = clock.split(separator: ":").compactMap { Int($0) }
         guard parts.count >= 2 else { return nil }
         return parts[0] * 60 + parts[1]
+    }
+}
+
+struct ActivePrayerWindow {
+    let prayerTime: PrayerTime
+    let endsAt: Date
+    let endingPrayer: Prayer?
+
+    func progress(at date: Date) -> Double {
+        let duration = endsAt.timeIntervalSince(prayerTime.time)
+        guard duration > 0 else { return 1 }
+        return min(1, max(0, date.timeIntervalSince(prayerTime.time) / duration))
+    }
+
+    func remaining(at date: Date) -> TimeInterval {
+        max(0, endsAt.timeIntervalSince(date))
+    }
+
+    static func resolve(from prayers: [PrayerTime], at date: Date) -> ActivePrayerWindow? {
+        let sorted = prayers.sorted { $0.time < $1.time }
+        guard let index = sorted.lastIndex(where: { $0.time <= date }) else {
+            return nil
+        }
+
+        let prayer = sorted[index]
+        let nextPrayer = sorted.indices.contains(index + 1) ? sorted[index + 1] : nil
+        let endsAt = prayer.endsAt ?? nextPrayer?.time
+        guard let endsAt, date < endsAt else { return nil }
+
+        return ActivePrayerWindow(
+            prayerTime: prayer,
+            endsAt: endsAt,
+            endingPrayer: prayer.endsAt == nil ? nextPrayer?.prayer : nil
+        )
     }
 }
 
@@ -1545,7 +1597,8 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
                     prayer: prayerTime.prayer,
                     time: prayerTime.time,
                     countdown: max(0, prayerTime.time.timeIntervalSince(now)),
-                    timeZoneIdentifier: prayerTime.timeZoneIdentifier
+                    timeZoneIdentifier: prayerTime.timeZoneIdentifier,
+                    endsAt: prayerTime.endsAt
                 )
             }
     }
@@ -1571,17 +1624,12 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         }
     }
 
-    var activePrayer: PrayerTime? {
-        guard let prayer = loadedPrayers.last(where: { $0.time <= now }) else {
-            return nil
-        }
+    var activePrayerWindow: ActivePrayerWindow? {
+        ActivePrayerWindow.resolve(from: loadedPrayers, at: now)
+    }
 
-        return PrayerTime(
-            prayer: prayer.prayer,
-            time: prayer.time,
-            countdown: 0,
-            timeZoneIdentifier: prayer.timeZoneIdentifier
-        )
+    var activePrayer: PrayerTime? {
+        activePrayerWindow?.prayerTime
     }
 
     var nextCountdown: TimeInterval {

@@ -12,24 +12,28 @@ struct HomeView: View {
 
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
-        let currentPrayer = prayerStore.activePrayer ?? nextPrayer
-        let selectedOutcome = reflectionStore.outcome(for: currentPrayer) ?? .missed
-        let trackingStatus = reflectionStore.trackingStatus(
-            for: currentPrayer,
-            sessionStatus: sessionStore.status(for: currentPrayer)
-        )
+        let activeWindow = prayerStore.activePrayerWindow
+        let currentPrayer = activeWindow?.prayerTime
+        let focusPrayer = currentPrayer ?? nextPrayer
+        let selectedOutcome = currentPrayer.flatMap { reflectionStore.outcome(for: $0) } ?? .missed
+        let trackingStatus = currentPrayer.map {
+            reflectionStore.trackingStatus(
+                for: $0,
+                sessionStatus: sessionStore.status(for: $0)
+            )
+        }
 
         GeometryReader { geometry in
             ZStack {
-                HomeDayAtmosphere(prayer: currentPrayer.prayer)
+                HomeDayAtmosphere(prayer: focusPrayer.prayer)
 
                 VStack(spacing: 0) {
                     HomeTopBar(onQibla: { qiblaPresented = true })
 
                     HomePrayerFocus(
-                        currentPrayerTime: currentPrayer,
+                        activeWindow: activeWindow,
                         nextPrayerTime: nextPrayer,
-                        countdown: prayerStore.nextCountdown,
+                        now: prayerStore.now,
                         trackingStatus: trackingStatus
                     )
                     .padding(.top, 18)
@@ -37,20 +41,24 @@ struct HomeView: View {
                     Spacer(minLength: 14)
 
                     VStack(spacing: 0) {
-                        HomePrayerActions(
-                            prayer: currentPrayer.prayer,
-                            selectedOutcome: selectedOutcome,
-                            trackingStatus: trackingStatus,
-                            onMark: { mark(currentPrayer, outcome: $0) },
-                            onBegin: { selectedTab = .prayer }
-                        )
+                        if let currentPrayer, let trackingStatus {
+                            HomePrayerActions(
+                                prayer: currentPrayer.prayer,
+                                selectedOutcome: selectedOutcome,
+                                trackingStatus: trackingStatus,
+                                onMark: { mark(currentPrayer, outcome: $0) },
+                                onBegin: { selectedTab = .prayer }
+                            )
 
-                        HomeSocialLine(
-                            prayer: currentPrayer.prayer,
-                            summaries: socialPrayerStore.friendSummaries,
-                            onOpen: { selectedTab = .circle }
-                        )
-                        .padding(.top, 18)
+                            HomeSocialLine(
+                                prayer: currentPrayer.prayer,
+                                summaries: socialPrayerStore.friendSummaries,
+                                onOpen: { selectedTab = .circle }
+                            )
+                            .padding(.top, 18)
+                        } else {
+                            HomeBetweenPrayersNote()
+                        }
 
                         HomePrayerTimeline(prayers: prayerStore.upcomingPrayers)
                             .padding(.top, 21)
@@ -67,11 +75,16 @@ struct HomeView: View {
             QiblaSheet(store: qiblaStore)
         }
         .onAppear {
-            socialPrayerStore.refresh(for: currentPrayer.time, timeZone: currentPrayer.timeZone)
+            refreshSocialPrayer(for: currentPrayer)
         }
-        .onChange(of: currentPrayer.time) { _, _ in
-            socialPrayerStore.refresh(for: currentPrayer.time, timeZone: currentPrayer.timeZone)
+        .onChange(of: currentPrayer?.time) { _, _ in
+            refreshSocialPrayer(for: currentPrayer)
         }
+    }
+
+    private func refreshSocialPrayer(for prayerTime: PrayerTime?) {
+        guard let prayerTime else { return }
+        socialPrayerStore.refresh(for: prayerTime.time, timeZone: prayerTime.timeZone)
     }
 
     private func mark(_ prayerTime: PrayerTime, outcome: PrayerReflectionOutcome) {
@@ -204,12 +217,23 @@ private struct HomeTopBar: View {
 }
 
 private struct HomePrayerFocus: View {
-    let currentPrayerTime: PrayerTime
+    let activeWindow: ActivePrayerWindow?
     let nextPrayerTime: PrayerTime
-    let countdown: TimeInterval
-    let trackingStatus: PrayerTrackingStatus
+    let now: Date
+    let trackingStatus: PrayerTrackingStatus?
 
     var body: some View {
+        if let activeWindow, let trackingStatus {
+            activePrayerFocus(activeWindow, trackingStatus: trackingStatus)
+        } else {
+            upcomingPrayerFocus
+        }
+    }
+
+    private func activePrayerFocus(
+        _ window: ActivePrayerWindow,
+        trackingStatus: PrayerTrackingStatus
+    ) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack {
                 Text(L10n.string("home.current_prayer")
@@ -223,50 +247,138 @@ private struct HomePrayerFocus: View {
                 HomeQuietStatus(status: trackingStatus)
             }
 
-            Text(currentPrayerTime.prayer.displayName)
+            Text(window.prayerTime.prayer.displayName)
                 .font(VaktFont.prayerDisplay(64))
                 .foregroundStyle(Color.vaktPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .contentTransition(.opacity)
 
-            currentPrayerStart
-
-            nextPrayerSummary
-                .padding(.top, 11)
+            HomePrayerWindowRail(
+                window: window,
+                now: now
+            )
+            .padding(.top, 10)
         }
     }
 
-    private var currentPrayerStart: some View {
-        Text(VaktTimeFormatter.string(from: currentPrayerTime.time, timeZone: currentPrayerTime.timeZone))
-            .font(VaktFont.timeDisplay(20))
-            .foregroundStyle(Color.vaktGlow)
-            .monospacedDigit()
-            .contentTransition(.numericText())
-    }
-
-    private var nextPrayerSummary: some View {
-        VStack(alignment: .leading, spacing: 3) {
+    private var upcomingPrayerFocus: some View {
+        VStack(alignment: .leading, spacing: 7) {
             Text(L10n.string("home.next_prayer")
                 .uppercased(with: VaktLocalization.appLocale))
-                .font(VaktFont.eyebrow(8))
+                .font(VaktFont.eyebrow(9))
                 .foregroundStyle(Color.vaktMuted)
-                .tracking(1.2)
+                .tracking(1.8)
 
             Text(nextPrayerTime.prayer.displayName)
-                .font(VaktFont.body(15))
-                .foregroundStyle(Color.vaktSecondary)
+                .font(VaktFont.prayerDisplay(64))
+                .foregroundStyle(Color.vaktPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .contentTransition(.opacity)
 
+            Text(VaktTimeFormatter.string(from: nextPrayerTime.time, timeZone: nextPrayerTime.timeZone))
+                .font(VaktFont.timeDisplay(20))
+                .foregroundStyle(Color.vaktGlow)
+                .monospacedDigit()
+
             CountdownLabel(
-                seconds: countdown,
-                fontSize: 11,
-                digitWidth: 7,
-                digitHeight: 15
+                seconds: max(0, nextPrayerTime.time.timeIntervalSince(now)),
+                fontSize: 12,
+                digitWidth: 7.5,
+                digitHeight: 16
             )
-            .padding(.top, 1)
+            .padding(.top, 7)
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+private struct HomePrayerWindowRail: View {
+    let window: ActivePrayerWindow
+    let now: Date
+
+    var body: some View {
+        VStack(spacing: 9) {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.vaktBorderStrong.opacity(0.72))
+
+                    Capsule()
+                        .fill(Color.vaktGlow.opacity(0.76))
+                        .frame(width: proxy.size.width * CGFloat(window.progress(at: now)))
+                }
+            }
+            .frame(height: 2)
+
+            HStack(alignment: .top, spacing: 18) {
+                Text(VaktTimeFormatter.string(
+                    from: window.prayerTime.time,
+                    timeZone: window.prayerTime.timeZone
+                ))
+                .font(VaktFont.body(13))
+                .foregroundStyle(Color.vaktGlow)
+                .monospacedDigit()
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 3) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(endingTitle)
+                            .font(VaktFont.body(13))
+                            .foregroundStyle(Color.vaktSecondary)
+
+                        Text(VaktTimeFormatter.string(
+                            from: window.endsAt,
+                            timeZone: window.prayerTime.timeZone
+                        ))
+                        .font(VaktFont.body(13))
+                        .foregroundStyle(Color.vaktGlow)
+                        .monospacedDigit()
+                    }
+
+                    CountdownLabel(
+                        seconds: window.remaining(at: now),
+                        fontSize: 10,
+                        digitWidth: 6.5,
+                        digitHeight: 14
+                    )
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var endingTitle: String {
+        window.endingPrayer?.displayName ?? L10n.string("home.sunrise")
+    }
+}
+
+private struct HomeBetweenPrayersNote: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sun.horizon")
+                .font(.system(size: 15, weight: .light))
+                .foregroundStyle(Color.vaktGlow)
+
+            Text(L10n.string("home.between_prayers"))
+                .font(VaktFont.body(12))
+                .foregroundStyle(Color.vaktSecondary)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 14)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color.vaktBorder.opacity(0.62))
+                .frame(height: 0.5)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.vaktBorder.opacity(0.62))
+                .frame(height: 0.5)
+        }
     }
 }
 

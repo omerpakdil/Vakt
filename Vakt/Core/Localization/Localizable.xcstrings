@@ -8394,6 +8394,40 @@
         }
       }
     },
+    "home.between_prayers": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "لم يدخل وقت الصلاة التالية بعد." } },
+        "de": { "stringUnit": { "state": "translated", "value": "Die nächste Gebetszeit hat noch nicht begonnen." } },
+        "en": { "stringUnit": { "state": "translated", "value": "The next prayer time has not begun yet." } },
+        "es": { "stringUnit": { "state": "translated", "value": "La siguiente hora de oración aún no ha comenzado." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "La prochaine heure de prière n’a pas encore commencé." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Waktu salat berikutnya belum dimulai." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Il prossimo orario di preghiera non è ancora iniziato." } },
+        "nl": { "stringUnit": { "state": "translated", "value": "De volgende gebedstijd is nog niet begonnen." } },
+        "pt": { "stringUnit": { "state": "translated", "value": "O próximo horário de oração ainda não começou." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Время следующего намаза ещё не наступило." } },
+        "tr": { "stringUnit": { "state": "translated", "value": "Sıradaki namaz vakti henüz girmedi." } },
+        "ur": { "stringUnit": { "state": "translated", "value": "اگلی نماز کا وقت ابھی شروع نہیں ہوا۔" } }
+      }
+    },
+    "home.sunrise": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "الشروق" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Sonnenaufgang" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Sunrise" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Amanecer" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Lever du soleil" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Matahari terbit" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Alba" } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Zonsopgang" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Nascer do sol" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Восход" } },
+        "tr": { "stringUnit": { "state": "translated", "value": "Güneş" } },
+        "ur": { "stringUnit": { "state": "translated", "value": "طلوعِ آفتاب" } }
+      }
+    },
     "home.current_prayer" : {
       "extractionState" : "manual",
       "localizations" : {

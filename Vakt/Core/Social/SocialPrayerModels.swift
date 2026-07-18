@@ -180,7 +180,8 @@ enum PrayerDeadlineBuilder {
     static func build(from prayers: [PrayerTime], now: Date) -> [PrayerDeadline] {
         let sorted = prayers.sorted { $0.time < $1.time }
         return zip(sorted, sorted.dropFirst()).compactMap { prayerTime, nextPrayerTime in
-            guard nextPrayerTime.time > prayerTime.time, nextPrayerTime.time > now else { return nil }
+            let closesAt = prayerTime.endsAt ?? nextPrayerTime.time
+            guard closesAt > prayerTime.time, closesAt > now else { return nil }
             var calendar = Calendar(identifier: .gregorian)
             calendar.timeZone = prayerTime.timeZone
             return PrayerDeadline(
@@ -188,7 +189,7 @@ enum PrayerDeadlineBuilder {
                 prayer: PrayerKey(prayerTime.prayer),
                 timeZoneIdentifier: prayerTime.timeZone.identifier,
                 prayerAt: prayerTime.time,
-                closesAt: nextPrayerTime.time
+                closesAt: closesAt
             )
         }
     }

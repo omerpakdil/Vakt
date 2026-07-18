@@ -34,9 +34,10 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
 
     func testSchedulesCheckInForAllFivePrayersIncludingIsha() throws {
         let now = date(2026, 7, 12, 4, 0)
+        let sunrise = date(2026, 7, 12, 5, 42)
         let nextFajr = date(2026, 7, 13, 4, 42)
         let prayers = [
-            prayer(.fajr, at: date(2026, 7, 12, 4, 41)),
+            prayer(.fajr, at: date(2026, 7, 12, 4, 41), endsAt: sunrise),
             prayer(.dhuhr, at: date(2026, 7, 12, 13, 10)),
             prayer(.asr, at: date(2026, 7, 12, 17, 5)),
             prayer(.maghrib, at: date(2026, 7, 12, 20, 35)),
@@ -75,14 +76,26 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
         calendar.timeZone = TimeZone(identifier: "Europe/Istanbul")!
         let actualFireDate = try XCTUnwrap(calendar.date(from: trigger.dateComponents))
         XCTAssertEqual(actualFireDate.timeIntervalSince1970, expectedFireDate.timeIntervalSince1970, accuracy: 1)
+
+        let fajrCheckIn = try XCTUnwrap(checkIns.first {
+            $0.content.userInfo["prayer"] as? String == Prayer.fajr.rawValue
+        })
+        let fajrTrigger = try XCTUnwrap(fajrCheckIn.trigger as? UNCalendarNotificationTrigger)
+        let fajrFireDate = try XCTUnwrap(calendar.date(from: fajrTrigger.dateComponents))
+        XCTAssertEqual(
+            fajrFireDate.timeIntervalSince1970,
+            sunrise.addingTimeInterval(-20 * 60).timeIntervalSince1970,
+            accuracy: 1
+        )
     }
 
-    private func prayer(_ prayer: Prayer, at time: Date) -> PrayerTime {
+    private func prayer(_ prayer: Prayer, at time: Date, endsAt: Date? = nil) -> PrayerTime {
         PrayerTime(
             prayer: prayer,
             time: time,
             countdown: 0,
-            timeZoneIdentifier: "Europe/Istanbul"
+            timeZoneIdentifier: "Europe/Istanbul",
+            endsAt: endsAt
         )
     }
 
