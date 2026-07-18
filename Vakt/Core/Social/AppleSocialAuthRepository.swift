@@ -94,9 +94,9 @@ final class SocialAccountStore: ObservableObject {
 
         do {
             let userID = try await auth.currentUserID()
-            state = .signedIn(userID)
             profile = try await profiles?.currentProfile()
             _ = try? await Purchases.shared.logIn(userID.rawValue.uuidString)
+            state = .signedIn(userID)
         } catch {
             state = .signedOut
         }
@@ -119,8 +119,8 @@ final class SocialAccountStore: ObservableObject {
         do {
             let fullName = credential.fullName?.formatted()
             let userID = try await auth.signInWithApple(identityToken: identityToken, fullName: fullName)
-            state = .signedIn(userID)
             profile = try await ensureProfile(for: userID, fullName: fullName)
+            state = .signedIn(userID)
         } catch {
             state = .failed(L10n.string("auth.sign_in.error.sign_in_failed"))
         }
@@ -162,7 +162,36 @@ final class SocialAccountStore: ObservableObject {
             displayName: cleanName,
             username: cleanUsername,
             avatarURL: profile?.avatarURL,
-            isPrayerStatusVisible: isPrayerStatusVisible
+            isPrayerStatusVisible: isPrayerStatusVisible,
+            profileCompletedAt: profile?.profileCompletedAt ?? Date()
+        )
+    }
+
+    func availableUsernames(_ candidates: [String]) async throws -> [String] {
+        guard let profiles else { throw BackendError.notConfigured }
+        return try await profiles.availableUsernames(candidates)
+    }
+
+    func completeProfile(displayName: String, username: String) async throws {
+        guard let profiles else { throw BackendError.notConfigured }
+        let cleanName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanUsername = UsernamePolicy.normalizedInput(username)
+        guard (1...48).contains(cleanName.count) else {
+            throw BackendError.invalidConfiguration(message: L10n.string("account.validation.name"))
+        }
+        guard UsernamePolicy.isValid(cleanUsername) else {
+            throw BackendError.invalidConfiguration(message: L10n.string("account.validation.username"))
+        }
+        guard try await profiles.availableUsernames([cleanUsername]).contains(cleanUsername) else {
+            throw BackendError.conflict
+        }
+
+        profile = try await profiles.upsertProfile(
+            displayName: cleanName,
+            username: cleanUsername,
+            avatarURL: profile?.avatarURL,
+            isPrayerStatusVisible: profile?.isPrayerStatusVisible ?? true,
+            profileCompletedAt: Date()
         )
     }
 
@@ -197,7 +226,8 @@ final class SocialAccountStore: ObservableObject {
             displayName: displayName,
             username: username,
             avatarURL: nil,
-            isPrayerStatusVisible: true
+            isPrayerStatusVisible: true,
+            profileCompletedAt: nil
         )
     }
 

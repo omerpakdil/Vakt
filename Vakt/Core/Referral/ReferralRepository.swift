@@ -1,4 +1,5 @@
 import Foundation
+import RevenueCat
 import Supabase
 
 protocol ReferralRepository: Sendable {
@@ -19,6 +20,8 @@ actor SupabaseReferralRepository: ReferralRepository {
 
     func synchronizeSubscription() async throws {
         do {
+            let session = try await client.auth.session
+            _ = try await Purchases.shared.logIn(session.user.id.uuidString)
             try await client.functions.invoke("sync-referral-subscription")
         } catch {
             throw mapReferralError(error)

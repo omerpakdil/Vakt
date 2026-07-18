@@ -44,11 +44,15 @@ Deno.serve(async (request) => {
     const subscriptions = Object.entries(payload.subscriber?.subscriptions ?? {})
       .filter(([productID]) => allowedProducts.has(productID));
     const now = Date.now();
-    const productID = latestProduct(subscriptions);
+    const entitlement = payload.subscriber?.entitlements?.premium;
+    const entitlementProductID = entitlement?.product_identifier;
+    const productID = entitlementProductID && allowedProducts.has(entitlementProductID)
+      ? entitlementProductID
+      : latestProduct(subscriptions);
     const product = productID ? payload.subscriber?.subscriptions?.[productID] : undefined;
     const environment = product?.is_sandbox === true ? "SANDBOX" : "PRODUCTION";
-    const expiration = parseDate(product?.expires_date);
-    const active = Boolean(product && (expiration === null || expiration.getTime() > now));
+    const expiration = parseDate(entitlement?.expires_date ?? product?.expires_date);
+    const active = Boolean(productID && (expiration === null || expiration.getTime() > now));
     const purchasedAt = earliestPurchase(subscriptions);
 
     await upsertSnapshot(admin, userData.user.id, {

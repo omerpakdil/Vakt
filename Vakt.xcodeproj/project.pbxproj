@@ -18,6 +18,7 @@
 		1FE341561FB1F3FF24F6E4D3 /* OnboardingClosingReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67B13F3E16E70F4C02F3DB83 /* OnboardingClosingReminderView.swift */; };
 		21A6B3413F0615FF22E054B9 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B30E44D4A40A93E7009743 /* ProfileView.swift */; };
 		270A9464A0838308C0A400CB /* MakeupPrayerCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */; };
+		C47E5A12B86D4C649F0231A7 /* UsernamePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81A4F3972C64B509E1632F8 /* UsernamePolicyTests.swift */; };
 		2C106C9D2BBFB370FA81DB9F /* OnboardingPrayerMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261328762E2C056816F4FC5D /* OnboardingPrayerMarkView.swift */; };
 		2C13DA2900EA8D29B13231CD /* VaktTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A9A097A462914DC6C3907F /* VaktTimeFormatter.swift */; };
 		2C19F24CF88DD7FF1D2A1F56 /* SocialCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571468A1D11774C4B6D413E /* SocialCircleView.swift */; };
@@ -82,6 +83,7 @@
 		DBE77A3F87E49B5B421491E4 /* BackendDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9F57B82427CD2470078F8 /* BackendDomain.swift */; };
 		DFACCC2FD85875A068185C94 /* SpiritualContentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B635F5AA7433CA7AA777DA9 /* SpiritualContentModels.swift */; };
 		E0A96C2CD78F2EA337F1E2BE /* SocialSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */; };
+		A2F4C91B7D3E4028A18C65F1 /* ProfileCompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D6E731C4A24F7E88350D12 /* ProfileCompletionView.swift */; };
 		E5CFD58E2F00CABC8309D216 /* InMemoryPresenceRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE1BB69715CF1A2B42280E3 /* InMemoryPresenceRepositoryTests.swift */; };
 		E9F41F9BC42C85D26A0F25C3 /* VaktExternalLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 976A9D621BE06B4490C4BB75 /* VaktExternalLinks.swift */; };
 		EF6BB903E28F7B559941CBFE /* OnboardingSafGatheringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CC99598E53524F7CFD08E1 /* OnboardingSafGatheringView.swift */; };
@@ -159,12 +161,14 @@
 		8763A820A239FF8A5803F0E0 /* HorizonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonView.swift; sourceTree = "<group>"; };
 		87F8C0040C5331AE7042C800 /* SupabaseClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientFactory.swift; sourceTree = "<group>"; };
 		8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeupPrayerCalendarTests.swift; sourceTree = "<group>"; };
+		D81A4F3972C64B509E1632F8 /* UsernamePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernamePolicyTests.swift; sourceTree = "<group>"; };
 		8DE5367EA1D733CEC1637393 /* PrayerDeadlineBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerDeadlineBuilderTests.swift; sourceTree = "<group>"; };
 		9095EA5598D784B99EC077C4 /* SupabasePresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePresenceRepository.swift; sourceTree = "<group>"; };
 		939C690BE9751661252F8E29 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		976A9D621BE06B4490C4BB75 /* VaktExternalLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktExternalLinks.swift; sourceTree = "<group>"; };
 		997611447861CC177C352650 /* ReferralStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralStore.swift; sourceTree = "<group>"; };
 		9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialSignInView.swift; sourceTree = "<group>"; };
+		B9D6E731C4A24F7E88350D12 /* ProfileCompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCompletionView.swift; sourceTree = "<group>"; };
 		9E61BDD55F6FF71FADC317DC /* ReferralRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralRepository.swift; sourceTree = "<group>"; };
 		9F0D3CB9D8955982A0FAEB4B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A2A9A097A462914DC6C3907F /* VaktTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktTimeFormatter.swift; sourceTree = "<group>"; };
@@ -462,6 +466,7 @@
 			children = (
 				8BCE6765DED1C0149650DE69 /* MakeupPrayerCalendarTests.swift */,
 				8DE5367EA1D733CEC1637393 /* PrayerDeadlineBuilderTests.swift */,
+				D81A4F3972C64B509E1632F8 /* UsernamePolicyTests.swift */,
 			);
 			path = Social;
 			sourceTree = "<group>";
@@ -469,6 +474,7 @@
 		A97CC2B6D0CF7D0546F75655 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				B9D6E731C4A24F7E88350D12 /* ProfileCompletionView.swift */,
 				9CB9DF493245E012A1DBC10F /* SocialSignInView.swift */,
 			);
 			path = Auth;
@@ -720,6 +726,7 @@
 			files = (
 				E5CFD58E2F00CABC8309D216 /* InMemoryPresenceRepositoryTests.swift in Sources */,
 				270A9464A0838308C0A400CB /* MakeupPrayerCalendarTests.swift in Sources */,
+				C47E5A12B86D4C649F0231A7 /* UsernamePolicyTests.swift in Sources */,
 				A0048BDE2954DBD9CBA41AAE /* PrayerDeadlineBuilderTests.swift in Sources */,
 				C91F8A47F3103890282B967B /* PrayerNotificationSchedulerTests.swift in Sources */,
 				A1C67447B8BD6037925CC229 /* PresenceCoordinatorTests.swift in Sources */,
@@ -784,6 +791,7 @@
 				BDBE20BEA6776B3AEA909798 /* SocialPrayerModels.swift in Sources */,
 				B9A7EE0D201FFF75CD85578E /* SocialPrayerStore.swift in Sources */,
 				E0A96C2CD78F2EA337F1E2BE /* SocialSignInView.swift in Sources */,
+				A2F4C91B7D3E4028A18C65F1 /* ProfileCompletionView.swift in Sources */,
 				DFACCC2FD85875A068185C94 /* SpiritualContentModels.swift in Sources */,
 				6D3C5BA960453BCBEC93DC81 /* SpiritualContentRepository.swift in Sources */,
 				7B02D7E77AC3F4A274ED7E79 /* SpiritualContentSelector.swift in Sources */,
@@ -985,7 +993,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
@@ -1011,7 +1019,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;

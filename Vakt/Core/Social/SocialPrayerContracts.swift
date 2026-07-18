@@ -11,8 +11,10 @@ protocol SocialProfileRepository: Sendable {
         displayName: String,
         username: String,
         avatarURL: URL?,
-        isPrayerStatusVisible: Bool
+        isPrayerStatusVisible: Bool,
+        profileCompletedAt: Date?
     ) async throws -> SocialProfile
+    func availableUsernames(_ candidates: [String]) async throws -> [String]
     func searchProfiles(usernamePrefix: String) async throws -> [SocialProfile]
 }
 

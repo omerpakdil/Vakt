@@ -2,6 +2,37 @@ import XCTest
 @testable import Vakt
 
 final class VaktTimeFormatterTests: XCTestCase {
+    func testAutomaticCalculationPolicyUsesRegionalMethods() {
+        XCTAssertEqual(policy(latitude: 39.9334, longitude: 32.8597).method, .diyanet)
+        XCTAssertEqual(policy(latitude: 40.7128, longitude: -74.0060).method, .isna)
+        XCTAssertEqual(policy(latitude: 51.5074, longitude: -0.1278).method, .muslimWorldLeague)
+        XCTAssertEqual(policy(latitude: 48.8566, longitude: 2.3522).method, .muslimWorldLeague)
+    }
+
+    func testHighLatitudePolicyUsesOneSeventhRule() {
+        XCTAssertEqual(policy(latitude: 59.3293, longitude: 18.0686).latitudeAdjustment, .oneSeventh)
+        XCTAssertEqual(policy(latitude: 43.6532, longitude: -79.3832).latitudeAdjustment, .angleBased)
+    }
+
+    func testManualMethodStillOverridesRegionalSelection() {
+        let policy = PrayerCalculationPolicy.resolve(
+            coordinate: Coordinate(latitude: 40.7128, longitude: -74.0060),
+            preference: .diyanet
+        )
+
+        XCTAssertEqual(policy.method, .diyanet)
+    }
+
+    func testPolarReferenceLatitudePreservesHemisphereAndLongitude() {
+        let northern = policy(latitude: 69.6492, longitude: 18.9553)
+            .referenceCoordinate(for: Coordinate(latitude: 69.6492, longitude: 18.9553))
+        let southern = policy(latitude: -69.0, longitude: 18.9553)
+            .referenceCoordinate(for: Coordinate(latitude: -69.0, longitude: 18.9553))
+
+        XCTAssertEqual(northern, Coordinate(latitude: 48.5, longitude: 18.9553))
+        XCTAssertEqual(southern, Coordinate(latitude: -48.5, longitude: 18.9553))
+    }
+
     func testSanFranciscoUsesLocalPrayerClockAndUSDayPeriod() throws {
         let date = try makeDate(year: 2026, month: 7, day: 4, hour: 20, minute: 14)
         let output = VaktTimeFormatter.string(
@@ -74,6 +105,13 @@ final class VaktTimeFormatterTests: XCTestCase {
                     minute: minute
                 )
             )
+        )
+    }
+
+    private func policy(latitude: Double, longitude: Double) -> PrayerCalculationPolicy {
+        PrayerCalculationPolicy.resolve(
+            coordinate: Coordinate(latitude: latitude, longitude: longitude),
+            preference: .automatic
         )
     }
 }

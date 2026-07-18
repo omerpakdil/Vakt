@@ -1232,15 +1232,67 @@ struct AlAdhanPrayerTimeProvider: PrayerTimeProviding {
         coordinate: Coordinate,
         calculationSettings: PrayerCalculationSettings
     ) async throws -> [PrayerTime] {
-        let dateString = Self.requestDateFormatter.string(from: date)
-        let method = AlAdhanCalculationMethod.method(for: coordinate, preference: calculationSettings.methodPreference)
+        let policy = PrayerCalculationPolicy.resolve(
+            coordinate: coordinate,
+            preference: calculationSettings.methodPreference
+        )
+        var response = try await request(
+            dateString: Self.requestDateString(from: date, timeZone: .autoupdatingCurrent),
+            coordinate: coordinate,
+            calculationSettings: calculationSettings,
+            policy: policy
+        )
+        let targetTimeZone = TimeZone(identifier: response.data.meta.timezone) ?? .autoupdatingCurrent
+        let targetDateString = Self.requestDateString(from: date, timeZone: targetTimeZone)
+
+        if targetDateString != response.data.date.gregorian.date {
+            response = try await request(
+                dateString: targetDateString,
+                coordinate: coordinate,
+                calculationSettings: calculationSettings,
+                policy: policy,
+                timeZoneIdentifier: targetTimeZone.identifier
+            )
+        }
+
+        if response.data.timings.requiresReferenceLatitude {
+            guard abs(coordinate.latitude) >= 48 else {
+                throw URLError(.cannotParseResponse)
+            }
+            response = try await request(
+                dateString: targetDateString,
+                coordinate: policy.referenceCoordinate(for: coordinate),
+                calculationSettings: calculationSettings,
+                policy: policy,
+                timeZoneIdentifier: targetTimeZone.identifier
+            )
+            guard !response.data.timings.requiresReferenceLatitude else {
+                throw URLError(.cannotParseResponse)
+            }
+        }
+
+        let timeZone = TimeZone(identifier: response.data.meta.timezone) ?? targetTimeZone
+        return try response.data.timings.prayerTimes(for: date, timeZone: timeZone)
+    }
+
+    private func request(
+        dateString: String,
+        coordinate: Coordinate,
+        calculationSettings: PrayerCalculationSettings,
+        policy: PrayerCalculationPolicy,
+        timeZoneIdentifier: String? = nil
+    ) async throws -> AlAdhanTimingsResponse {
         var components = URLComponents(string: "https://api.aladhan.com/v1/timings/\(dateString)")!
         components.queryItems = [
             URLQueryItem(name: "latitude", value: String(coordinate.latitude)),
             URLQueryItem(name: "longitude", value: String(coordinate.longitude)),
-            URLQueryItem(name: "method", value: String(method.rawValue)),
-            URLQueryItem(name: "school", value: String(calculationSettings.asrJuristicPreference.alAdhanSchoolValue))
+            URLQueryItem(name: "method", value: String(policy.method.rawValue)),
+            URLQueryItem(name: "school", value: String(calculationSettings.asrJuristicPreference.alAdhanSchoolValue)),
+            URLQueryItem(name: "latitudeAdjustmentMethod", value: String(policy.latitudeAdjustment.rawValue))
         ]
+        if let timeZoneIdentifier {
+            components.queryItems?.append(URLQueryItem(name: "timezonestring", value: timeZoneIdentifier))
+        }
 
         guard let url = components.url else {
             throw URLError(.badURL)
@@ -1251,22 +1303,20 @@ struct AlAdhanPrayerTimeProvider: PrayerTimeProviding {
             throw URLError(.badServerResponse)
         }
 
-        let decoded = try JSONDecoder().decode(AlAdhanTimingsResponse.self, from: data)
-        let timeZone = TimeZone(identifier: decoded.data.meta.timezone) ?? .current
-        return try decoded.data.timings.prayerTimes(for: date, timeZone: timeZone)
+        return try JSONDecoder().decode(AlAdhanTimingsResponse.self, from: data)
     }
 
-    private static let requestDateFormatter: DateFormatter = {
+    private static func requestDateString(from date: Date, timeZone: TimeZone) -> String {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = .autoupdatingCurrent
+        formatter.timeZone = timeZone
         formatter.dateFormat = "dd-MM-yyyy"
-        return formatter
-    }()
+        return formatter.string(from: date)
+    }
 }
 
-private enum AlAdhanCalculationMethod: Int {
+enum AlAdhanCalculationMethod: Int {
     case muslimWorldLeague = 3
     case ummAlQura = 4
     case egyptian = 5
@@ -1307,13 +1357,48 @@ private enum AlAdhanCalculationMethod: Int {
     }
 }
 
+enum AlAdhanLatitudeAdjustmentMethod: Int {
+    case middleOfTheNight = 1
+    case oneSeventh = 2
+    case angleBased = 3
+}
+
+struct PrayerCalculationPolicy: Equatable {
+    let method: AlAdhanCalculationMethod
+    let latitudeAdjustment: AlAdhanLatitudeAdjustmentMethod
+
+    static func resolve(
+        coordinate: Coordinate,
+        preference: PrayerCalculationMethodPreference
+    ) -> PrayerCalculationPolicy {
+        PrayerCalculationPolicy(
+            method: AlAdhanCalculationMethod.method(for: coordinate, preference: preference),
+            latitudeAdjustment: abs(coordinate.latitude) >= 48 ? .oneSeventh : .angleBased
+        )
+    }
+
+    func referenceCoordinate(for coordinate: Coordinate) -> Coordinate {
+        let referenceLatitude = coordinate.latitude < 0 ? -48.5 : 48.5
+        return Coordinate(latitude: referenceLatitude, longitude: coordinate.longitude)
+    }
+}
+
 private struct AlAdhanTimingsResponse: Decodable {
     let data: AlAdhanTimingsData
 }
 
 private struct AlAdhanTimingsData: Decodable {
     let timings: AlAdhanTimings
+    let date: AlAdhanDate
     let meta: AlAdhanMeta
+}
+
+private struct AlAdhanDate: Decodable {
+    let gregorian: AlAdhanGregorianDate
+}
+
+private struct AlAdhanGregorianDate: Decodable {
+    let date: String
 }
 
 private struct AlAdhanMeta: Decodable {
@@ -1327,14 +1412,43 @@ private struct AlAdhanTimings: Decodable {
     let Maghrib: String
     let Isha: String
 
+    var requiresReferenceLatitude: Bool {
+        guard
+            let fajr = clockMinutes(Fajr),
+            let dhuhr = clockMinutes(Dhuhr),
+            let asr = clockMinutes(Asr),
+            let maghrib = clockMinutes(Maghrib)
+        else {
+            return true
+        }
+
+        return !(fajr < dhuhr && dhuhr < asr && asr < maghrib)
+    }
+
     func prayerTimes(for date: Date, timeZone: TimeZone) throws -> [PrayerTime] {
-        [
+        var prayers = [
             try prayerTime(.fajr, value: Fajr, date: date, timeZone: timeZone),
             try prayerTime(.dhuhr, value: Dhuhr, date: date, timeZone: timeZone),
             try prayerTime(.asr, value: Asr, date: date, timeZone: timeZone),
             try prayerTime(.maghrib, value: Maghrib, date: date, timeZone: timeZone),
             try prayerTime(.isha, value: Isha, date: date, timeZone: timeZone)
         ]
+
+        if prayers[4].time <= prayers[3].time {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = timeZone
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: prayers[4].time) else {
+                throw URLError(.cannotParseResponse)
+            }
+            prayers[4] = PrayerTime(
+                prayer: .isha,
+                time: nextDay,
+                countdown: max(0, nextDay.timeIntervalSince(Date())),
+                timeZoneIdentifier: timeZone.identifier
+            )
+        }
+
+        return prayers
     }
 
     private func prayerTime(_ prayer: Prayer, value: String, date: Date, timeZone: TimeZone) throws -> PrayerTime {
@@ -1367,6 +1481,13 @@ private struct AlAdhanTimings: Decodable {
             countdown: max(0, time.timeIntervalSince(Date())),
             timeZoneIdentifier: timeZone.identifier
         )
+    }
+
+    private func clockMinutes(_ value: String) -> Int? {
+        let clock = value.split(separator: " ").first.map(String.init) ?? value
+        let parts = clock.split(separator: ":").compactMap { Int($0) }
+        guard parts.count >= 2 else { return nil }
+        return parts[0] * 60 + parts[1]
     }
 }
 

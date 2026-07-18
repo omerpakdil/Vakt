@@ -300,23 +300,30 @@ private struct SignInActionArea: View {
 
     var body: some View {
         VStack(spacing: 11) {
-            SignInWithAppleButton(.continue) { request in
-                request.requestedScopes = [.fullName, .email]
-            } onCompletion: { result in
-                switch result {
-                case .success(let authorization):
-                    Task { await store.signIn(authorization: authorization) }
-                case .failure(let error):
-                    if (error as? ASAuthorizationError)?.code != .canceled {
-                        store.showSignInError(L10n.string("auth.sign_in.error.apple_failed"))
+            Group {
+                if isChecking {
+                    SignInProgressButton()
+                        .transition(.opacity)
+                } else {
+                    SignInWithAppleButton(.continue) { request in
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            Task { await store.signIn(authorization: authorization) }
+                        case .failure(let error):
+                            if (error as? ASAuthorizationError)?.code != .canceled {
+                                store.showSignInError(L10n.string("auth.sign_in.error.apple_failed"))
+                            }
+                        }
                     }
+                    .signInWithAppleButtonStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .transition(.opacity)
                 }
             }
-            .signInWithAppleButtonStyle(.white)
             .frame(height: 55)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .disabled(isChecking)
-            .opacity(isChecking ? 0.72 : 1)
+            .animation(.easeInOut(duration: 0.2), value: isChecking)
 
             Text(statusText)
                 .font(VaktFont.caption(10))
@@ -332,13 +339,15 @@ private struct SignInActionArea: View {
             .font(VaktFont.caption(10))
             .foregroundStyle(Color.vaktMuted)
             .buttonStyle(.plain)
+            .allowsHitTesting(!isChecking)
+            .opacity(isChecking ? 0.45 : 1)
         }
     }
 
     private var statusText: String {
         switch store.state {
         case .checking:
-            L10n.string("auth.sign_in.status.checking")
+            ""
         case .failed(let message):
             message
         case .signedOut, .signedIn:
@@ -349,5 +358,30 @@ private struct SignInActionArea: View {
     private var statusColor: Color {
         if case .failed = store.state { return .vaktAccent }
         return .vaktMuted
+    }
+}
+
+private struct SignInProgressButton: View {
+    var body: some View {
+        HStack(spacing: 11) {
+            ProgressView()
+                .controlSize(.small)
+                .tint(Color.vaktDeep)
+
+            Text(L10n.string("auth.sign_in.status.checking"))
+                .font(VaktFont.body(13))
+                .foregroundStyle(Color.vaktDeep)
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 18)
+        .background(Color.vaktPrimary.opacity(0.94))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

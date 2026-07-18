@@ -42,7 +42,7 @@ actor SupabaseSocialProfileRepository: SocialProfileRepository {
         do {
             let rows: [ProfileRow] = try await client
                 .from("profiles")
-                .select("id,display_name,username,avatar_url,is_prayer_status_visible")
+                .select(Self.profileColumns)
                 .eq("id", value: userID.rawValue.uuidString)
                 .limit(1)
                 .execute()
@@ -58,7 +58,8 @@ actor SupabaseSocialProfileRepository: SocialProfileRepository {
         displayName: String,
         username: String,
         avatarURL: URL?,
-        isPrayerStatusVisible: Bool
+        isPrayerStatusVisible: Bool,
+        profileCompletedAt: Date?
     ) async throws -> SocialProfile {
         let userID = try await auth.currentUserID()
 
@@ -68,17 +69,31 @@ actor SupabaseSocialProfileRepository: SocialProfileRepository {
                 displayName: displayName,
                 username: username.lowercased(),
                 avatarURL: avatarURL?.absoluteString,
-                isPrayerStatusVisible: isPrayerStatusVisible
+                isPrayerStatusVisible: isPrayerStatusVisible,
+                profileCompletedAt: profileCompletedAt
             )
             let rows: [ProfileRow] = try await client
                 .from("profiles")
                 .upsert(payload, onConflict: "id")
-                .select("id,display_name,username,avatar_url,is_prayer_status_visible")
+                .select(Self.profileColumns)
                 .execute()
                 .value
 
             guard let row = rows.first else { throw BackendError.invalidResponse }
             return SocialProfile(row: row)
+        } catch {
+            throw SupabaseBackendErrorMapper.map(error)
+        }
+    }
+
+    func availableUsernames(_ candidates: [String]) async throws -> [String] {
+        guard !candidates.isEmpty else { return [] }
+
+        do {
+            return try await client
+                .rpc("available_usernames", params: UsernameAvailabilityParameters(candidates: candidates))
+                .execute()
+                .value
         } catch {
             throw SupabaseBackendErrorMapper.map(error)
         }
@@ -93,7 +108,7 @@ actor SupabaseSocialProfileRepository: SocialProfileRepository {
         do {
             let rows: [ProfileRow] = try await client
                 .from("profiles")
-                .select("id,display_name,username,avatar_url,is_prayer_status_visible")
+                .select(Self.profileColumns)
                 .ilike("username", pattern: "\(trimmed)%")
                 .limit(20)
                 .execute()
@@ -104,6 +119,8 @@ actor SupabaseSocialProfileRepository: SocialProfileRepository {
             throw SupabaseBackendErrorMapper.map(error)
         }
     }
+
+    private static let profileColumns = "id,display_name,username,avatar_url,is_prayer_status_visible,profile_completed_at"
 }
 
 actor SupabaseFriendshipRepository: FriendshipRepository {
@@ -608,6 +625,7 @@ private struct ProfileRow: Decodable, Sendable {
     let username: String
     let avatarURL: String?
     let isPrayerStatusVisible: Bool
+    let profileCompletedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -615,6 +633,7 @@ private struct ProfileRow: Decodable, Sendable {
         case username
         case avatarURL = "avatar_url"
         case isPrayerStatusVisible = "is_prayer_status_visible"
+        case profileCompletedAt = "profile_completed_at"
     }
 }
 
@@ -658,6 +677,7 @@ private struct ProfileUpsertPayload: Encodable, Sendable {
     let username: String
     let avatarURL: String?
     let isPrayerStatusVisible: Bool
+    let profileCompletedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -665,7 +685,12 @@ private struct ProfileUpsertPayload: Encodable, Sendable {
         case username
         case avatarURL = "avatar_url"
         case isPrayerStatusVisible = "is_prayer_status_visible"
+        case profileCompletedAt = "profile_completed_at"
     }
+}
+
+private struct UsernameAvailabilityParameters: Encodable, Sendable {
+    let candidates: [String]
 }
 
 private struct FriendshipRow: Decodable, Sendable {
@@ -847,7 +872,8 @@ private extension SocialProfile {
             displayName: row.displayName,
             username: row.username,
             avatarURL: row.avatarURL.flatMap(URL.init(string:)),
-            isPrayerStatusVisible: row.isPrayerStatusVisible
+            isPrayerStatusVisible: row.isPrayerStatusVisible,
+            profileCompletedAt: row.profileCompletedAt
         )
     }
 }

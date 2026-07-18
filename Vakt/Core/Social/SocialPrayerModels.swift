@@ -14,6 +14,64 @@ struct SocialProfile: Identifiable, Codable, Equatable, Sendable {
     var username: String
     var avatarURL: URL?
     var isPrayerStatusVisible: Bool
+    var profileCompletedAt: Date?
+
+    var isComplete: Bool { profileCompletedAt != nil }
+}
+
+enum UsernamePolicy {
+    static let minimumLength = 3
+    static let maximumLength = 24
+
+    static func normalizedInput(_ value: String) -> String {
+        value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+    }
+
+    static func isValid(_ value: String) -> Bool {
+        normalizedInput(value).range(
+            of: "^[a-z0-9_]{3,24}$",
+            options: .regularExpression
+        ) != nil
+    }
+
+    static func candidates(displayName: String, fallbackSeed: String) -> [String] {
+        let latinName = displayName
+            .applyingTransform(.toLatin, reverse: false)?
+            .folding(options: [.diacriticInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+            .lowercased() ?? displayName.lowercased()
+        let tokens = latinName
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+
+        let joined = String(tokens.joined().prefix(20))
+        let underscored = String(tokens.joined(separator: "_").prefix(maximumLength))
+        let firstLast = tokens.count > 1
+            ? String("\(tokens[0])_\(tokens[tokens.count - 1])".prefix(maximumLength))
+            : joined
+        let base = joined.count >= minimumLength ? joined : "vaktfriend"
+        let digits = fallbackSeed.filter(\.isNumber)
+        let suffix = String((digits.isEmpty ? fallbackSeed.unicodeScalars.map { Int($0.value) }.reduce(0, +).description : digits).suffix(2))
+
+        return [
+            underscored,
+            joined,
+            firstLast,
+            String("\(base.prefix(21))\(suffix)"),
+            String("\(base.prefix(20))_\(suffix)")
+        ]
+        .map(normalizedInput)
+        .filter(isValid)
+        .uniqued()
+    }
+}
+
+private extension Array where Element: Hashable {
+    func uniqued() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
+    }
 }
 
 enum FriendshipStatus: String, Codable, CaseIterable, Hashable, Sendable {

@@ -50,6 +50,9 @@ struct AppRootView: View {
                     notificationManager: notificationManager
                 )
                 .transition(.opacity.combined(with: .move(edge: .leading)))
+            } else if isCheckingAccount {
+                SubscriptionLaunchView()
+                    .transition(.opacity)
             } else if !isSignedIn {
                 SocialSignInView(store: socialAccountStore)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
@@ -86,6 +89,10 @@ struct AppRootView: View {
                 await subscriptionStore.refreshSubscription()
                 await referralStore.refresh()
             }
+        }
+        .onChange(of: socialAccountStore.profile?.profileCompletedAt) { _, completedAt in
+            guard completedAt != nil else { return }
+            startAppServicesIfAllowed()
             if let token = UserDefaults.standard.string(forKey: VaktAppDelegate.remoteNotificationTokenKey) {
                 socialPrayerStore.registerDeviceToken(token)
             }
@@ -176,6 +183,13 @@ struct AppRootView: View {
         return false
     }
 
+    private var isCheckingAccount: Bool {
+        if case .checking = socialAccountStore.state {
+            return true
+        }
+        return false
+    }
+
     private var isPaywallPreview: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("--vakt-paywall-preview")
@@ -202,7 +216,10 @@ struct AppRootView: View {
             PaywallView(store: subscriptionStore, referralStore: referralStore)
                 .transition(.opacity)
         case .active:
-            if prayerStore.hasUsablePrayerSchedule {
+            if socialAccountStore.profile?.isComplete != true {
+                ProfileCompletionView(store: socialAccountStore)
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+            } else if prayerStore.hasUsablePrayerSchedule {
                 mainTabs
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
             } else {
@@ -301,6 +318,7 @@ struct AppRootView: View {
     private func startAppServicesIfAllowed() {
         guard onboardingStore.hasCompletedOnboarding,
               subscriptionStore.entitlement == .active,
+              socialAccountStore.profile?.isComplete == true,
               !hasStartedAppServices else {
             return
         }
