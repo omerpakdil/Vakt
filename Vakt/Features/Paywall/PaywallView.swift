@@ -872,55 +872,73 @@ struct PurchaseSuccessView: View {
     let onComplete: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var archProgress: CGFloat = 0
-    @State private var contentVisible = false
+    @State private var modalVisible = false
+    @State private var rippleVisible = false
+    @State private var completionProgress: CGFloat = 0
     @State private var isExiting = false
 
     var body: some View {
         ZStack {
-            Color.vaktDeep.ignoresSafeArea()
+            PaywallBackground()
 
-            RadialGradient(
-                colors: [Color.vaktGlow.opacity(contentVisible ? 0.17 : 0.04), .clear],
-                center: .center,
-                startRadius: 6,
-                endRadius: 260
-            )
-            .ignoresSafeArea()
+            Color.vaktDeep.opacity(0.62)
+                .ignoresSafeArea()
 
-            VStack(spacing: 28) {
+            VStack(spacing: 23) {
                 ZStack {
-                    PurchaseSuccessArch()
-                        .trim(from: 0, to: archProgress)
-                        .stroke(
-                            Color.vaktGlow.opacity(0.74),
-                            style: StrokeStyle(lineWidth: 1.15, lineCap: .round, lineJoin: .round)
-                        )
-                        .frame(width: 154, height: 184)
-                        .shadow(color: Color.vaktGlow.opacity(0.18), radius: 18)
+                    Circle()
+                        .stroke(Color.vaktGlow.opacity(0.2), lineWidth: 1)
+                        .frame(width: 88, height: 88)
+                        .scaleEffect(rippleVisible ? 1 : 0.68)
+                        .opacity(rippleVisible ? 0 : 0.9)
+
+                    Circle()
+                        .fill(Color.vaktPrimary)
+                        .frame(width: 54, height: 54)
+                        .shadow(color: Color.vaktGlow.opacity(0.2), radius: 18)
 
                     Image(systemName: "checkmark")
-                        .font(.system(size: 29, weight: .light))
-                        .foregroundStyle(Color.vaktPrimary)
-                        .scaleEffect(contentVisible ? 1 : 0.72)
-                        .opacity(contentVisible ? 1 : 0)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(Color.vaktBg)
                 }
                 .accessibilityHidden(true)
 
-                VStack(spacing: 9) {
+                VStack(spacing: 8) {
                     Text(L10n.string("purchase.success.title"))
-                        .font(VaktFont.title(29))
+                        .font(VaktFont.title(26))
                         .foregroundStyle(Color.vaktPrimary)
 
                     Text(L10n.string("purchase.success.subtitle"))
                         .font(VaktFont.body(13))
-                        .foregroundStyle(Color.vaktSecondary)
+                        .foregroundStyle(Color.vaktMuted)
+                        .lineSpacing(3)
                 }
                 .multilineTextAlignment(.center)
-                .opacity(contentVisible ? 1 : 0)
-                .offset(y: contentVisible ? 0 : 7)
+
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.vaktBorderStrong.opacity(0.65))
+
+                        Capsule()
+                            .fill(Color.vaktGlow.opacity(0.82))
+                            .frame(width: proxy.size.width * completionProgress)
+                    }
+                }
+                .frame(height: 2)
             }
-            .padding(.horizontal, VaktSpace.xl)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 30)
+            .frame(maxWidth: 316)
+            .background(Color.vaktSurface.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.vaktBorderStrong.opacity(0.68), lineWidth: 0.6)
+            )
+            .shadow(color: Color.vaktDeep.opacity(0.5), radius: 30, y: 16)
+            .scaleEffect(modalVisible ? 1 : 0.965)
+            .opacity(modalVisible ? 1 : 0)
         }
         .opacity(isExiting ? 0 : 1)
         .accessibilityElement(children: .combine)
@@ -933,51 +951,30 @@ struct PurchaseSuccessView: View {
         guard !Task.isCancelled else { return }
 
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        withAnimation(reduceMotion ? .none : .easeOut(duration: 0.46)) {
-            archProgress = 1
+        withAnimation(reduceMotion ? .none : .spring(response: 0.48, dampingFraction: 0.88)) {
+            modalVisible = true
         }
 
-        try? await Task.sleep(for: .milliseconds(reduceMotion ? 80 : 280))
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 100 : 360))
         guard !Task.isCancelled else { return }
 
-        withAnimation(reduceMotion ? .none : .spring(response: 0.46, dampingFraction: 0.86)) {
-            contentVisible = true
+        withAnimation(reduceMotion ? .none : .easeOut(duration: 0.9)) {
+            rippleVisible = true
         }
 
-        try? await Task.sleep(for: .milliseconds(850))
+        withAnimation(reduceMotion ? .none : .linear(duration: 1.65)) {
+            completionProgress = 1
+        }
+
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 1_500 : 1_740))
         guard !Task.isCancelled else { return }
 
-        withAnimation(.easeInOut(duration: reduceMotion ? 0.12 : 0.2)) {
+        withAnimation(.easeInOut(duration: reduceMotion ? 0.16 : 0.3)) {
             isExiting = true
         }
 
-        try? await Task.sleep(for: .milliseconds(reduceMotion ? 120 : 190))
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 170 : 290))
         guard !Task.isCancelled else { return }
         onComplete()
-    }
-}
-
-private struct PurchaseSuccessArch: Shape {
-    func path(in rect: CGRect) -> Path {
-        let left = rect.minX + rect.width * 0.14
-        let right = rect.maxX - rect.width * 0.14
-        let shoulderY = rect.minY + rect.height * 0.43
-        let peak = CGPoint(x: rect.midX, y: rect.minY + rect.height * 0.08)
-        let baseY = rect.maxY - rect.height * 0.08
-
-        var path = Path()
-        path.move(to: CGPoint(x: left, y: baseY))
-        path.addLine(to: CGPoint(x: left, y: shoulderY))
-        path.addQuadCurve(
-            to: peak,
-            control: CGPoint(x: left + rect.width * 0.08, y: rect.minY + rect.height * 0.2)
-        )
-        path.addQuadCurve(
-            to: CGPoint(x: right, y: shoulderY),
-            control: CGPoint(x: right - rect.width * 0.08, y: rect.minY + rect.height * 0.2)
-        )
-        path.addLine(to: CGPoint(x: right, y: baseY))
-        path.addLine(to: CGPoint(x: left, y: baseY))
-        return path
     }
 }
