@@ -993,7 +993,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
@@ -1019,7 +1019,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
