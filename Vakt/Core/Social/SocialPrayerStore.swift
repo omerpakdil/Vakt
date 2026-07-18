@@ -219,23 +219,27 @@ final class SocialPrayerStore: ObservableObject {
         }
     }
 
-    func acceptFriendship(_ request: PendingFriendRequest, date: Date = Date(), timeZone: TimeZone = .autoupdatingCurrent) {
-        guard let repositories else { return }
+    func acceptFriendship(
+        _ request: PendingFriendRequest,
+        date: Date = Date(),
+        timeZone: TimeZone = .autoupdatingCurrent
+    ) async -> SocialProfile? {
+        guard let repositories else { return nil }
 
-        Task { [weak self] in
-            guard let self else { return }
-            isSyncing = true
-            do {
-                _ = try await repositories.friendships.acceptFriendship(request.friendship.id)
-                await refresh(
-                    repositories: repositories,
-                    day: Self.localDay(for: date, timeZone: timeZone)
-                )
-                lastErrorMessage = nil
-            } catch {
-                lastErrorMessage = error.localizedDescription
-            }
-            isSyncing = false
+        isSyncing = true
+        defer { isSyncing = false }
+
+        do {
+            _ = try await repositories.friendships.acceptFriendship(request.friendship.id)
+            await refresh(
+                repositories: repositories,
+                day: Self.localDay(for: date, timeZone: timeZone)
+            )
+            lastErrorMessage = nil
+            return request.requester
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            return nil
         }
     }
 

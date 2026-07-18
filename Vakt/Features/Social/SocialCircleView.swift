@@ -9,7 +9,8 @@ struct SocialCircleView: View {
     @State private var addFriendPresented = false
     @State private var allFriendsPresented = false
     @State private var referralPresented = false
-    @State private var friendRequestFeedback: FriendshipRequestFeedback?
+    @State private var friendshipFeedback: FriendshipEventFeedback?
+    @State private var acceptingRequestID: UUID?
 
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
@@ -25,12 +26,9 @@ struct SocialCircleView: View {
                     if !socialPrayerStore.pendingRequests.isEmpty {
                         PendingRequestsBand(
                             requests: socialPrayerStore.pendingRequests,
+                            acceptingRequestID: acceptingRequestID,
                             onAccept: { request in
-                                socialPrayerStore.acceptFriendship(
-                                    request,
-                                    date: circlePrayer.time,
-                                    timeZone: circlePrayer.timeZone
-                                )
+                                acceptFriendship(request, prayerTime: circlePrayer)
                             }
                         )
                     }
@@ -50,8 +48,8 @@ struct SocialCircleView: View {
                 .frame(width: geometry.size.width, alignment: .top)
                 .frame(minHeight: geometry.size.height, alignment: .top)
 
-                if let friendRequestFeedback {
-                    FriendshipRequestToast(feedback: friendRequestFeedback)
+                if let friendshipFeedback {
+                    FriendshipEventToast(feedback: friendshipFeedback)
                         .padding(.horizontal, VaktSpace.lg)
                         .padding(.bottom, max(16, geometry.safeAreaInsets.bottom + 12))
                         .frame(maxHeight: .infinity, alignment: .bottom)
@@ -65,7 +63,9 @@ struct SocialCircleView: View {
                 store: socialPrayerStore,
                 referralStore: referralStore,
                 subscriptionStore: subscriptionStore,
-                onRequestCompleted: showFriendRequestFeedback
+                onRequestCompleted: { feedback in
+                    showFriendshipFeedback(.request(feedback))
+                }
             )
         }
         .sheet(isPresented: $allFriendsPresented) {
@@ -86,17 +86,33 @@ struct SocialCircleView: View {
         }
     }
 
-    private func showFriendRequestFeedback(_ feedback: FriendshipRequestFeedback) {
+    private func acceptFriendship(_ request: PendingFriendRequest, prayerTime: PrayerTime) {
+        guard acceptingRequestID == nil else { return }
+        acceptingRequestID = request.id
+
+        Task { @MainActor in
+            let profile = await socialPrayerStore.acceptFriendship(
+                request,
+                date: prayerTime.time,
+                timeZone: prayerTime.timeZone
+            )
+            acceptingRequestID = nil
+            guard let profile else { return }
+            showFriendshipFeedback(.accepted(profile))
+        }
+    }
+
+    private func showFriendshipFeedback(_ feedback: FriendshipEventFeedback) {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         withAnimation(.easeOut(duration: 0.28)) {
-            friendRequestFeedback = feedback
+            friendshipFeedback = feedback
         }
 
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(2_400))
-            guard friendRequestFeedback == feedback else { return }
+            guard friendshipFeedback == feedback else { return }
             withAnimation(.easeIn(duration: 0.22)) {
-                friendRequestFeedback = nil
+                friendshipFeedback = nil
             }
         }
     }
@@ -575,6 +591,7 @@ private struct FriendPrayerStatusCapsule: View {
 
 private struct PendingRequestsBand: View {
     let requests: [PendingFriendRequest]
+    let acceptingRequestID: UUID?
     let onAccept: (PendingFriendRequest) -> Void
 
     var body: some View {
@@ -599,8 +616,18 @@ private struct PendingRequestsBand: View {
 
                     Spacer()
 
-                    Button(L10n.string("social.requests.accept")) {
+                    Button {
                         onAccept(request)
+                    } label: {
+                        Group {
+                            if acceptingRequestID == request.id {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Text(L10n.string("social.requests.accept"))
+                            }
+                        }
+                        .frame(minWidth: 42)
                     }
                     .font(VaktFont.caption(11))
                     .lineLimit(1)
@@ -610,6 +637,7 @@ private struct PendingRequestsBand: View {
                     .frame(height: 30)
                     .background(Color.vaktPrimary)
                     .clipShape(Capsule())
+                    .disabled(acceptingRequestID != nil)
                 }
             }
         }
@@ -898,8 +926,20 @@ private struct SearchProfileRow: View {
     }
 }
 
-private struct FriendshipRequestToast: View {
-    let feedback: FriendshipRequestFeedback
+private enum FriendshipEventFeedback: Equatable {
+    case request(FriendshipRequestFeedback)
+    case accepted(SocialProfile)
+
+    var profile: SocialProfile {
+        switch self {
+        case .request(let feedback): feedback.profile
+        case .accepted(let profile): profile
+        }
+    }
+}
+
+private struct FriendshipEventToast: View {
+    let feedback: FriendshipEventFeedback
 
     var body: some View {
         HStack(spacing: 12) {
@@ -937,23 +977,33 @@ private struct FriendshipRequestToast: View {
 
     private var title: String {
         switch feedback {
-        case .sent:
-            L10n.string("social.friend_request.feedback.sent")
-        case .alreadyPending:
-            L10n.string("social.friend_request.feedback.already_sent")
-        case .alreadyFriends:
-            L10n.string("social.friend_request.feedback.already_friends")
-        case .incomingRequest:
-            L10n.string("social.friend_request.feedback.incoming")
+        case .accepted:
+            L10n.string("social.friend_request.feedback.accepted")
+        case .request(let requestFeedback):
+            switch requestFeedback {
+            case .sent:
+                L10n.string("social.friend_request.feedback.sent")
+            case .alreadyPending:
+                L10n.string("social.friend_request.feedback.already_sent")
+            case .alreadyFriends:
+                L10n.string("social.friend_request.feedback.already_friends")
+            case .incomingRequest:
+                L10n.string("social.friend_request.feedback.incoming")
+            }
         }
     }
 
     private var icon: String {
         switch feedback {
-        case .sent: "paperplane.fill"
-        case .alreadyPending: "clock.fill"
-        case .alreadyFriends: "person.2.fill"
-        case .incomingRequest: "person.crop.circle.badge.checkmark"
+        case .accepted:
+            "person.crop.circle.badge.checkmark"
+        case .request(let requestFeedback):
+            switch requestFeedback {
+            case .sent: "paperplane.fill"
+            case .alreadyPending: "clock.fill"
+            case .alreadyFriends: "person.2.fill"
+            case .incomingRequest: "person.crop.circle.badge.checkmark"
+            }
         }
     }
 }
