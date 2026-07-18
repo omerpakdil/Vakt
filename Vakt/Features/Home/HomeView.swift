@@ -288,6 +288,8 @@ private struct HomeAtmospherePalette {
     let starOpacity: Double
     let celestialX: Double
     let celestialY: Double
+    let moonX: Double
+    let moonY: Double
     let horizonIntensity: Double
 
     static func palette(for phase: HomeAtmospherePhase) -> HomeAtmospherePalette {
@@ -297,42 +299,48 @@ private struct HomeAtmospherePalette {
                 top: .init(hex: 0x07101F), middle: .init(hex: 0x0A1222), bottom: .init(hex: 0x060810),
                 glow: .init(hex: 0x7185B2), horizon: .init(hex: 0x344663),
                 sunOpacity: 0, moonOpacity: 0.72, starOpacity: 0.52,
-                celestialX: 0.79, celestialY: 0.14, horizonIntensity: 0.08
+                celestialX: 0.79, celestialY: 0.14,
+                moonX: 0.79, moonY: 0.14, horizonIntensity: 0.08
             )
         case .dawn:
             HomeAtmospherePalette(
                 top: .init(hex: 0x172847), middle: .init(hex: 0x302C43), bottom: .init(hex: 0x111421),
                 glow: .init(hex: 0xD2A19A), horizon: .init(hex: 0xC8897D),
                 sunOpacity: 0.24, moonOpacity: 0.18, starOpacity: 0.16,
-                celestialX: 0.81, celestialY: 0.34, horizonIntensity: 0.38
+                celestialX: 0.81, celestialY: 0.34,
+                moonX: 0.66, moonY: 0.14, horizonIntensity: 0.38
             )
         case .morning:
             HomeAtmospherePalette(
                 top: .init(hex: 0x18354E), middle: .init(hex: 0x11283C), bottom: .init(hex: 0x08121F),
                 glow: .init(hex: 0xD3C29E), horizon: .init(hex: 0x86A7B8),
                 sunOpacity: 0.64, moonOpacity: 0, starOpacity: 0,
-                celestialX: 0.80, celestialY: 0.21, horizonIntensity: 0.17
+                celestialX: 0.80, celestialY: 0.21,
+                moonX: 0.55, moonY: 0.10, horizonIntensity: 0.17
             )
         case .midday:
             HomeAtmospherePalette(
                 top: .init(hex: 0x1C3C56), middle: .init(hex: 0x142C41), bottom: .init(hex: 0x091421),
                 glow: .init(hex: 0xD8D3B2), horizon: .init(hex: 0x91AFBD),
                 sunOpacity: 0.56, moonOpacity: 0, starOpacity: 0,
-                celestialX: 0.82, celestialY: 0.10, horizonIntensity: 0.12
+                celestialX: 0.82, celestialY: 0.10,
+                moonX: 0.45, moonY: 0.10, horizonIntensity: 0.12
             )
         case .afternoon:
             HomeAtmospherePalette(
                 top: .init(hex: 0x344052), middle: .init(hex: 0x292D3A), bottom: .init(hex: 0x0E121C),
                 glow: .init(hex: 0xD3A577), horizon: .init(hex: 0xB48269),
                 sunOpacity: 0.58, moonOpacity: 0, starOpacity: 0,
-                celestialX: 0.78, celestialY: 0.27, horizonIntensity: 0.25
+                celestialX: 0.78, celestialY: 0.27,
+                moonX: 0.72, moonY: 0.10, horizonIntensity: 0.25
             )
         case .sunset:
             HomeAtmospherePalette(
                 top: .init(hex: 0x442B3A), middle: .init(hex: 0x29243A), bottom: .init(hex: 0x0B101B),
                 glow: .init(hex: 0xD28B79), horizon: .init(hex: 0xC56E62),
                 sunOpacity: 0.42, moonOpacity: 0.04, starOpacity: 0.04,
-                celestialX: 0.75, celestialY: 0.40, horizonIntensity: 0.45
+                celestialX: 0.75, celestialY: 0.40,
+                moonX: 0.84, moonY: 0.15, horizonIntensity: 0.45
             )
         }
     }
@@ -353,6 +361,8 @@ private struct HomeAtmospherePalette {
             starOpacity: value(starOpacity, other.starOpacity),
             celestialX: value(celestialX, other.celestialX),
             celestialY: value(celestialY, other.celestialY),
+            moonX: value(moonX, other.moonX),
+            moonY: value(moonY, other.moonY),
             horizonIntensity: value(horizonIntensity, other.horizonIntensity)
         )
     }
@@ -442,43 +452,47 @@ private struct HomeDayAtmosphere: View {
 
     private func celestialBody(palette: HomeAtmospherePalette, size: CGSize) -> some View {
         ZStack {
-            Circle()
-                .fill(palette.glow.color.opacity(0.14 * palette.sunOpacity))
-                .frame(width: 88, height: 88)
-                .blur(radius: 18)
+            ZStack {
+                Circle()
+                    .fill(palette.glow.color.opacity(0.14 * palette.sunOpacity))
+                    .frame(width: 88, height: 88)
+                    .blur(radius: 18)
 
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.vaktPrimary.opacity(0.86), palette.glow.color.opacity(0.5)],
-                        center: .topLeading,
-                        startRadius: 0,
-                        endRadius: 24
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.vaktPrimary.opacity(0.86), palette.glow.color.opacity(0.5)],
+                            center: .topLeading,
+                            startRadius: 0,
+                            endRadius: 24
+                        )
                     )
-                )
-                .frame(width: 34, height: 34)
-                .opacity(palette.sunOpacity)
+                    .frame(width: 34, height: 34)
+                    .opacity(palette.sunOpacity)
+            }
+            .position(
+                x: size.width * palette.celestialX,
+                y: size.height * palette.celestialY
+            )
 
             ZStack {
                 Circle()
-                    .stroke(palette.glow.color.opacity(0.18), lineWidth: 10)
-                    .blur(radius: 9)
+                    .fill(palette.glow.color.opacity(0.16))
+                    .frame(width: 58, height: 58)
+                    .blur(radius: 16)
 
-                Circle()
-                    .trim(from: 0.15, to: 0.84)
-                    .stroke(
-                        Color.vaktPrimary.opacity(0.82),
-                        style: StrokeStyle(lineWidth: 2.1, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(24))
+                Image(systemName: "moon.fill")
+                    .font(.system(size: 29, weight: .regular))
+                    .symbolRenderingMode(.monochrome)
+                    .foregroundStyle(Color.vaktPrimary.opacity(0.9))
+                    .shadow(color: palette.glow.color.opacity(0.36), radius: 8)
             }
-            .frame(width: 31, height: 31)
             .opacity(palette.moonOpacity)
+            .position(
+                x: size.width * palette.moonX,
+                y: size.height * palette.moonY
+            )
         }
-        .position(
-            x: size.width * palette.celestialX,
-            y: size.height * palette.celestialY
-        )
     }
 
     private func starCoordinate(seed: Int) -> Double {
