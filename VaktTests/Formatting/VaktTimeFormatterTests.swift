@@ -115,3 +115,104 @@ final class VaktTimeFormatterTests: XCTestCase {
         )
     }
 }
+
+final class HomeAtmosphereEngineTests: XCTestCase {
+    func testAtmosphereFollowsPrayerAndSunriseLandmarks() throws {
+        let prayers = try makePrayerSchedule()
+
+        XCTAssertEqual(snapshot(hour: 5, minute: 30, prayers: prayers).phase, .dawn)
+        XCTAssertEqual(snapshot(hour: 8, minute: 0, prayers: prayers).phase, .morning)
+        XCTAssertEqual(snapshot(hour: 13, minute: 0, prayers: prayers).phase, .midday)
+        XCTAssertEqual(snapshot(hour: 17, minute: 0, prayers: prayers).phase, .afternoon)
+        XCTAssertEqual(snapshot(hour: 20, minute: 0, prayers: prayers).phase, .sunset)
+        XCTAssertEqual(snapshot(hour: 22, minute: 0, prayers: prayers).phase, .night)
+    }
+
+    func testAtmosphereProgressInterpolatesTowardNextLandmark() throws {
+        let snapshot = snapshot(hour: 9, minute: 0, prayers: try makePrayerSchedule())
+
+        XCTAssertEqual(snapshot.phase, .morning)
+        XCTAssertEqual(snapshot.nextPhase, .midday)
+        XCTAssertEqual(snapshot.progress, 0.5, accuracy: 0.001)
+    }
+
+    func testNightRemainsStableUntilFinalPartOfInterval() throws {
+        let prayers = try makePrayerSchedule()
+        let earlyNight = snapshot(hour: 22, minute: 0, prayers: prayers)
+        let lateNight = snapshot(day: 20, hour: 4, minute: 30, prayers: prayers)
+
+        XCTAssertEqual(earlyNight.transitionProgress, 0, accuracy: 0.001)
+        XCTAssertGreaterThan(lateNight.transitionProgress, 0)
+    }
+
+    func testDeveloperPreviewForcesExactAtmosphere() throws {
+        let date = try makeDate(day: 19, hour: 13, minute: 0)
+        let snapshot = HomeAtmosphereEngine.snapshot(
+            at: date,
+            prayers: try makePrayerSchedule(),
+            forcedPhase: .night
+        )
+
+        XCTAssertEqual(snapshot.phase, .night)
+        XCTAssertEqual(snapshot.nextPhase, .night)
+        XCTAssertEqual(snapshot.progress, 0)
+    }
+
+    private func snapshot(
+        day: Int = 19,
+        hour: Int,
+        minute: Int,
+        prayers: [PrayerTime]
+    ) -> HomeAtmosphereSnapshot {
+        HomeAtmosphereEngine.snapshot(
+            at: try! makeDate(day: day, hour: hour, minute: minute),
+            prayers: prayers
+        )
+    }
+
+    private func makePrayerSchedule() throws -> [PrayerTime] {
+        let sunrise = try makeDate(day: 19, hour: 6, minute: 0)
+        let nextSunrise = try makeDate(day: 20, hour: 6, minute: 0)
+
+        return [
+            prayer(.fajr, day: 19, hour: 5, endsAt: sunrise),
+            prayer(.dhuhr, day: 19, hour: 12),
+            prayer(.asr, day: 19, hour: 16),
+            prayer(.maghrib, day: 19, hour: 19),
+            prayer(.isha, day: 19, hour: 21),
+            prayer(.fajr, day: 20, hour: 5, endsAt: nextSunrise),
+            prayer(.dhuhr, day: 20, hour: 12)
+        ]
+    }
+
+    private func prayer(
+        _ prayer: Prayer,
+        day: Int,
+        hour: Int,
+        endsAt: Date? = nil
+    ) -> PrayerTime {
+        PrayerTime(
+            prayer: prayer,
+            time: try! makeDate(day: day, hour: hour, minute: 0),
+            countdown: 0,
+            timeZoneIdentifier: "UTC",
+            endsAt: endsAt
+        )
+    }
+
+    private func makeDate(day: Int, hour: Int, minute: Int) throws -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        return try XCTUnwrap(
+            calendar.date(
+                from: DateComponents(
+                    year: 2026,
+                    month: 7,
+                    day: day,
+                    hour: hour,
+                    minute: minute
+                )
+            )
+        )
+    }
+}

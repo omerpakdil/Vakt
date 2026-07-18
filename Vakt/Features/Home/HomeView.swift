@@ -9,12 +9,15 @@ struct HomeView: View {
 
     @StateObject private var qiblaStore = QiblaCompassStore()
     @State private var qiblaPresented = false
+    #if DEBUG
+    @AppStorage(HomeAtmospherePhase.previewStorageKey)
+    private var developerAtmosphereRawValue = HomeAtmospherePhase.automaticPreviewValue
+    #endif
 
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
         let activeWindow = prayerStore.activePrayerWindow
         let currentPrayer = activeWindow?.prayerTime
-        let focusPrayer = currentPrayer ?? nextPrayer
         let selectedOutcome = currentPrayer.flatMap { reflectionStore.outcome(for: $0) } ?? .missed
         let trackingStatus = currentPrayer.map {
             reflectionStore.trackingStatus(
@@ -22,10 +25,15 @@ struct HomeView: View {
                 sessionStatus: sessionStore.status(for: $0)
             )
         }
+        let atmosphere = HomeAtmosphereEngine.snapshot(
+            at: prayerStore.now,
+            prayers: prayerStore.prayersForDeadlineSync,
+            forcedPhase: developerAtmospherePhase
+        )
 
         GeometryReader { geometry in
             ZStack {
-                HomeDayAtmosphere(prayer: focusPrayer.prayer)
+                HomeDayAtmosphere(snapshot: atmosphere)
 
                 VStack(spacing: 0) {
                     HomeTopBar(onQibla: { qiblaPresented = true })
@@ -82,6 +90,14 @@ struct HomeView: View {
         }
     }
 
+    private var developerAtmospherePhase: HomeAtmospherePhase? {
+        #if DEBUG
+        HomeAtmospherePhase(rawValue: developerAtmosphereRawValue)
+        #else
+        nil
+        #endif
+    }
+
     private func refreshSocialPrayer(for prayerTime: PrayerTime?) {
         guard let prayerTime else { return }
         socialPrayerStore.refresh(for: prayerTime.time, timeZone: prayerTime.timeZone)
@@ -103,62 +119,371 @@ struct HomeView: View {
     }
 }
 
+enum HomeAtmospherePhase: String, CaseIterable, Identifiable {
+    case night
+    case dawn
+    case morning
+    case midday
+    case afternoon
+    case sunset
+
+    static let previewStorageKey = "vakt.developer.homeAtmospherePreview.v1"
+    static let automaticPreviewValue = "automatic"
+
+    var id: String { rawValue }
+
+    var developerTitle: String {
+        switch self {
+        case .night: "Gece"
+        case .dawn: "Sabah"
+        case .morning: "Gündüz"
+        case .midday: "Öğle"
+        case .afternoon: "İkindi"
+        case .sunset: "Akşam"
+        }
+    }
+
+    var developerIcon: String {
+        switch self {
+        case .night: "moon.stars"
+        case .dawn: "sunrise"
+        case .morning: "sun.horizon"
+        case .midday: "sun.max"
+        case .afternoon: "sun.min"
+        case .sunset: "sunset"
+        }
+    }
+}
+
+struct HomeAtmosphereSnapshot: Equatable {
+    let phase: HomeAtmospherePhase
+    let nextPhase: HomeAtmospherePhase
+    let progress: Double
+
+    var transitionProgress: Double {
+        let normalized: Double
+        if phase == .night {
+            normalized = min(1, max(0, (progress - 0.72) / 0.28))
+        } else {
+            normalized = min(1, max(0, progress))
+        }
+        return normalized * normalized * (3 - 2 * normalized)
+    }
+}
+
+enum HomeAtmosphereEngine {
+    private struct Landmark {
+        let date: Date
+        let phase: HomeAtmospherePhase
+    }
+
+    static func snapshot(
+        at date: Date,
+        prayers: [PrayerTime],
+        forcedPhase: HomeAtmospherePhase? = nil
+    ) -> HomeAtmosphereSnapshot {
+        if let forcedPhase {
+            return HomeAtmosphereSnapshot(phase: forcedPhase, nextPhase: forcedPhase, progress: 0)
+        }
+
+        let landmarks = makeLandmarks(from: prayers)
+        guard !landmarks.isEmpty else {
+            let phase = fallbackPhase(at: date)
+            return HomeAtmosphereSnapshot(phase: phase, nextPhase: phase, progress: 0)
+        }
+
+        guard let currentIndex = landmarks.lastIndex(where: { $0.date <= date }) else {
+            let phase = landmarks[0].phase
+            return HomeAtmosphereSnapshot(phase: phase, nextPhase: phase, progress: 0)
+        }
+
+        let current = landmarks[currentIndex]
+        guard landmarks.indices.contains(currentIndex + 1) else {
+            return HomeAtmosphereSnapshot(phase: current.phase, nextPhase: current.phase, progress: 0)
+        }
+
+        let next = landmarks[currentIndex + 1]
+        let duration = next.date.timeIntervalSince(current.date)
+        let progress = duration > 0 ? date.timeIntervalSince(current.date) / duration : 0
+        return HomeAtmosphereSnapshot(
+            phase: current.phase,
+            nextPhase: next.phase,
+            progress: min(1, max(0, progress))
+        )
+    }
+
+    private static func makeLandmarks(from prayers: [PrayerTime]) -> [Landmark] {
+        prayers
+            .flatMap { prayerTime -> [Landmark] in
+                switch prayerTime.prayer {
+                case .fajr:
+                    var values = [Landmark(date: prayerTime.time, phase: .dawn)]
+                    if let sunrise = prayerTime.endsAt, sunrise > prayerTime.time {
+                        values.append(Landmark(date: sunrise, phase: .morning))
+                    }
+                    return values
+                case .dhuhr:
+                    return [Landmark(date: prayerTime.time, phase: .midday)]
+                case .asr:
+                    return [Landmark(date: prayerTime.time, phase: .afternoon)]
+                case .maghrib:
+                    return [Landmark(date: prayerTime.time, phase: .sunset)]
+                case .isha:
+                    return [Landmark(date: prayerTime.time, phase: .night)]
+                }
+            }
+            .sorted { $0.date < $1.date }
+    }
+
+    private static func fallbackPhase(at date: Date) -> HomeAtmospherePhase {
+        switch Calendar.autoupdatingCurrent.component(.hour, from: date) {
+        case 5..<7: .dawn
+        case 7..<12: .morning
+        case 12..<16: .midday
+        case 16..<19: .afternoon
+        case 19..<21: .sunset
+        default: .night
+        }
+    }
+}
+
+private struct AtmosphereColor: Equatable {
+    let red: Double
+    let green: Double
+    let blue: Double
+
+    init(hex: UInt32) {
+        red = Double((hex >> 16) & 0xFF) / 255
+        green = Double((hex >> 8) & 0xFF) / 255
+        blue = Double(hex & 0xFF) / 255
+    }
+
+    func mixed(with other: AtmosphereColor, amount: Double) -> AtmosphereColor {
+        AtmosphereColor(
+            red: red + (other.red - red) * amount,
+            green: green + (other.green - green) * amount,
+            blue: blue + (other.blue - blue) * amount
+        )
+    }
+
+    private init(red: Double, green: Double, blue: Double) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+    }
+
+    var color: Color {
+        Color(.sRGB, red: red, green: green, blue: blue, opacity: 1)
+    }
+}
+
+private struct HomeAtmospherePalette {
+    let top: AtmosphereColor
+    let middle: AtmosphereColor
+    let bottom: AtmosphereColor
+    let glow: AtmosphereColor
+    let horizon: AtmosphereColor
+    let sunOpacity: Double
+    let moonOpacity: Double
+    let starOpacity: Double
+    let celestialX: Double
+    let celestialY: Double
+    let horizonIntensity: Double
+
+    static func palette(for phase: HomeAtmospherePhase) -> HomeAtmospherePalette {
+        switch phase {
+        case .night:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x07101F), middle: .init(hex: 0x0A1222), bottom: .init(hex: 0x060810),
+                glow: .init(hex: 0x7185B2), horizon: .init(hex: 0x344663),
+                sunOpacity: 0, moonOpacity: 0.72, starOpacity: 0.52,
+                celestialX: 0.79, celestialY: 0.14, horizonIntensity: 0.08
+            )
+        case .dawn:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x172847), middle: .init(hex: 0x302C43), bottom: .init(hex: 0x111421),
+                glow: .init(hex: 0xD2A19A), horizon: .init(hex: 0xC8897D),
+                sunOpacity: 0.24, moonOpacity: 0.18, starOpacity: 0.16,
+                celestialX: 0.81, celestialY: 0.34, horizonIntensity: 0.38
+            )
+        case .morning:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x18354E), middle: .init(hex: 0x11283C), bottom: .init(hex: 0x08121F),
+                glow: .init(hex: 0xD3C29E), horizon: .init(hex: 0x86A7B8),
+                sunOpacity: 0.64, moonOpacity: 0, starOpacity: 0,
+                celestialX: 0.80, celestialY: 0.21, horizonIntensity: 0.17
+            )
+        case .midday:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x1C3C56), middle: .init(hex: 0x142C41), bottom: .init(hex: 0x091421),
+                glow: .init(hex: 0xD8D3B2), horizon: .init(hex: 0x91AFBD),
+                sunOpacity: 0.56, moonOpacity: 0, starOpacity: 0,
+                celestialX: 0.82, celestialY: 0.10, horizonIntensity: 0.12
+            )
+        case .afternoon:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x344052), middle: .init(hex: 0x292D3A), bottom: .init(hex: 0x0E121C),
+                glow: .init(hex: 0xD3A577), horizon: .init(hex: 0xB48269),
+                sunOpacity: 0.58, moonOpacity: 0, starOpacity: 0,
+                celestialX: 0.78, celestialY: 0.27, horizonIntensity: 0.25
+            )
+        case .sunset:
+            HomeAtmospherePalette(
+                top: .init(hex: 0x442B3A), middle: .init(hex: 0x29243A), bottom: .init(hex: 0x0B101B),
+                glow: .init(hex: 0xD28B79), horizon: .init(hex: 0xC56E62),
+                sunOpacity: 0.42, moonOpacity: 0.04, starOpacity: 0.04,
+                celestialX: 0.75, celestialY: 0.40, horizonIntensity: 0.45
+            )
+        }
+    }
+
+    func mixed(with other: HomeAtmospherePalette, amount: Double) -> HomeAtmospherePalette {
+        func value(_ first: Double, _ second: Double) -> Double {
+            first + (second - first) * amount
+        }
+
+        return HomeAtmospherePalette(
+            top: top.mixed(with: other.top, amount: amount),
+            middle: middle.mixed(with: other.middle, amount: amount),
+            bottom: bottom.mixed(with: other.bottom, amount: amount),
+            glow: glow.mixed(with: other.glow, amount: amount),
+            horizon: horizon.mixed(with: other.horizon, amount: amount),
+            sunOpacity: value(sunOpacity, other.sunOpacity),
+            moonOpacity: value(moonOpacity, other.moonOpacity),
+            starOpacity: value(starOpacity, other.starOpacity),
+            celestialX: value(celestialX, other.celestialX),
+            celestialY: value(celestialY, other.celestialY),
+            horizonIntensity: value(horizonIntensity, other.horizonIntensity)
+        )
+    }
+}
+
 private struct HomeDayAtmosphere: View {
-    let prayer: Prayer
+    let snapshot: HomeAtmosphereSnapshot
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ZStack {
-            Color.vaktBg.ignoresSafeArea()
+        let palette = currentPalette
 
-            LinearGradient(
-                colors: [topColor.opacity(0.38), Color.vaktBg.opacity(0.97), Color.vaktDeep],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack {
+                Color.vaktBg
 
-            RadialGradient(
-                colors: [glowColor.opacity(0.2), .clear],
-                center: UnitPoint(x: 0.82, y: 0.16),
-                startRadius: 0,
-                endRadius: 250
-            )
-            .ignoresSafeArea()
-
-            Canvas { context, size in
-                let horizonY = size.height * 0.44
-                var horizon = Path()
-                horizon.move(to: CGPoint(x: 0, y: horizonY))
-                horizon.addCurve(
-                    to: CGPoint(x: size.width, y: horizonY + 18),
-                    control1: CGPoint(x: size.width * 0.28, y: horizonY - 9),
-                    control2: CGPoint(x: size.width * 0.66, y: horizonY + 30)
+                LinearGradient(
+                    colors: [palette.top.color, palette.middle.color, palette.bottom.color],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-                context.stroke(horizon, with: .color(Color.vaktGlow.opacity(0.075)), lineWidth: 0.7)
+
+                RadialGradient(
+                    colors: [palette.glow.color.opacity(0.27), .clear],
+                    center: UnitPoint(x: palette.celestialX, y: palette.celestialY),
+                    startRadius: 0,
+                    endRadius: min(geometry.size.width * 0.72, 280)
+                )
+
+                atmosphereCanvas(palette: palette)
+
+                celestialBody(palette: palette, size: geometry.size)
+
+                LinearGradient(
+                    colors: [.clear, Color.vaktBg.opacity(0.58), Color.vaktDeep.opacity(0.96)],
+                    startPoint: UnitPoint(x: 0.5, y: 0.28),
+                    endPoint: .bottom
+                )
             }
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 2.4), value: snapshot.phase)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 2.4), value: snapshot.nextPhase)
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+
+    private var currentPalette: HomeAtmospherePalette {
+        HomeAtmospherePalette.palette(for: snapshot.phase).mixed(
+            with: HomeAtmospherePalette.palette(for: snapshot.nextPhase),
+            amount: snapshot.transitionProgress
+        )
+    }
+
+    private func atmosphereCanvas(palette: HomeAtmospherePalette) -> some View {
+        Canvas { context, size in
+            if palette.starOpacity > 0.001 {
+                for index in 0..<18 {
+                    let x = starCoordinate(seed: index * 37 + 11)
+                    let y = starCoordinate(seed: index * 53 + 7) * 0.39 + 0.035
+                    let radius = 0.45 + starCoordinate(seed: index * 29 + 3) * 0.75
+                    let rect = CGRect(
+                        x: size.width * x - radius,
+                        y: size.height * y - radius,
+                        width: radius * 2,
+                        height: radius * 2
+                    )
+                    let opacity = palette.starOpacity * (0.28 + starCoordinate(seed: index * 71 + 5) * 0.54)
+                    context.fill(Path(ellipseIn: rect), with: .color(Color.vaktPrimary.opacity(opacity)))
+                }
+            }
+
+            let horizonY = size.height * 0.43
+            var horizon = Path()
+            horizon.move(to: CGPoint(x: 0, y: horizonY))
+            horizon.addCurve(
+                to: CGPoint(x: size.width, y: horizonY + 14),
+                control1: CGPoint(x: size.width * 0.28, y: horizonY - 8),
+                control2: CGPoint(x: size.width * 0.68, y: horizonY + 25)
+            )
+            context.stroke(
+                horizon,
+                with: .color(palette.horizon.color.opacity(palette.horizonIntensity)),
+                lineWidth: 0.8
+            )
         }
     }
 
-    private var topColor: Color {
-        switch prayer {
-        case .fajr: Color(hex: "#23395A")
-        case .dhuhr: Color(hex: "#263B4F")
-        case .asr: Color(hex: "#3A3545")
-        case .maghrib: Color(hex: "#422B3B")
-        case .isha: Color(hex: "#17223B")
+    private func celestialBody(palette: HomeAtmospherePalette, size: CGSize) -> some View {
+        ZStack {
+            Circle()
+                .fill(palette.glow.color.opacity(0.14 * palette.sunOpacity))
+                .frame(width: 88, height: 88)
+                .blur(radius: 18)
+
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.vaktPrimary.opacity(0.86), palette.glow.color.opacity(0.5)],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: 24
+                    )
+                )
+                .frame(width: 34, height: 34)
+                .opacity(palette.sunOpacity)
+
+            ZStack {
+                Circle()
+                    .stroke(palette.glow.color.opacity(0.18), lineWidth: 10)
+                    .blur(radius: 9)
+
+                Circle()
+                    .trim(from: 0.15, to: 0.84)
+                    .stroke(
+                        Color.vaktPrimary.opacity(0.82),
+                        style: StrokeStyle(lineWidth: 2.1, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(24))
+            }
+            .frame(width: 31, height: 31)
+            .opacity(palette.moonOpacity)
         }
+        .position(
+            x: size.width * palette.celestialX,
+            y: size.height * palette.celestialY
+        )
     }
 
-    private var glowColor: Color {
-        switch prayer {
-        case .fajr: Color(hex: "#AABED3")
-        case .dhuhr: Color(hex: "#B6C8D5")
-        case .asr: Color(hex: "#C2A7A0")
-        case .maghrib: Color(hex: "#C18C83")
-        case .isha: Color.vaktGlow
-        }
+    private func starCoordinate(seed: Int) -> Double {
+        let value = sin(Double(seed) * 12.9898) * 43_758.5453
+        return abs(value - floor(value))
     }
 }
 

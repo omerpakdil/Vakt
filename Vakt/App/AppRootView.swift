@@ -303,6 +303,7 @@ struct AppRootView: View {
 
             NavigationStack {
                 ProfileView(
+                    selectedTab: $selectedTab,
                     prayerStore: prayerStore,
                     notificationManager: notificationManager,
                     reflectionStore: reflectionStore,

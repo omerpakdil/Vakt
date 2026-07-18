@@ -3,6 +3,7 @@ import UserNotifications
 import AuthenticationServices
 
 struct ProfileView: View {
+    @Binding var selectedTab: VaktTab
     @ObservedObject var prayerStore: PrayerScheduleStore
     @ObservedObject var notificationManager: NotificationManager
     @ObservedObject var reflectionStore: PrayerReflectionStore
@@ -108,6 +109,17 @@ struct ProfileView: View {
                 onPreviewMakeup: {
                     isDeveloperPresented = false
                     isMakeupPreviewPresented = true
+                },
+                onPreviewAtmosphere: { phase in
+                    UserDefaults.standard.set(
+                        phase?.rawValue ?? HomeAtmospherePhase.automaticPreviewValue,
+                        forKey: HomeAtmospherePhase.previewStorageKey
+                    )
+                    isDeveloperPresented = false
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(260))
+                        selectedTab = .home
+                    }
                 }
             )
         }
@@ -1772,21 +1784,28 @@ private struct ProfileDeveloperSheet: View {
     let onShowRatePrompt: () -> Void
     let onPreviewSplash: () -> Void
     let onPreviewMakeup: () -> Void
+    let onPreviewAtmosphere: (HomeAtmospherePhase?) -> Void
+
+    @AppStorage(HomeAtmospherePhase.previewStorageKey)
+    private var selectedAtmosphere = HomeAtmospherePhase.automaticPreviewValue
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.vaktBg.ignoresSafeArea()
 
-                VStack(spacing: 8) {
-                    developerRow(icon: "arrow.counterclockwise", title: "Reset onboarding", detail: "Splash ve onboarding akışını yeniden aç", action: onResetOnboarding)
-                    developerRow(icon: "trash", title: "Clear entries", detail: "Cihazdaki namaz kayıtlarını temizle", action: onClearEntries)
-                    developerRow(icon: "star", title: "Show rate prompt", detail: "Değerlendirme ekranını göster", action: onShowRatePrompt)
-                    developerRow(icon: "sparkles", title: "Preview splash", detail: "Splash deneyimini önizle", action: onPreviewSplash)
-                    developerRow(icon: "calendar", title: "Preview makeup calendar", detail: "Örnek kaza günleriyle ekranı aç", action: onPreviewMakeup)
-                    Spacer()
+                ScrollView {
+                    VStack(spacing: 12) {
+                        atmospherePreviewSection
+
+                        developerRow(icon: "arrow.counterclockwise", title: "Reset onboarding", detail: "Splash ve onboarding akışını yeniden aç", action: onResetOnboarding)
+                        developerRow(icon: "trash", title: "Clear entries", detail: "Cihazdaki namaz kayıtlarını temizle", action: onClearEntries)
+                        developerRow(icon: "star", title: "Show rate prompt", detail: "Değerlendirme ekranını göster", action: onShowRatePrompt)
+                        developerRow(icon: "sparkles", title: "Preview splash", detail: "Splash deneyimini önizle", action: onPreviewSplash)
+                        developerRow(icon: "calendar", title: "Preview makeup calendar", detail: "Örnek kaza günleriyle ekranı aç", action: onPreviewMakeup)
+                    }
+                    .padding(VaktSpace.lg)
                 }
-                .padding(VaktSpace.lg)
             }
             .navigationTitle("Developer")
             .navigationBarTitleDisplayMode(.inline)
@@ -1797,8 +1816,88 @@ private struct ProfileDeveloperSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    private var atmospherePreviewSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Ana sayfa atmosferi")
+                        .font(VaktFont.body(13))
+                        .foregroundStyle(Color.vaktPrimary)
+
+                    Text("Bir duruma dokununca ana sayfada açılır")
+                        .font(VaktFont.caption(9))
+                        .foregroundStyle(Color.vaktMuted)
+                }
+
+                Spacer()
+
+                Button {
+                    selectedAtmosphere = HomeAtmospherePhase.automaticPreviewValue
+                    onPreviewAtmosphere(nil)
+                } label: {
+                    Text("Otomatik")
+                        .font(VaktFont.caption(9))
+                        .foregroundStyle(
+                            selectedAtmosphere == HomeAtmospherePhase.automaticPreviewValue
+                                ? Color.vaktBg
+                                : Color.vaktSecondary
+                        )
+                        .padding(.horizontal, 10)
+                        .frame(height: 28)
+                        .background(
+                            selectedAtmosphere == HomeAtmospherePhase.automaticPreviewValue
+                                ? Color.vaktPrimary
+                                : Color.vaktElevated.opacity(0.55)
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(VaktPressStyle())
+            }
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: 3),
+                spacing: 7
+            ) {
+                ForEach(HomeAtmospherePhase.allCases) { phase in
+                    atmosphereButton(phase)
+                }
+            }
+        }
+        .padding(13)
+        .background(Color.vaktSurface.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
+                .strokeBorder(Color.vaktBorderStrong.opacity(0.5), lineWidth: 0.5)
+        )
+    }
+
+    private func atmosphereButton(_ phase: HomeAtmospherePhase) -> some View {
+        let isSelected = selectedAtmosphere == phase.rawValue
+
+        return Button {
+            selectedAtmosphere = phase.rawValue
+            onPreviewAtmosphere(phase)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: phase.developerIcon)
+                    .font(.system(size: 11, weight: .medium))
+
+                Text(phase.developerTitle)
+                    .font(VaktFont.caption(9))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(isSelected ? Color.vaktBg : Color.vaktSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 34)
+            .background(isSelected ? Color.vaktPrimary : Color.vaktElevated.opacity(0.48))
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+        .buttonStyle(VaktPressStyle())
     }
 
     private func developerRow(
