@@ -283,7 +283,10 @@ struct AppRootView: View {
                 )
             }
                 .tabItem {
-                    Label(L10n.text(.tabPrayer), systemImage: "checkmark.circle")
+                    Label(
+                        L10n.text(.tabPrayer),
+                        systemImage: selectedTab == .prayer ? "moon.stars.fill" : "moon.stars"
+                    )
                 }
                 .tag(VaktTab.prayer)
 
