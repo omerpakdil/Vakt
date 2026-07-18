@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AppRootView: View {
     @State private var selectedTab: VaktTab = .home
@@ -201,9 +202,37 @@ struct AppRootView: View {
             PaywallView(store: subscriptionStore, referralStore: referralStore)
                 .transition(.opacity)
         case .active:
-            mainTabs
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
+            if prayerStore.hasUsablePrayerSchedule {
+                mainTabs
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+            } else {
+                prayerLocationSetup
+                    .transition(.opacity)
+            }
         }
+    }
+
+    private var prayerLocationSetup: some View {
+        OnboardingLocationView(
+            stepIndex: 0,
+            stepCount: 1,
+            prayerStore: prayerStore,
+            reduceMotion: UIAccessibility.isReduceMotionEnabled,
+            showsPageMark: false,
+            allowsSkip: false,
+            onContinue: handlePrayerLocationSetup,
+            onSkip: {}
+        )
+    }
+
+    private func handlePrayerLocationSetup() {
+        if prayerStore.locationAccessNeedsSettings,
+           let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(settingsURL)
+            return
+        }
+
+        prayerStore.requestLocationPermission()
     }
 
     private var mainTabs: some View {

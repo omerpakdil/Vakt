@@ -1437,6 +1437,19 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         upcomingPrayers.first ?? fallbackPrayerTime
     }
 
+    var hasUsablePrayerSchedule: Bool {
+        loadedPrayers.contains { $0.time > now }
+    }
+
+    var locationAccessNeedsSettings: Bool {
+        switch locationManager.authorizationStatus {
+        case .denied, .restricted:
+            return true
+        default:
+            return false
+        }
+    }
+
     var activePrayer: PrayerTime? {
         guard let prayer = loadedPrayers.last(where: { $0.time <= now }) else {
             return nil
@@ -1530,7 +1543,7 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
                 status = .locating
                 locationManager.requestWhenInUseAuthorization()
             } else {
-                status = loadedPrayers.isEmpty ? .denied : .usingSavedTimes
+                status = loadedPrayers.isEmpty ? .locating : .usingSavedTimes
                 refreshSavedCoordinateIfAvailable()
             }
         case .authorizedAlways, .authorizedWhenInUse:

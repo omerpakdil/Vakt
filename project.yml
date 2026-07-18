@@ -63,7 +63,7 @@ targets:
         PRODUCT_NAME: Vakt
         TARGETED_DEVICE_FAMILY: "1"
         MARKETING_VERSION: 1.0.0
-        CURRENT_PROJECT_VERSION: 1
+        CURRENT_PROJECT_VERSION: 2
         DEVELOPMENT_TEAM: HJD426RPSC
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Vakt/Resources/Vakt.entitlements

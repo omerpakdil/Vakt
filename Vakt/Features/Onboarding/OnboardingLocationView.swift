@@ -5,6 +5,8 @@ struct OnboardingLocationView: View {
     let stepCount: Int
     @ObservedObject var prayerStore: PrayerScheduleStore
     let reduceMotion: Bool
+    var showsPageMark = true
+    var allowsSkip = true
     let onContinue: () -> Void
     let onSkip: () -> Void
 
@@ -33,6 +35,8 @@ struct OnboardingLocationView: View {
                     LocationPageMark(stepIndex: stepIndex, stepCount: stepCount)
                         .padding(.top, VaktSpace.xl)
                         .padding(.horizontal, VaktSpace.lg)
+                        .opacity(showsPageMark ? 1 : 0)
+                        .accessibilityHidden(!showsPageMark)
 
                     Spacer(minLength: proxy.size.height * 0.44)
 
@@ -51,7 +55,10 @@ struct OnboardingLocationView: View {
                             .lineSpacing(5)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        LocationQuietFact(status: prayerStore.status, onSkip: onSkip)
+                        LocationQuietFact(
+                            status: prayerStore.status,
+                            onSkip: allowsSkip ? onSkip : nil
+                        )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, VaktSpace.lg)
@@ -292,7 +299,7 @@ private struct LocationDayArcScene: View {
 
 private struct LocationQuietFact: View {
     let status: PrayerScheduleStatus
-    let onSkip: () -> Void
+    let onSkip: (() -> Void)?
 
     var body: some View {
         HStack(spacing: VaktSpace.sm) {
@@ -302,17 +309,19 @@ private struct LocationQuietFact: View {
 
             Spacer(minLength: VaktSpace.sm)
 
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                onSkip()
-            } label: {
-                Text(L10n.string("action.not_now"))
-                    .font(VaktFont.caption(11))
-                    .foregroundStyle(Color.vaktMuted)
-                    .padding(.horizontal, 6)
-                    .frame(minHeight: 44)
+            if let onSkip {
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    onSkip()
+                } label: {
+                    Text(L10n.string("action.not_now"))
+                        .font(VaktFont.caption(11))
+                        .foregroundStyle(Color.vaktMuted)
+                        .padding(.horizontal, 6)
+                        .frame(minHeight: 44)
+                }
+                .buttonStyle(VaktPressStyle())
             }
-            .buttonStyle(VaktPressStyle())
         }
     }
 
@@ -367,7 +376,11 @@ private struct LocationPrimaryActions: View {
         switch status {
         case .ready, .usingSavedTimes:
             return L10n.string("action.continue")
-        default:
+        case .denied:
+            return L10n.string("open_settings")
+        case .failed:
+            return L10n.string("common.retry")
+        case .locating, .loading:
             return L10n.string("action.use_location")
         }
     }
@@ -376,7 +389,11 @@ private struct LocationPrimaryActions: View {
         switch status {
         case .ready, .usingSavedTimes:
             return "checkmark"
-        default:
+        case .denied:
+            return "gear"
+        case .failed:
+            return "arrow.clockwise"
+        case .locating, .loading:
             return "location.fill"
         }
     }
