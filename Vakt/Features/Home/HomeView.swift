@@ -21,15 +21,15 @@ struct HomeView: View {
 
         GeometryReader { geometry in
             ZStack {
-                HomeDayAtmosphere(prayer: nextPrayer.prayer)
+                HomeDayAtmosphere(prayer: currentPrayer.prayer)
 
                 VStack(spacing: 0) {
                     HomeTopBar(onQibla: { qiblaPresented = true })
 
                     HomePrayerFocus(
-                        prayerTime: nextPrayer,
+                        currentPrayerTime: currentPrayer,
+                        nextPrayerTime: nextPrayer,
                         countdown: prayerStore.nextCountdown,
-                        currentPrayer: currentPrayer.prayer,
                         trackingStatus: trackingStatus
                     )
                     .padding(.top, 18)
@@ -204,15 +204,15 @@ private struct HomeTopBar: View {
 }
 
 private struct HomePrayerFocus: View {
-    let prayerTime: PrayerTime
+    let currentPrayerTime: PrayerTime
+    let nextPrayerTime: PrayerTime
     let countdown: TimeInterval
-    let currentPrayer: Prayer
     let trackingStatus: PrayerTrackingStatus
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack {
-                Text(L10n.string("home.next_prayer")
+                Text(L10n.string("home.current_prayer")
                     .uppercased(with: VaktLocalization.appLocale))
                     .font(VaktFont.eyebrow(9))
                     .foregroundStyle(Color.vaktMuted)
@@ -220,35 +220,64 @@ private struct HomePrayerFocus: View {
 
                 Spacer()
 
-                HomeQuietStatus(prayer: currentPrayer, status: trackingStatus)
+                HomeQuietStatus(status: trackingStatus)
             }
 
-            Text(prayerTime.prayer.displayName)
+            Text(currentPrayerTime.prayer.displayName)
                 .font(VaktFont.prayerDisplay(64))
                 .foregroundStyle(Color.vaktPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .contentTransition(.opacity)
 
-            HStack(alignment: .firstTextBaseline, spacing: 9) {
-                Text(VaktTimeFormatter.string(from: prayerTime.time, timeZone: prayerTime.timeZone))
-                    .font(VaktFont.timeDisplay(20))
-                    .foregroundStyle(Color.vaktGlow)
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 9) {
+                    currentPrayerStart
 
-                Rectangle()
-                    .fill(Color.vaktBorderStrong)
-                    .frame(width: 22, height: 1)
+                    Rectangle()
+                        .fill(Color.vaktBorderStrong)
+                        .frame(width: 22, height: 1)
 
-                CountdownLabel(seconds: countdown)
+                    nextPrayerCountdown
+                }
+
+                VStack(alignment: .leading, spacing: 5) {
+                    currentPrayerStart
+                    nextPrayerCountdown
+                }
             }
         }
+    }
+
+    private var currentPrayerStart: some View {
+        Text(VaktTimeFormatter.string(from: currentPrayerTime.time, timeZone: currentPrayerTime.timeZone))
+            .font(VaktFont.timeDisplay(20))
+            .foregroundStyle(Color.vaktGlow)
+            .monospacedDigit()
+            .contentTransition(.numericText())
+    }
+
+    private var nextPrayerCountdown: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+            Text(L10n.string("home.next_prayer"))
+                .foregroundStyle(Color.vaktMuted)
+
+            Text(nextPrayerTime.prayer.displayName)
+                .foregroundStyle(Color.vaktSecondary)
+
+            Text("·")
+                .foregroundStyle(Color.vaktBorderStrong)
+
+            CountdownLabel(seconds: countdown)
+        }
+        .font(VaktFont.body(13))
+        .lineLimit(1)
+        .minimumScaleFactor(0.76)
+        .accessibilityElement(children: .combine)
     }
 }
 
 private struct HomeQuietStatus: View {
-    let prayer: Prayer
     let status: PrayerTrackingStatus
 
     var body: some View {
@@ -257,14 +286,7 @@ private struct HomeQuietStatus: View {
                 .fill(color)
                 .frame(width: 5, height: 5)
 
-            HStack(spacing: 4) {
-                Text(prayer.displayName)
-                    .foregroundStyle(Color.vaktSecondary)
-
-                Text("·")
-
-                Text(title)
-            }
+            Text(title)
             .font(VaktFont.caption(10))
             .foregroundStyle(Color.vaktMuted)
             .lineLimit(1)

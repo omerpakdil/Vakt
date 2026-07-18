@@ -1729,13 +1729,23 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
                     coordinate: coordinate,
                     calculationSettings: settings
                 )
+                var previousPrayerTimes: [PrayerTime] = []
+                if (today.first?.time ?? .distantFuture) > now {
+                    let yesterdayDate = calendar.date(byAdding: .day, value: -1, to: now)
+                        ?? now.addingTimeInterval(-24 * 60 * 60)
+                    previousPrayerTimes = try await provider.prayerTimes(
+                        for: yesterdayDate,
+                        coordinate: coordinate,
+                        calculationSettings: settings
+                    )
+                }
                 let tomorrowDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now.addingTimeInterval(24 * 60 * 60)
                 let tomorrow = try await provider.prayerTimes(
                     for: tomorrowDate,
                     coordinate: coordinate,
                     calculationSettings: settings
                 )
-                let merged = (today + tomorrow).sorted { $0.time < $1.time }
+                let merged = (previousPrayerTimes + today + tomorrow).sorted { $0.time < $1.time }
 
                 await MainActor.run {
                     self.loadedPrayers = merged
