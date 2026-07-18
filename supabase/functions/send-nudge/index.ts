@@ -49,7 +49,10 @@ Deno.serve(async (request) => {
       admin.from("device_tokens").select("id,token,language_code").eq("user_id", nudge.to_user_id),
     ]);
     if (devicesError) throw devicesError;
-    if (!devices?.length) return json({ delivered: 0, reason: "no_registered_device" });
+    if (!devices?.length) {
+      await admin.from("nudges").delete().eq("id", nudge.id);
+      return json({ error: "Recipient has no registered device" }, 409);
+    }
 
     const apnsToken = await makeAPNSToken();
     const host = Deno.env.get("APNS_ENVIRONMENT") === "sandbox"
@@ -58,6 +61,7 @@ Deno.serve(async (request) => {
     const topic = Deno.env.get("APNS_TOPIC") ?? "com.callousity.vakt";
     let delivered = 0;
     const invalidDeviceIDs: string[] = [];
+    const deliveryFailures: string[] = [];
     await Promise.all(devices.map(async (device) => {
       const language = normalizePushLanguage(device.language_code);
       const payload = {
@@ -88,6 +92,7 @@ Deno.serve(async (request) => {
       }
 
       const failure = await response.json().catch(() => ({})) as { reason?: string };
+      deliveryFailures.push(failure.reason ?? `HTTP_${response.status}`);
       if (response.status === 410 || failure.reason === "BadDeviceToken" || failure.reason === "Unregistered") {
         invalidDeviceIDs.push(device.id);
       }
@@ -99,7 +104,8 @@ Deno.serve(async (request) => {
 
     if (delivered === 0) {
       await admin.from("nudges").delete().eq("id", nudge.id);
-      return json({ error: "Notification could not be delivered" }, 502);
+      console.error("APNs nudge delivery failed", { nudgeID: nudge.id, deliveryFailures });
+      return json({ error: "Notification could not be delivered", reasons: deliveryFailures }, 502);
     }
 
     return json({ delivered });

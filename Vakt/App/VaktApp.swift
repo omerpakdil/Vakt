@@ -18,6 +18,10 @@ final class VaktAppDelegate: NSObject, UIApplicationDelegate {
         return true
     }
 
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        application.registerForRemoteNotifications()
+    }
+
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data

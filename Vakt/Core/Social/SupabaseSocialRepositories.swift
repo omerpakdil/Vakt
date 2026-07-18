@@ -632,19 +632,16 @@ actor SupabaseDeviceTokenRepository: DeviceTokenRepository {
     }
 
     func register(token: String, languageCode: String) async throws {
-        let userID = try await auth.currentUserID()
-        let payload = DeviceTokenUpsertPayload(
-            userID: userID.rawValue,
+        _ = try await auth.currentUserID()
+        let parameters = RegisterDeviceTokenParameters(
             token: token,
             platform: "ios",
-            languageCode: languageCode,
-            updatedAt: Date()
+            languageCode: languageCode
         )
 
         do {
             try await client
-                .from("device_tokens")
-                .upsert(payload, onConflict: "token")
+                .rpc("register_device_token", params: parameters)
                 .execute()
         } catch {
             throw SupabaseBackendErrorMapper.map(error)
@@ -688,19 +685,15 @@ private struct FriendEventDeliveryPayload: Encodable, Sendable {
     }
 }
 
-private struct DeviceTokenUpsertPayload: Encodable, Sendable {
-    let userID: UUID
+private struct RegisterDeviceTokenParameters: Encodable, Sendable {
     let token: String
     let platform: String
     let languageCode: String
-    let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
-        case userID = "user_id"
-        case token
-        case platform
-        case languageCode = "language_code"
-        case updatedAt = "updated_at"
+        case token = "p_token"
+        case platform = "p_platform"
+        case languageCode = "p_language_code"
     }
 }
 

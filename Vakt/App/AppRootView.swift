@@ -68,6 +68,7 @@ struct AppRootView: View {
             updatePrayerCalculationSettings()
             spiritualContentStore.prepare(languageCode: VaktLocalization.languageCode)
             await socialAccountStore.restoreSession()
+            registerStoredRemoteNotificationTokenIfAvailable()
             await subscriptionStore.prepare()
             startAppServicesIfAllowed()
         }
@@ -85,6 +86,7 @@ struct AppRootView: View {
         }
         .onChange(of: isSignedIn) { _, signedIn in
             guard signedIn else { return }
+            registerStoredRemoteNotificationTokenIfAvailable()
             Task {
                 await subscriptionStore.refreshSubscription()
                 await referralStore.refresh()
@@ -103,6 +105,10 @@ struct AppRootView: View {
             syncPrayerDeadlines()
         }
         .onChange(of: notificationManager.authorizationStatus) { _, _ in
+            if notificationManager.authorizationStatus.allowsPrayerNotifications {
+                UIApplication.shared.registerForRemoteNotifications()
+                registerStoredRemoteNotificationTokenIfAvailable()
+            }
             schedulePrayerNotifications()
         }
         .onChange(of: notificationManager.isReminderEnabled) { _, _ in
@@ -354,6 +360,15 @@ struct AppRootView: View {
             liveMemberCount: 0,
             quietSoundEnabled: profileSettingsStore.quietNotificationSoundEnabled
         )
+    }
+
+    private func registerStoredRemoteNotificationTokenIfAvailable() {
+        guard isSignedIn,
+              let token = UserDefaults.standard.string(forKey: VaktAppDelegate.remoteNotificationTokenKey),
+              !token.isEmpty else {
+            return
+        }
+        socialPrayerStore.registerDeviceToken(token)
     }
 
     private func syncPrayerDeadlines() {

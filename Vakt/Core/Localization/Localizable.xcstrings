@@ -8317,6 +8317,23 @@
         }
       }
     },
+    "home.greeting.night": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "ليلة طيبة" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Gute Nacht" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Good night" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Buenas noches" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Bonne nuit" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Selamat malam" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Buona notte" } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Goedenacht" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Boa noite" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Доброй ночи" } },
+        "tr": { "stringUnit": { "state": "translated", "value": "Hayırlı geceler" } },
+        "ur": { "stringUnit": { "state": "translated", "value": "شب بخیر" } }
+      }
+    },
     "home.greeting.morning": {
       "extractionState": "manual",
       "localizations": {

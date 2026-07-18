@@ -8,12 +8,15 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
     @Published private(set) var lastDeepLink: NotificationDeepLink?
     @Published private(set) var lastPrayerAction: PrayerNotificationAction?
     @Published private(set) var preferences: NotificationPreferences
+    @Published private(set) var pendingPrayerNotificationCount = 0
+    @Published private(set) var lastSchedulingError: String?
 
     private static let reminderEnabledKey = "vakt.notifications.remindersEnabled.v1"
     private static let preferencesKey = "vakt.notifications.preferences.v2"
 
     private let center: UNUserNotificationCenter
     private let scheduler = PrayerNotificationScheduler()
+    private var schedulingGeneration = 0
 
     init(
         center: UNUserNotificationCenter = .current(),
@@ -51,8 +54,16 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
             return
         }
 
-        Task {
+        // Keep the last valid schedule while location and prayer times are loading.
+        guard !prayers.isEmpty else { return }
+
+        schedulingGeneration += 1
+        let generation = schedulingGeneration
+
+        Task { [weak self] in
+            guard let self else { return }
             let settings = await center.notificationSettings()
+            guard generation == schedulingGeneration else { return }
             authorizationStatus = settings.authorizationStatus
 
             if !settings.authorizationStatus.allowsPrayerNotifications {
@@ -68,7 +79,7 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
                 quietSoundEnabled: quietSoundEnabled
             )
 
-            await replaceScheduledPrayerNotifications(with: requests)
+            await replaceScheduledPrayerNotifications(with: requests, generation: generation)
         }
     }
 
@@ -192,24 +203,39 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         center.setNotificationCategories([prayerCategory, checkInCategory])
     }
 
-    private func replaceScheduledPrayerNotifications(with requests: [UNNotificationRequest]) async {
+    private func replaceScheduledPrayerNotifications(
+        with requests: [UNNotificationRequest],
+        generation: Int
+    ) async {
         let pending = await center.pendingNotificationRequests()
+        guard generation == schedulingGeneration else { return }
         let existingIdentifiers = pending
             .map(\.identifier)
             .filter { $0.hasPrefix(PrayerNotificationScheduler.identifierPrefix) }
 
         center.removePendingNotificationRequests(withIdentifiers: existingIdentifiers)
 
+        var scheduledCount = 0
+        var schedulingErrors: [String] = []
         for request in requests {
+            guard generation == schedulingGeneration else { return }
             do {
                 try await center.add(request)
+                scheduledCount += 1
             } catch {
-                continue
+                schedulingErrors.append(error.localizedDescription)
             }
         }
+
+        guard generation == schedulingGeneration else { return }
+        pendingPrayerNotificationCount = scheduledCount
+        lastSchedulingError = schedulingErrors.first
     }
 
     private func removeScheduledPrayerNotifications() {
+        schedulingGeneration += 1
+        pendingPrayerNotificationCount = 0
+        lastSchedulingError = nil
         Task {
             let pending = await center.pendingNotificationRequests()
             let pendingIdentifiers = pending

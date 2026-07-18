@@ -36,7 +36,7 @@ struct HomeView: View {
                 HomeDayAtmosphere(snapshot: atmosphere)
 
                 VStack(spacing: 0) {
-                    HomeTopBar(onQibla: { qiblaPresented = true })
+                    HomeTopBar(now: prayerStore.now, onQibla: { qiblaPresented = true })
 
                     HomePrayerFocus(
                         activeWindow: activeWindow,
@@ -502,6 +502,7 @@ private struct HomeDayAtmosphere: View {
 }
 
 private struct HomeTopBar: View {
+    let now: Date
     let onQibla: () -> Void
 
     var body: some View {
@@ -536,16 +537,17 @@ private struct HomeTopBar: View {
     }
 
     private var greeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
+        let hour = Calendar.autoupdatingCurrent.component(.hour, from: now)
         return switch hour {
         case 5..<12: L10n.string("home.greeting.morning")
         case 12..<18: L10n.string("home.greeting.day")
-        default: L10n.string("home.greeting.evening")
+        case 18..<22: L10n.string("home.greeting.evening")
+        default: L10n.string("home.greeting.night")
         }
     }
 
     private var dateText: String {
-        Date().formatted(
+        now.formatted(
             .dateTime
                 .weekday(.wide)
                 .day()
