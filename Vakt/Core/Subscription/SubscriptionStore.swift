@@ -57,6 +57,7 @@ final class SubscriptionStore: ObservableObject {
     @Published private(set) var entitlement: Entitlement = .checking
     @Published private(set) var plans: [Plan] = []
     @Published private(set) var purchaseState: PurchaseState = .idle
+    @Published private(set) var completedPurchaseID: UUID?
     @Published private(set) var isLoadingProducts = false
     /// True when RevenueCat cannot return live Offering packages in DEBUG and
     /// the store falls back to local plans so the paywall can still be previewed.
@@ -132,10 +133,15 @@ final class SubscriptionStore: ObservableObject {
 
         do {
             let customerInfo = try await purchase(package: package)
+            if customerInfo.entitlements[entitlementID]?.isActive == true {
+                completedPurchaseID = UUID()
+            }
             apply(customerInfo: customerInfo)
-            purchaseState = entitlement == .active
-                ? .idle
-                : .failed(L10n.string("paywall.error.activation_failed"))
+            if entitlement == .active {
+                purchaseState = .idle
+            } else {
+                purchaseState = .failed(L10n.string("paywall.error.activation_failed"))
+            }
         } catch RevenueCatPurchaseError.cancelled {
             purchaseState = .idle
         } catch {
@@ -176,6 +182,10 @@ final class SubscriptionStore: ObservableObject {
         purchaseState = .idle
     }
 
+    func consumeCompletedPurchase() {
+        completedPurchaseID = nil
+    }
+
     private func loadProducts() async {
         isLoadingProducts = true
         defer { isLoadingProducts = false }
@@ -214,6 +224,7 @@ final class SubscriptionStore: ObservableObject {
     private func simulateDeveloperPurchase() async {
         purchaseState = .purchasing
         try? await Task.sleep(for: .seconds(0.6))
+        completedPurchaseID = UUID()
         entitlement = .active
         purchaseState = .idle
     }

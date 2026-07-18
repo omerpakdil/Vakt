@@ -151,6 +151,7 @@ struct AppRootView: View {
         .animation(.easeInOut(duration: 0.35), value: onboardingStore.hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.35), value: onboardingStore.hasPassedSplash)
         .animation(.easeInOut(duration: 0.35), value: subscriptionStore.entitlement)
+        .animation(.easeInOut(duration: 0.28), value: subscriptionStore.completedPurchaseID)
         .animation(.easeInOut(duration: 0.35), value: isSignedIn)
         .fullScreenCover(isPresented: reviewPromptBinding) {
             RateVaktView(
@@ -216,7 +217,12 @@ struct AppRootView: View {
             PaywallView(store: subscriptionStore, referralStore: referralStore)
                 .transition(.opacity)
         case .active:
-            if socialAccountStore.profile?.isComplete != true {
+            if subscriptionStore.completedPurchaseID != nil {
+                PurchaseSuccessView {
+                    subscriptionStore.consumeCompletedPurchase()
+                }
+                .transition(.opacity)
+            } else if socialAccountStore.profile?.isComplete != true {
                 ProfileCompletionView(store: socialAccountStore)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
             } else if prayerStore.hasUsablePrayerSchedule {

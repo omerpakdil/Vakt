@@ -867,3 +867,117 @@ private struct PaywallPlanUnavailable: View {
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
+
+struct PurchaseSuccessView: View {
+    let onComplete: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var archProgress: CGFloat = 0
+    @State private var contentVisible = false
+    @State private var isExiting = false
+
+    var body: some View {
+        ZStack {
+            Color.vaktDeep.ignoresSafeArea()
+
+            RadialGradient(
+                colors: [Color.vaktGlow.opacity(contentVisible ? 0.17 : 0.04), .clear],
+                center: .center,
+                startRadius: 6,
+                endRadius: 260
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 28) {
+                ZStack {
+                    PurchaseSuccessArch()
+                        .trim(from: 0, to: archProgress)
+                        .stroke(
+                            Color.vaktGlow.opacity(0.74),
+                            style: StrokeStyle(lineWidth: 1.15, lineCap: .round, lineJoin: .round)
+                        )
+                        .frame(width: 154, height: 184)
+                        .shadow(color: Color.vaktGlow.opacity(0.18), radius: 18)
+
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 29, weight: .light))
+                        .foregroundStyle(Color.vaktPrimary)
+                        .scaleEffect(contentVisible ? 1 : 0.72)
+                        .opacity(contentVisible ? 1 : 0)
+                }
+                .accessibilityHidden(true)
+
+                VStack(spacing: 9) {
+                    Text(L10n.string("purchase.success.title"))
+                        .font(VaktFont.title(29))
+                        .foregroundStyle(Color.vaktPrimary)
+
+                    Text(L10n.string("purchase.success.subtitle"))
+                        .font(VaktFont.body(13))
+                        .foregroundStyle(Color.vaktSecondary)
+                }
+                .multilineTextAlignment(.center)
+                .opacity(contentVisible ? 1 : 0)
+                .offset(y: contentVisible ? 0 : 7)
+            }
+            .padding(.horizontal, VaktSpace.xl)
+        }
+        .opacity(isExiting ? 0 : 1)
+        .accessibilityElement(children: .combine)
+        .task { await playTransition() }
+    }
+
+    @MainActor
+    private func playTransition() async {
+        try? await Task.sleep(for: .milliseconds(90))
+        guard !Task.isCancelled else { return }
+
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        withAnimation(reduceMotion ? .none : .easeOut(duration: 0.46)) {
+            archProgress = 1
+        }
+
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 80 : 280))
+        guard !Task.isCancelled else { return }
+
+        withAnimation(reduceMotion ? .none : .spring(response: 0.46, dampingFraction: 0.86)) {
+            contentVisible = true
+        }
+
+        try? await Task.sleep(for: .milliseconds(850))
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.easeInOut(duration: reduceMotion ? 0.12 : 0.2)) {
+            isExiting = true
+        }
+
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 120 : 190))
+        guard !Task.isCancelled else { return }
+        onComplete()
+    }
+}
+
+private struct PurchaseSuccessArch: Shape {
+    func path(in rect: CGRect) -> Path {
+        let left = rect.minX + rect.width * 0.14
+        let right = rect.maxX - rect.width * 0.14
+        let shoulderY = rect.minY + rect.height * 0.43
+        let peak = CGPoint(x: rect.midX, y: rect.minY + rect.height * 0.08)
+        let baseY = rect.maxY - rect.height * 0.08
+
+        var path = Path()
+        path.move(to: CGPoint(x: left, y: baseY))
+        path.addLine(to: CGPoint(x: left, y: shoulderY))
+        path.addQuadCurve(
+            to: peak,
+            control: CGPoint(x: left + rect.width * 0.08, y: rect.minY + rect.height * 0.2)
+        )
+        path.addQuadCurve(
+            to: CGPoint(x: right, y: shoulderY),
+            control: CGPoint(x: right - rect.width * 0.08, y: rect.minY + rect.height * 0.2)
+        )
+        path.addLine(to: CGPoint(x: right, y: baseY))
+        path.addLine(to: CGPoint(x: left, y: baseY))
+        return path
+    }
+}

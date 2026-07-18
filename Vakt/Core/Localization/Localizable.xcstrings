@@ -21644,73 +21644,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "عندما يحين الوقت، وجّه انتباهك إلى الصلاة."
+            "value" : "عندما يحين الوقت، وجّه كامل انتباهك إلى الصلاة."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wenn die Zeit gekommen ist, richte deine Aufmerksamkeit auf das Gebet."
+            "value" : "Wenn es Zeit ist, konzentriere dich auf das Gebet."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When the time comes, let your attention rest on prayer."
+            "value" : "When the time comes, give prayer your full attention."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cuando llegue la hora, dirige tu atención a la oración."
+            "value" : "Cuando llegue la hora, centra tu atención en la oración."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quand l’heure arrive, tournez votre attention vers la prière."
+            "value" : "Quand l’heure arrive, porte toute ton attention sur la prière."
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saat waktunya tiba, arahkan perhatianmu pada salat."
+            "value" : "Saat waktunya tiba, pusatkan perhatianmu pada salat."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quando arriva l’ora, rivolgi l’attenzione alla preghiera."
+            "value" : "Quando arriva l’ora, dedica tutta la tua attenzione alla preghiera."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wanneer het tijd is, richt je aandacht op het gebed."
+            "value" : "Wanneer het tijd is, geef het gebed je volle aandacht."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quando chegar a hora, volte sua atenção para a oração."
+            "value" : "Quando chegar a hora, concentre sua atenção na oração."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Когда приходит время, направьте внимание на молитву."
+            "value" : "Когда приходит время, сосредоточься на намазе."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vakit geldiğinde, dikkatini namaza bırak."
+            "value" : "Vakit geldiğinde dikkatini namaza ver."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "جب وقت آئے تو اپنی توجہ نماز کی طرف کر دیں۔"
+            "value" : "جب وقت آئے تو اپنی پوری توجہ نماز پر دیں۔"
           }
         }
       }
@@ -41269,6 +41269,160 @@
           "stringUnit": {
             "state": "translated",
             "value": "اس ہفتے"
+          }
+        }
+      }
+    },
+    "purchase.success.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لنُكمل ملفك الشخصي الآن."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervollständigen wir jetzt dein Profil."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now, let’s complete your profile."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora, completemos tu perfil."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenant, complétons ton profil."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekarang, mari lengkapi profilmu."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ora completiamo il tuo profilo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laten we nu je profiel voltooien."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora, vamos completar seu perfil."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Теперь завершим твой профиль."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şimdi profilini tamamlayalım."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اب آپ کا پروفائل مکمل کرتے ہیں۔"
+          }
+        }
+      }
+    },
+    "purchase.success.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بدأ اشتراكك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Abonnement ist aktiv."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your subscription is active."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu suscripción está activa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton abonnement est actif."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langgananmu sudah aktif."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo abbonamento è attivo."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je abonnement is actief."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua assinatura está ativa."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подписка активна."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aboneliğin başladı."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "آپ کی رکنیت فعال ہو گئی ہے۔"
           }
         }
       }
