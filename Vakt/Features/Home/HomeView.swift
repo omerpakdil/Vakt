@@ -9,13 +9,14 @@ struct HomeView: View {
 
     @StateObject private var qiblaStore = QiblaCompassStore()
     @State private var qiblaPresented = false
-    @State private var selectedOutcome: PrayerReflectionOutcome = .missed
 
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
+        let currentPrayer = prayerStore.activePrayer ?? nextPrayer
+        let selectedOutcome = reflectionStore.outcome(for: currentPrayer) ?? .missed
         let trackingStatus = reflectionStore.trackingStatus(
-            for: nextPrayer,
-            sessionStatus: sessionStore.status(for: nextPrayer)
+            for: currentPrayer,
+            sessionStatus: sessionStore.status(for: currentPrayer)
         )
 
         GeometryReader { geometry in
@@ -28,6 +29,7 @@ struct HomeView: View {
                     HomePrayerFocus(
                         prayerTime: nextPrayer,
                         countdown: prayerStore.nextCountdown,
+                        currentPrayer: currentPrayer.prayer,
                         trackingStatus: trackingStatus
                     )
                     .padding(.top, 18)
@@ -36,15 +38,15 @@ struct HomeView: View {
 
                     VStack(spacing: 0) {
                         HomePrayerActions(
-                            prayer: nextPrayer.prayer,
-                            selectedOutcome: $selectedOutcome,
+                            prayer: currentPrayer.prayer,
+                            selectedOutcome: selectedOutcome,
                             trackingStatus: trackingStatus,
-                            onMark: { mark(nextPrayer, outcome: $0) },
+                            onMark: { mark(currentPrayer, outcome: $0) },
                             onBegin: { selectedTab = .prayer }
                         )
 
                         HomeSocialLine(
-                            prayer: nextPrayer.prayer,
+                            prayer: currentPrayer.prayer,
                             summaries: socialPrayerStore.friendSummaries,
                             onOpen: { selectedTab = .circle }
                         )
@@ -65,21 +67,15 @@ struct HomeView: View {
             QiblaSheet(store: qiblaStore)
         }
         .onAppear {
-            syncSelectedOutcome(for: nextPrayer)
-            socialPrayerStore.refresh(for: nextPrayer.time, timeZone: nextPrayer.timeZone)
+            socialPrayerStore.refresh(for: currentPrayer.time, timeZone: currentPrayer.timeZone)
         }
-        .onChange(of: nextPrayer.prayer) { _, _ in
-            syncSelectedOutcome(for: nextPrayer)
-            socialPrayerStore.refresh(for: nextPrayer.time, timeZone: nextPrayer.timeZone)
-        }
-        .onChange(of: reflectionStore.entries) { _, _ in
-            syncSelectedOutcome(for: nextPrayer)
+        .onChange(of: currentPrayer.time) { _, _ in
+            socialPrayerStore.refresh(for: currentPrayer.time, timeZone: currentPrayer.timeZone)
         }
     }
 
     private func mark(_ prayerTime: PrayerTime, outcome: PrayerReflectionOutcome) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        selectedOutcome = outcome
 
         if outcome == .prayed {
             sessionStore.markPrayerCompleted(for: prayerTime)
@@ -91,10 +87,6 @@ struct HomeView: View {
             outcome: outcome
         )
         socialPrayerStore.mark(prayerTime, outcome: outcome)
-    }
-
-    private func syncSelectedOutcome(for prayerTime: PrayerTime) {
-        selectedOutcome = reflectionStore.outcome(for: prayerTime) ?? .missed
     }
 }
 
@@ -214,6 +206,7 @@ private struct HomeTopBar: View {
 private struct HomePrayerFocus: View {
     let prayerTime: PrayerTime
     let countdown: TimeInterval
+    let currentPrayer: Prayer
     let trackingStatus: PrayerTrackingStatus
 
     var body: some View {
@@ -227,7 +220,7 @@ private struct HomePrayerFocus: View {
 
                 Spacer()
 
-                HomeQuietStatus(status: trackingStatus)
+                HomeQuietStatus(prayer: currentPrayer, status: trackingStatus)
             }
 
             Text(prayerTime.prayer.displayName)
@@ -255,6 +248,7 @@ private struct HomePrayerFocus: View {
 }
 
 private struct HomeQuietStatus: View {
+    let prayer: Prayer
     let status: PrayerTrackingStatus
 
     var body: some View {
@@ -263,9 +257,18 @@ private struct HomeQuietStatus: View {
                 .fill(color)
                 .frame(width: 5, height: 5)
 
-            Text(title)
-                .font(VaktFont.caption(10))
-                .foregroundStyle(Color.vaktMuted)
+            HStack(spacing: 4) {
+                Text(prayer.displayName)
+                    .foregroundStyle(Color.vaktSecondary)
+
+                Text("·")
+
+                Text(title)
+            }
+            .font(VaktFont.caption(10))
+            .foregroundStyle(Color.vaktMuted)
+            .lineLimit(1)
+            .minimumScaleFactor(0.72)
         }
     }
 
@@ -289,7 +292,7 @@ private struct HomeQuietStatus: View {
 
 private struct HomePrayerActions: View {
     let prayer: Prayer
-    @Binding var selectedOutcome: PrayerReflectionOutcome
+    let selectedOutcome: PrayerReflectionOutcome
     let trackingStatus: PrayerTrackingStatus
     let onMark: (PrayerReflectionOutcome) -> Void
     let onBegin: () -> Void

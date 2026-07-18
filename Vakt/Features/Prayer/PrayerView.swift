@@ -12,7 +12,7 @@ struct PrayerView: View {
     @State private var makeupSheetPresented = false
 
     var body: some View {
-        let prayerTime = prayerStore.nextPrayer
+        let prayerTime = prayerStore.activePrayer ?? prayerStore.nextPrayer
         let trackingStatus = reflectionStore.trackingStatus(
             for: prayerTime,
             sessionStatus: sessionStore.status(for: prayerTime)
