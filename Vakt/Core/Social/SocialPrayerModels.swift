@@ -96,6 +96,48 @@ struct PendingFriendRequest: Identifiable, Equatable, Sendable {
     var id: UUID { friendship.id }
 }
 
+enum FriendshipRequestResult: Equatable, Sendable {
+    case sent(Friendship)
+    case alreadyPending(Friendship)
+    case alreadyFriends(Friendship)
+    case incomingRequest(Friendship)
+}
+
+enum FriendshipRequestClassifier {
+    static func classify(
+        _ friendship: Friendship,
+        currentUserID: VaktUserID
+    ) throws -> FriendshipRequestResult {
+        switch friendship.status {
+        case .accepted:
+            return .alreadyFriends(friendship)
+        case .pending where friendship.requesterID == currentUserID:
+            return .alreadyPending(friendship)
+        case .pending:
+            return .incomingRequest(friendship)
+        case .blocked:
+            throw BackendError.forbidden
+        }
+    }
+}
+
+enum FriendshipRequestFeedback: Equatable {
+    case sent(SocialProfile)
+    case alreadyPending(SocialProfile)
+    case alreadyFriends(SocialProfile)
+    case incomingRequest(SocialProfile)
+
+    var profile: SocialProfile {
+        switch self {
+        case .sent(let profile),
+             .alreadyPending(let profile),
+             .alreadyFriends(let profile),
+             .incomingRequest(let profile):
+            profile
+        }
+    }
+}
+
 enum SocialPrayerStatus: String, Codable, CaseIterable, Hashable, Sendable {
     case preparing
     case prayedOnTime = "prayed_on_time"

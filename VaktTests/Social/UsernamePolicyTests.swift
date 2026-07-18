@@ -32,3 +32,63 @@ final class UsernamePolicyTests: XCTestCase {
         XCTAssertFalse(UsernamePolicy.isValid("user.name"))
     }
 }
+
+final class FriendshipRequestClassifierTests: XCTestCase {
+    private let currentUserID = VaktUserID(
+        rawValue: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    )
+    private let otherUserID = VaktUserID(
+        rawValue: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    )
+
+    func testPendingRequestFromCurrentUserIsAlreadySent() throws {
+        let friendship = makeFriendship(requesterID: currentUserID, status: .pending)
+
+        XCTAssertEqual(
+            try FriendshipRequestClassifier.classify(friendship, currentUserID: currentUserID),
+            .alreadyPending(friendship)
+        )
+    }
+
+    func testPendingRequestFromOtherUserIsIncoming() throws {
+        let friendship = makeFriendship(requesterID: otherUserID, status: .pending)
+
+        XCTAssertEqual(
+            try FriendshipRequestClassifier.classify(friendship, currentUserID: currentUserID),
+            .incomingRequest(friendship)
+        )
+    }
+
+    func testAcceptedRelationshipIsAlreadyFriends() throws {
+        let friendship = makeFriendship(requesterID: currentUserID, status: .accepted)
+
+        XCTAssertEqual(
+            try FriendshipRequestClassifier.classify(friendship, currentUserID: currentUserID),
+            .alreadyFriends(friendship)
+        )
+    }
+
+    func testBlockedRelationshipCannotBeRequested() {
+        let friendship = makeFriendship(requesterID: otherUserID, status: .blocked)
+
+        XCTAssertThrowsError(
+            try FriendshipRequestClassifier.classify(friendship, currentUserID: currentUserID)
+        ) { error in
+            XCTAssertEqual(error as? BackendError, .forbidden)
+        }
+    }
+
+    private func makeFriendship(
+        requesterID: VaktUserID,
+        status: FriendshipStatus
+    ) -> Friendship {
+        Friendship(
+            id: UUID(),
+            requesterID: requesterID,
+            receiverID: requesterID == currentUserID ? otherUserID : currentUserID,
+            status: status,
+            createdAt: Date(timeIntervalSince1970: 1_000),
+            updatedAt: Date(timeIntervalSince1970: 1_000)
+        )
+    }
+}

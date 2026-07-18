@@ -21,7 +21,7 @@ protocol SocialProfileRepository: Sendable {
 protocol FriendshipRepository: Sendable {
     func friends() async throws -> [SocialProfile]
     func pendingRequests() async throws -> [PendingFriendRequest]
-    func requestFriendship(receiverID: VaktUserID) async throws -> Friendship
+    func requestFriendship(receiverID: VaktUserID) async throws -> FriendshipRequestResult
     func acceptFriendship(_ friendshipID: UUID) async throws -> Friendship
     func removeFriendship(_ friendshipID: UUID) async throws
 }

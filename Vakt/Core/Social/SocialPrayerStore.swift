@@ -191,21 +191,31 @@ final class SocialPrayerStore: ObservableObject {
         }
     }
 
-    func requestFriendship(with profile: SocialProfile) {
-        guard let repositories else { return }
+    func requestFriendship(with profile: SocialProfile) async -> FriendshipRequestFeedback? {
+        guard let repositories else { return nil }
 
-        Task { [weak self] in
-            guard let self else { return }
-            isSyncing = true
-            do {
-                _ = try await repositories.friendships.requestFriendship(receiverID: profile.id)
-                profileSearchResults.removeAll { $0.id == profile.id }
-                pendingRequests = try await repositories.friendships.pendingRequests()
-                lastErrorMessage = nil
-            } catch {
-                lastErrorMessage = error.localizedDescription
+        isSyncing = true
+        defer { isSyncing = false }
+
+        do {
+            let result = try await repositories.friendships.requestFriendship(receiverID: profile.id)
+            profileSearchResults.removeAll { $0.id == profile.id }
+            pendingRequests = try await repositories.friendships.pendingRequests()
+            lastErrorMessage = nil
+
+            return switch result {
+            case .sent:
+                .sent(profile)
+            case .alreadyPending:
+                .alreadyPending(profile)
+            case .alreadyFriends:
+                .alreadyFriends(profile)
+            case .incomingRequest:
+                .incomingRequest(profile)
             }
-            isSyncing = false
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            return nil
         }
     }
 

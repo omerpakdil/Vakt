@@ -199,10 +199,14 @@ actor SupabaseFriendshipRepository: FriendshipRepository {
         }
     }
 
-    func requestFriendship(receiverID: VaktUserID) async throws -> Friendship {
+    func requestFriendship(receiverID: VaktUserID) async throws -> FriendshipRequestResult {
         let userID = try await auth.currentUserID()
 
         do {
+            if let existing = try await friendship(between: userID, and: receiverID) {
+                return try FriendshipRequestClassifier.classify(existing, currentUserID: userID)
+            }
+
             let payload = FriendshipInsertPayload(
                 requesterID: userID.rawValue,
                 receiverID: receiverID.rawValue,
@@ -224,10 +228,39 @@ actor SupabaseFriendshipRepository: FriendshipRepository {
                     body: FriendEventDeliveryPayload(friendshipID: friendship.id, event: "requested")
                 )
             )
-            return friendship
+            return .sent(friendship)
         } catch {
-            throw SupabaseBackendErrorMapper.map(error)
+            let mappedError = SupabaseBackendErrorMapper.map(error)
+            if mappedError == .conflict,
+               let existing = await friendshipAfterConflict(between: userID, and: receiverID) {
+                return try FriendshipRequestClassifier.classify(existing, currentUserID: userID)
+            }
+            throw mappedError
         }
+    }
+
+    private func friendshipAfterConflict(
+        between userID: VaktUserID,
+        and otherUserID: VaktUserID
+    ) async -> Friendship? {
+        try? await friendship(between: userID, and: otherUserID)
+    }
+
+    private func friendship(
+        between userID: VaktUserID,
+        and otherUserID: VaktUserID
+    ) async throws -> Friendship? {
+        let user = userID.rawValue.uuidString
+        let other = otherUserID.rawValue.uuidString
+        let rows: [FriendshipRow] = try await client
+            .from("friendships")
+            .select("id,requester_id,receiver_id,status,created_at,updated_at")
+            .or("and(requester_id.eq.\(user),receiver_id.eq.\(other)),and(requester_id.eq.\(other),receiver_id.eq.\(user))")
+            .limit(1)
+            .execute()
+            .value
+
+        return rows.first.flatMap(Friendship.init(row:))
     }
 
     func acceptFriendship(_ friendshipID: UUID) async throws -> Friendship {

@@ -9,6 +9,7 @@ struct SocialCircleView: View {
     @State private var addFriendPresented = false
     @State private var allFriendsPresented = false
     @State private var referralPresented = false
+    @State private var friendRequestFeedback: FriendshipRequestFeedback?
 
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
@@ -48,13 +49,23 @@ struct SocialCircleView: View {
                 .padding(.bottom, max(10, geometry.safeAreaInsets.bottom + 8))
                 .frame(width: geometry.size.width, alignment: .top)
                 .frame(minHeight: geometry.size.height, alignment: .top)
+
+                if let friendRequestFeedback {
+                    FriendshipRequestToast(feedback: friendRequestFeedback)
+                        .padding(.horizontal, VaktSpace.lg)
+                        .padding(.bottom, max(16, geometry.safeAreaInsets.bottom + 12))
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .zIndex(20)
+                }
             }
         }
         .sheet(isPresented: $addFriendPresented) {
             AddFriendSheet(
                 store: socialPrayerStore,
                 referralStore: referralStore,
-                subscriptionStore: subscriptionStore
+                subscriptionStore: subscriptionStore,
+                onRequestCompleted: showFriendRequestFeedback
             )
         }
         .sheet(isPresented: $allFriendsPresented) {
@@ -72,6 +83,21 @@ struct SocialCircleView: View {
         }
         .onChange(of: circlePrayer.prayer) { _, _ in
             socialPrayerStore.refresh(for: circlePrayer.time, timeZone: circlePrayer.timeZone)
+        }
+    }
+
+    private func showFriendRequestFeedback(_ feedback: FriendshipRequestFeedback) {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        withAnimation(.easeOut(duration: 0.28)) {
+            friendRequestFeedback = feedback
+        }
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(2_400))
+            guard friendRequestFeedback == feedback else { return }
+            withAnimation(.easeIn(duration: 0.22)) {
+                friendRequestFeedback = nil
+            }
         }
     }
 
@@ -683,9 +709,11 @@ private struct AddFriendSheet: View {
     @ObservedObject var store: SocialPrayerStore
     @ObservedObject var referralStore: ReferralStore
     @ObservedObject var subscriptionStore: SubscriptionStore
+    let onRequestCompleted: (FriendshipRequestFeedback) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @State private var referralPresented = false
+    @State private var requestingProfileID: VaktUserID?
 
     var body: some View {
         NavigationStack {
@@ -773,8 +801,11 @@ private struct AddFriendSheet: View {
                         ScrollView {
                             VStack(spacing: VaktSpace.sm) {
                                 ForEach(store.profileSearchResults) { profile in
-                                    SearchProfileRow(profile: profile) {
-                                        store.requestFriendship(with: profile)
+                                    SearchProfileRow(
+                                        profile: profile,
+                                        isSending: requestingProfileID == profile.id
+                                    ) {
+                                        requestFriendship(with: profile)
                                     }
                                 }
                             }
@@ -799,10 +830,26 @@ private struct AddFriendSheet: View {
             ReferralCenterView(store: referralStore, subscriptionStore: subscriptionStore)
         }
     }
+
+    private func requestFriendship(with profile: SocialProfile) {
+        guard requestingProfileID == nil else { return }
+        requestingProfileID = profile.id
+
+        Task { @MainActor in
+            let feedback = await store.requestFriendship(with: profile)
+            requestingProfileID = nil
+            guard let feedback else { return }
+
+            dismiss()
+            try? await Task.sleep(for: .milliseconds(320))
+            onRequestCompleted(feedback)
+        }
+    }
 }
 
 private struct SearchProfileRow: View {
     let profile: SocialProfile
+    let isSending: Bool
     let onAdd: () -> Void
 
     var body: some View {
@@ -821,8 +868,18 @@ private struct SearchProfileRow: View {
 
             Spacer()
 
-            Button(L10n.string("social.action.add")) {
+            Button {
                 onAdd()
+            } label: {
+                Group {
+                    if isSending {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Text(L10n.string("social.action.add"))
+                    }
+                }
+                .frame(minWidth: 30)
             }
             .font(VaktFont.caption(11))
             .lineLimit(1)
@@ -833,10 +890,71 @@ private struct SearchProfileRow: View {
             .background(Color.vaktPrimary)
             .clipShape(Capsule())
             .buttonStyle(VaktPressStyle())
+            .disabled(isSending)
         }
         .padding(VaktSpace.md)
         .background(Color.vaktSurface.opacity(0.78))
         .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+    }
+}
+
+private struct FriendshipRequestToast: View {
+    let feedback: FriendshipRequestFeedback
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.vaktBg)
+                .frame(width: 32, height: 32)
+                .background(Color.vaktPrimary)
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(VaktFont.body(13))
+                    .foregroundStyle(Color.vaktPrimary)
+
+                Text(feedback.profile.displayName)
+                    .font(VaktFont.caption(10))
+                    .foregroundStyle(Color.vaktMuted)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 58)
+        .background(Color.vaktSurface.opacity(0.96))
+        .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
+                .strokeBorder(Color.vaktBorderStrong.opacity(0.72), lineWidth: 0.6)
+        )
+        .shadow(color: Color.vaktDeep.opacity(0.36), radius: 18, y: 8)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var title: String {
+        switch feedback {
+        case .sent:
+            L10n.string("social.friend_request.feedback.sent")
+        case .alreadyPending:
+            L10n.string("social.friend_request.feedback.already_sent")
+        case .alreadyFriends:
+            L10n.string("social.friend_request.feedback.already_friends")
+        case .incomingRequest:
+            L10n.string("social.friend_request.feedback.incoming")
+        }
+    }
+
+    private var icon: String {
+        switch feedback {
+        case .sent: "paperplane.fill"
+        case .alreadyPending: "clock.fill"
+        case .alreadyFriends: "person.2.fill"
+        case .incomingRequest: "person.crop.circle.badge.checkmark"
+        }
     }
 }
 
