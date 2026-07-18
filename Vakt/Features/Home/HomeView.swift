@@ -795,8 +795,16 @@ private struct HomePrayerActions: View {
                 onBegin()
             } label: {
                 HStack(spacing: 12) {
-                    Image(systemName: isOpen ? "arrow.uturn.forward" : "moon.stars")
-                        .font(.system(size: 15, weight: .medium))
+                    Group {
+                        if isOpen {
+                            Image(systemName: "arrow.uturn.forward")
+                                .font(.system(size: 15, weight: .medium))
+                        } else {
+                            VaktPrayerEntryGlyph()
+                        }
+                    }
+                    .frame(width: 24, height: 24)
+                    .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(actionTitle)
@@ -860,6 +868,51 @@ private struct HomePrayerActions: View {
             return L10n.string("home.action.return.subtitle")
         }
         return L10n.formatString("home.action.begin.subtitle", prayer.displayName)
+    }
+}
+
+private struct VaktPrayerEntryGlyph: View {
+    var body: some View {
+        ZStack {
+            VaktMihrabOutline()
+                .stroke(
+                    Color.vaktBg.opacity(0.88),
+                    style: StrokeStyle(lineWidth: 1.65, lineCap: .round, lineJoin: .round)
+                )
+
+            Capsule()
+                .fill(Color.vaktBg.opacity(0.3))
+                .frame(width: 18, height: 1.2)
+                .offset(y: 8.6)
+        }
+        .frame(width: 22, height: 22)
+    }
+}
+
+private struct VaktMihrabOutline: Shape {
+    func path(in rect: CGRect) -> Path {
+        let left = rect.minX + rect.width * 0.21
+        let right = rect.maxX - rect.width * 0.21
+        let centerX = rect.midX
+        let top = rect.minY + rect.height * 0.09
+        let shoulderY = rect.minY + rect.height * 0.34
+        let bottom = rect.maxY - rect.height * 0.16
+
+        var path = Path()
+        path.move(to: CGPoint(x: left, y: bottom))
+        path.addLine(to: CGPoint(x: left, y: shoulderY))
+        path.addCurve(
+            to: CGPoint(x: centerX, y: top),
+            control1: CGPoint(x: left, y: rect.height * 0.23),
+            control2: CGPoint(x: centerX - rect.width * 0.08, y: top + rect.height * 0.025)
+        )
+        path.addCurve(
+            to: CGPoint(x: right, y: shoulderY),
+            control1: CGPoint(x: centerX + rect.width * 0.08, y: top + rect.height * 0.025),
+            control2: CGPoint(x: right, y: rect.height * 0.23)
+        )
+        path.addLine(to: CGPoint(x: right, y: bottom))
+        return path
     }
 }
 
