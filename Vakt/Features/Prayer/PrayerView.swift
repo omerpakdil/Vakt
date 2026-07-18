@@ -286,18 +286,17 @@ private struct PrayerMatRitual: View {
                 onBegin()
             } label: {
                 HStack(spacing: 14) {
-                    Image(systemName: isOpen ? "arrow.counterclockwise" : "moon.haze")
-                        .font(.system(size: 17, weight: .light))
-                        .foregroundStyle(Color.vaktGlow)
-                        .frame(width: 28)
-
-                    Rectangle()
-                        .fill(Color.vaktBorderStrong.opacity(0.75))
-                        .frame(width: 0.5, height: 34)
-
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(buttonTitle)
-                            .font(VaktFont.button(16))
+                        HStack(spacing: 7) {
+                            if isOpen {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Color.vaktGlow)
+                            }
+
+                            Text(buttonTitle)
+                                .font(VaktFont.button(16))
+                        }
 
                         Text(buttonSubtitle)
                             .font(VaktFont.caption(10))
