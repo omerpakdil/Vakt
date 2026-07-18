@@ -230,22 +230,10 @@ private struct HomePrayerFocus: View {
                 .minimumScaleFactor(0.75)
                 .contentTransition(.opacity)
 
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline, spacing: 9) {
-                    currentPrayerStart
+            currentPrayerStart
 
-                    Rectangle()
-                        .fill(Color.vaktBorderStrong)
-                        .frame(width: 22, height: 1)
-
-                    nextPrayerCountdown
-                }
-
-                VStack(alignment: .leading, spacing: 5) {
-                    currentPrayerStart
-                    nextPrayerCountdown
-                }
-            }
+            nextPrayerSummary
+                .padding(.top, 11)
         }
     }
 
@@ -257,22 +245,27 @@ private struct HomePrayerFocus: View {
             .contentTransition(.numericText())
     }
 
-    private var nextPrayerCountdown: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 5) {
-            Text(L10n.string("home.next_prayer"))
+    private var nextPrayerSummary: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(L10n.string("home.next_prayer")
+                .uppercased(with: VaktLocalization.appLocale))
+                .font(VaktFont.eyebrow(8))
                 .foregroundStyle(Color.vaktMuted)
+                .tracking(1.2)
 
             Text(nextPrayerTime.prayer.displayName)
+                .font(VaktFont.body(15))
                 .foregroundStyle(Color.vaktSecondary)
+                .contentTransition(.opacity)
 
-            Text("·")
-                .foregroundStyle(Color.vaktBorderStrong)
-
-            CountdownLabel(seconds: countdown)
+            CountdownLabel(
+                seconds: countdown,
+                fontSize: 11,
+                digitWidth: 7,
+                digitHeight: 15
+            )
+            .padding(.top, 1)
         }
-        .font(VaktFont.body(13))
-        .lineLimit(1)
-        .minimumScaleFactor(0.76)
         .accessibilityElement(children: .combine)
     }
 }

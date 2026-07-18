@@ -374,6 +374,9 @@ struct PrayerRow: View {
 
 struct CountdownLabel: View {
     let seconds: TimeInterval
+    var fontSize: CGFloat = 13
+    var digitWidth: CGFloat = 8
+    var digitHeight: CGFloat = 17
 
     private var totalSeconds: Int {
         max(0, Int(seconds.rounded(.down)))
@@ -384,48 +387,48 @@ struct CountdownLabel: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: fontSize < 13 ? 3 : 4) {
             if totalMinutes >= 60 {
                 VaktRollingNumberText(
                     value: totalMinutes / 60,
                     direction: -1,
-                    font: VaktFont.body(13),
+                    font: VaktFont.body(fontSize),
                     color: .vaktAccent.opacity(0.72),
-                    digitWidth: 8,
-                    digitHeight: 17,
+                    digitWidth: digitWidth,
+                    digitHeight: digitHeight,
                     showsPulse: false
                 )
 
                 Text(L10n.text(.timeRemainingHourUnit))
-                    .font(VaktFont.body(13))
+                    .font(VaktFont.body(fontSize))
                     .foregroundStyle(Color.vaktMuted)
 
                 VaktRollingNumberText(
                     value: totalMinutes % 60,
                     direction: -1,
-                    font: VaktFont.body(13),
+                    font: VaktFont.body(fontSize),
                     color: .vaktAccent.opacity(0.72),
-                    digitWidth: 8,
-                    digitHeight: 17,
+                    digitWidth: digitWidth,
+                    digitHeight: digitHeight,
                     showsPulse: false
                 )
 
                 Text(L10n.text(.timeRemainingMinuteRemainingUnit))
-                    .font(VaktFont.body(13))
+                    .font(VaktFont.body(fontSize))
                     .foregroundStyle(Color.vaktMuted)
             } else {
                 VaktRollingNumberText(
                     value: max(1, totalMinutes),
                     direction: -1,
-                    font: VaktFont.body(13),
+                    font: VaktFont.body(fontSize),
                     color: .vaktAccent.opacity(0.72),
-                    digitWidth: 8,
-                    digitHeight: 17,
+                    digitWidth: digitWidth,
+                    digitHeight: digitHeight,
                     showsPulse: false
                 )
 
                 Text(totalMinutes == 1 ? L10n.text(.minuteRemainingSuffix) : L10n.text(.minutesRemainingSuffix))
-                    .font(VaktFont.body(13))
+                    .font(VaktFont.body(fontSize))
                     .foregroundStyle(Color.vaktMuted)
             }
         }
