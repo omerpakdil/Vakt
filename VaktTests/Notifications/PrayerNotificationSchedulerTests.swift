@@ -22,6 +22,29 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
         )
     }
 
+    @MainActor
+    func testPermissionSetupRequiresScheduleThenNotificationDecision() {
+        let suiteName = "PermissionSetupStoreTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = PermissionSetupStore(defaults: defaults)
+
+        XCTAssertEqual(
+            store.nextStep(hasUsablePrayerSchedule: false, notificationStatus: .notDetermined),
+            .location
+        )
+        XCTAssertEqual(
+            store.nextStep(hasUsablePrayerSchedule: true, notificationStatus: .notDetermined),
+            .notifications
+        )
+
+        store.completeNotificationDecision()
+
+        XCTAssertNil(
+            store.nextStep(hasUsablePrayerSchedule: true, notificationStatus: .notDetermined)
+        )
+    }
+
     func testSchedulesCheckInForPrayerAlreadyInProgress() {
         let now = date(2026, 7, 12, 14, 0)
         let prayers = [

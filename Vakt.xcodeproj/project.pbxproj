@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11A7C91E2D4F4B2A9E310001 /* PermissionSetupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A7C91E2D4F4B2A9E310001 /* PermissionSetupStore.swift */; };
+		11B7C91E2D4F4B2A9E310002 /* PermissionSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B7C91E2D4F4B2A9E310002 /* PermissionSetupView.swift */; };
 		0538FA7E5E0608BD98C668D1 /* PrayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C270C6B45B8BD661343C55 /* PrayerView.swift */; };
 		0828EEED4558CC454F582017 /* BackendComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3305E5D718CEC978BEDB71A /* BackendComposition.swift */; };
 		0A0EB4C127E8BF371E082E7C /* InMemoryPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8081F97783F6D49AF274BFB /* InMemoryPresenceRepository.swift */; };
@@ -108,6 +110,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		22A7C91E2D4F4B2A9E310001 /* PermissionSetupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionSetupStore.swift; sourceTree = "<group>"; };
+		22B7C91E2D4F4B2A9E310002 /* PermissionSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionSetupView.swift; sourceTree = "<group>"; };
 		000B67223D0ADBE985088C5C /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
 		00AB1D53FDEB926BA8ADAF38 /* SimulatedPresenceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedPresenceRepository.swift; sourceTree = "<group>"; };
 		018669BAEE0758185FE80315 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -290,6 +294,7 @@
 				99D3CEA9690843F0E4513DED /* Localization */,
 				A99A0A24AC8771B0495F8BDD /* Models */,
 				1E4ECC9F7521C3A2BD64F3D5 /* Notifications */,
+				33A7C91E2D4F4B2A9E310001 /* Permissions */,
 				7A28733068CBBC47EB11216F /* Qibla */,
 				76C7992C5CFED6BC9138C991 /* Referral */,
 				217EFB0F8042455B0CCE45DD /* Review */,
@@ -299,6 +304,22 @@
 				C1794949DFB35A253E55809D /* Support */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		33A7C91E2D4F4B2A9E310001 /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				22A7C91E2D4F4B2A9E310001 /* PermissionSetupStore.swift */,
+			);
+			path = Permissions;
+			sourceTree = "<group>";
+		};
+		33B7C91E2D4F4B2A9E310002 /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				22B7C91E2D4F4B2A9E310002 /* PermissionSetupView.swift */,
+			);
+			path = Permissions;
 			sourceTree = "<group>";
 		};
 		2D1697B90CD7228BC8C7C62E /* Notifications */ = {
@@ -441,6 +462,7 @@
 				FD374C8DDE51EA6B06C0AE80 /* Insights */,
 				134F7721F45ED133987D24E9 /* Onboarding */,
 				3C8EB7D9F1F44938F690A01E /* Paywall */,
+				33B7C91E2D4F4B2A9E310002 /* Permissions */,
 				0EEC63957B3820F24EEF145E /* Prayer */,
 				547D397658BD3C59ABCDDB08 /* Profile */,
 				3B156A6191CFEA09F7056808 /* Qibla */,
@@ -770,6 +792,8 @@
 				970D7B70B84F1CB1948B9920 /* OnboardingStore.swift in Sources */,
 				5F4311165A0043551C314031 /* OnboardingView.swift in Sources */,
 				D9E0498150CC7EC046247FC7 /* PaywallView.swift in Sources */,
+				11A7C91E2D4F4B2A9E310001 /* PermissionSetupStore.swift in Sources */,
+				11B7C91E2D4F4B2A9E310002 /* PermissionSetupView.swift in Sources */,
 				0538FA7E5E0608BD98C668D1 /* PrayerView.swift in Sources */,
 				5810BB9D474F351D7F9E4FB2 /* PresenceCoordinator.swift in Sources */,
 				D9B0D8000BC15E3B4E5AEA39 /* PresenceHorizonLayout.swift in Sources */,

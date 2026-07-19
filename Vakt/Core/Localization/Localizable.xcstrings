@@ -32084,6 +32084,23 @@
         }
       }
     },
+    "permission.location.ready_to_request": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "ستُجهّز مواقيت الصلاة المحلية بعد السماح بالموقع." } },
+        "de": { "stringUnit": { "state": "translated", "value": "Nach der Standortfreigabe werden deine lokalen Gebetszeiten vorbereitet." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your local prayer times will be prepared after you allow location." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tus horarios locales de oración se prepararán cuando permitas la ubicación." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Tes horaires de prière locaux seront préparés après l’autorisation de la localisation." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Waktu salat setempat akan disiapkan setelah kamu mengizinkan lokasi." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Gli orari di preghiera locali saranno preparati dopo aver consentito la posizione." } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Je lokale gebedstijden worden klaargezet nadat je locatie toestaat." } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Os teus horários locais de oração serão preparados após permitires a localização." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Местное расписание молитв будет подготовлено после разрешения геолокации." } },
+        "tr": { "stringUnit": { "state": "translated", "value": "Konuma izin verdiğinde yerel namaz vakitlerin hazırlanır." } },
+        "ur": { "stringUnit": { "state": "translated", "value": "مقام کی اجازت دینے کے بعد مقامی نماز کے اوقات تیار ہو جائیں گے۔" } }
+      }
+    },
     "period.month": {
       "extractionState": "manual",
       "localizations": {

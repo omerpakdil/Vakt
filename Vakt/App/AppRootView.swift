@@ -5,6 +5,7 @@ struct AppRootView: View {
     @State private var selectedTab: VaktTab = .home
     @State private var hasStartedAppServices = false
     @StateObject private var onboardingStore = OnboardingStore()
+    @StateObject private var permissionSetupStore = PermissionSetupStore()
     @StateObject private var subscriptionStore = SubscriptionStore()
     @StateObject private var prayerStore = PrayerScheduleStore()
     @StateObject private var notificationManager = NotificationManager()
@@ -232,37 +233,37 @@ struct AppRootView: View {
             } else if socialAccountStore.profile?.isComplete != true {
                 ProfileCompletionView(store: socialAccountStore)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
-            } else if prayerStore.hasUsablePrayerSchedule {
+            } else if let step = permissionSetupStep {
+                PermissionSetupView(
+                    step: step,
+                    prayerStore: prayerStore,
+                    notificationManager: notificationManager,
+                    onRequestLocation: requestPermissionSetupLocation,
+                    onOpenLocationSettings: openSystemSettings,
+                    onCompleteNotificationDecision: permissionSetupStore.completeNotificationDecision
+                )
+                .transition(.opacity)
+            } else {
                 mainTabs
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
-            } else {
-                prayerLocationSetup
-                    .transition(.opacity)
             }
         }
     }
 
-    private var prayerLocationSetup: some View {
-        OnboardingLocationView(
-            stepIndex: 0,
-            stepCount: 1,
-            prayerStore: prayerStore,
-            reduceMotion: UIAccessibility.isReduceMotionEnabled,
-            showsPageMark: false,
-            allowsSkip: false,
-            onContinue: handlePrayerLocationSetup,
-            onSkip: {}
+    private var permissionSetupStep: PermissionSetupStore.Step? {
+        permissionSetupStore.nextStep(
+            hasUsablePrayerSchedule: prayerStore.hasUsablePrayerSchedule,
+            notificationStatus: notificationManager.authorizationStatus
         )
     }
 
-    private func handlePrayerLocationSetup() {
-        if prayerStore.locationAccessNeedsSettings,
-           let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(settingsURL)
-            return
-        }
-
+    private func requestPermissionSetupLocation() {
         prayerStore.requestLocationPermission()
+    }
+
+    private func openSystemSettings() {
+        guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(settingsURL)
     }
 
     private var mainTabs: some View {

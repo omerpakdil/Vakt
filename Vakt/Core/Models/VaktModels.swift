@@ -1624,6 +1624,10 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         }
     }
 
+    var locationAuthorizationStatus: CLAuthorizationStatus {
+        locationManager.authorizationStatus
+    }
+
     var activePrayerWindow: ActivePrayerWindow? {
         ActivePrayerWindow.resolve(from: loadedPrayers, at: now)
     }
