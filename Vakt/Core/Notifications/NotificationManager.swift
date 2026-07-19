@@ -11,6 +11,17 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
     @Published private(set) var pendingPrayerNotificationCount = 0
     @Published private(set) var lastSchedulingError: String?
 
+    var reminderState: ReminderState {
+        ReminderState(
+            preferenceEnabled: isReminderEnabled,
+            authorizationStatus: authorizationStatus
+        )
+    }
+
+    var areRemindersActive: Bool {
+        reminderState == .enabled
+    }
+
     private static let reminderEnabledKey = "vakt.notifications.remindersEnabled.v1"
     private static let preferencesKey = "vakt.notifications.preferences.v2"
 
@@ -83,23 +94,22 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         }
     }
 
-    func requestAuthorization() {
-        Task {
-            _ = await requestAuthorizationIfNeeded()
-        }
-    }
-
     func enableRemindersAndRequestAuthorization() async -> Bool {
-        updateReminderPreference(true)
-        return await requestAuthorizationIfNeeded()
+        let authorized = await requestAuthorizationIfNeeded()
+        updateReminderPreference(authorized)
+        if !authorized {
+            removeScheduledPrayerNotifications()
+        }
+        return authorized
     }
 
     func setReminderEnabled(_ isEnabled: Bool) {
-        updateReminderPreference(isEnabled)
-
         if isEnabled {
-            requestAuthorization()
+            Task {
+                _ = await enableRemindersAndRequestAuthorization()
+            }
         } else {
+            updateReminderPreference(false)
             removeScheduledPrayerNotifications()
         }
     }
@@ -156,10 +166,12 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         case .notDetermined:
             do {
                 let granted = try await center.requestAuthorization(options: [.alert, .badge, .sound])
-                refreshAuthorizationStatus()
+                let updatedSettings = await center.notificationSettings()
+                authorizationStatus = updatedSettings.authorizationStatus
                 return granted
             } catch {
-                refreshAuthorizationStatus()
+                let updatedSettings = await center.notificationSettings()
+                authorizationStatus = updatedSettings.authorizationStatus
                 return false
             }
         @unknown default:
@@ -308,6 +320,26 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
             default:
                 lastDeepLink = .prayer(prayer)
             }
+        }
+    }
+}
+
+enum ReminderState: Equatable {
+    case notRequested
+    case enabled
+    case paused
+    case denied
+
+    init(preferenceEnabled: Bool, authorizationStatus: UNAuthorizationStatus) {
+        switch authorizationStatus {
+        case .notDetermined:
+            self = .notRequested
+        case .denied:
+            self = .denied
+        case .authorized, .provisional, .ephemeral:
+            self = preferenceEnabled ? .enabled : .paused
+        @unknown default:
+            self = .denied
         }
     }
 }

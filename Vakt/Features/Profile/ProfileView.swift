@@ -169,8 +169,7 @@ struct ProfileView: View {
             Spacer(minLength: 6)
 
             PersonalSettingsDock(
-                remindersEnabled: notificationManager.isReminderEnabled &&
-                    notificationManager.authorizationStatus != .denied,
+                reminderState: notificationManager.reminderState,
                 methodTitle: profileSettings.prayerCalculationMethod.title,
                 onReminders: { isRemindersPresented = true },
                 onPrayerTimes: { isPrayerMethodSheetPresented = true },
@@ -945,7 +944,7 @@ private struct MakeupPrayerLine: View {
 }
 
 private struct PersonalSettingsDock: View {
-    let remindersEnabled: Bool
+    let reminderState: ReminderState
     let methodTitle: String
     let onReminders: () -> Void
     let onPrayerTimes: () -> Void
@@ -954,11 +953,9 @@ private struct PersonalSettingsDock: View {
     var body: some View {
         HStack(spacing: 8) {
             dockButton(
-                icon: remindersEnabled ? "bell.fill" : "bell.slash",
+                icon: reminderState == .enabled ? "bell.fill" : "bell.slash",
                 title: L10n.string("profile.dock.reminders"),
-                detail: remindersEnabled
-                    ? L10n.string("profile.dock.on")
-                    : L10n.string("profile.dock.off"),
+                detail: reminderDetail,
                 action: onReminders
             )
             dockButton(
@@ -981,6 +978,17 @@ private struct PersonalSettingsDock: View {
             RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
                 .strokeBorder(Color.vaktBorder.opacity(0.6), lineWidth: 0.5)
         )
+    }
+
+    private var reminderDetail: String {
+        switch reminderState {
+        case .enabled:
+            return L10n.string("profile.dock.on")
+        case .paused:
+            return L10n.string("profile.dock.off")
+        case .notRequested, .denied:
+            return L10n.string("profile.dock.permission_required")
+        }
     }
 
     private func dockButton(icon: String, title: String, detail: String, action: @escaping () -> Void) -> some View {
@@ -1068,13 +1076,17 @@ private struct ReminderSettingsSheet: View {
                     }
 
                     ReminderMasterControl(
-                        isEnabled: manager.isReminderEnabled,
-                        authorizationStatus: manager.authorizationStatus,
+                        state: manager.reminderState,
                         onToggle: {
-                            if manager.authorizationStatus == .denied {
+                            switch manager.reminderState {
+                            case .denied:
                                 onOpenSystemSettings()
-                            } else {
-                                manager.setReminderEnabled(!manager.isReminderEnabled)
+                            case .enabled:
+                                manager.setReminderEnabled(false)
+                            case .notRequested, .paused:
+                                Task {
+                                    _ = await manager.enableRemindersAndRequestAuthorization()
+                                }
                             }
                         }
                     )
@@ -1088,7 +1100,7 @@ private struct ReminderSettingsSheet: View {
                                 ProfileNumberFormatter.string(manager.preferences.minutesBeforePrayer)
                             ),
                             isOn: manager.preferences.prayerOpeningEnabled,
-                            isEnabled: manager.isReminderEnabled
+                            isEnabled: manager.areRemindersActive
                         ) {
                             manager.setPrayerOpeningEnabled(!manager.preferences.prayerOpeningEnabled)
                         }
@@ -1100,7 +1112,7 @@ private struct ReminderSettingsSheet: View {
                             title: L10n.string("reminder.at_time.title"),
                             detail: L10n.string("reminder.at_time.detail"),
                             isOn: manager.preferences.prayerTimeEnabled,
-                            isEnabled: manager.isReminderEnabled
+                            isEnabled: manager.areRemindersActive
                         ) {
                             manager.setPrayerTimeEnabled(!manager.preferences.prayerTimeEnabled)
                         }
@@ -1115,7 +1127,7 @@ private struct ReminderSettingsSheet: View {
                                 ProfileNumberFormatter.string(manager.preferences.fajrWakeMinutesBefore)
                             ),
                             isOn: manager.preferences.fajrWakeEnabled,
-                            isEnabled: manager.isReminderEnabled
+                            isEnabled: manager.areRemindersActive
                         ) {
                             manager.setFajrWakeEnabled(!manager.preferences.fajrWakeEnabled)
                         }
@@ -1130,7 +1142,7 @@ private struct ReminderSettingsSheet: View {
                                 ProfileNumberFormatter.string(manager.preferences.checkInMinutesBeforeNextPrayer)
                             ),
                             isOn: manager.preferences.checkInEnabled,
-                            isEnabled: manager.isReminderEnabled
+                            isEnabled: manager.areRemindersActive
                         ) {
                             manager.setCheckInEnabled(!manager.preferences.checkInEnabled)
                         }
@@ -1201,8 +1213,7 @@ private struct ReminderSettingsSheet: View {
 }
 
 private struct ReminderMasterControl: View {
-    let isEnabled: Bool
-    let authorizationStatus: UNAuthorizationStatus
+    let state: ReminderState
     let onToggle: () -> Void
 
     var body: some View {
@@ -1211,11 +1222,11 @@ private struct ReminderMasterControl: View {
             onToggle()
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: authorizationStatus == .denied ? "bell.slash" : "bell.badge.fill")
+                Image(systemName: masterIcon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(isEnabled ? Color.vaktBg : Color.vaktMuted)
+                    .foregroundStyle(isActive ? Color.vaktBg : Color.vaktMuted)
                     .frame(width: 38, height: 38)
-                    .background(isEnabled ? Color.vaktPrimary : Color.vaktBorder.opacity(0.5))
+                    .background(isActive ? Color.vaktPrimary : Color.vaktBorder.opacity(0.5))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -1234,39 +1245,64 @@ private struct ReminderMasterControl: View {
 
                 Spacer()
 
-                if authorizationStatus == .denied {
+                if state == .denied {
                     Text(L10n.string("reminder.action.settings"))
                         .font(VaktFont.caption(11))
                         .foregroundStyle(Color.vaktGlow)
+                } else if state == .notRequested {
+                    Text(L10n.string("reminder.action.allow"))
+                        .font(VaktFont.caption(11))
+                        .foregroundStyle(Color.vaktGlow)
                 } else {
-                    VaktTogglePill(isOn: isEnabled)
+                    VaktTogglePill(isOn: isActive)
                 }
             }
             .padding(.horizontal, 14)
             .frame(height: 66)
-            .background(Color.vaktElevated.opacity(isEnabled ? 0.52 : 0.25))
+            .background(Color.vaktElevated.opacity(isActive ? 0.52 : 0.25))
             .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
-                    .strokeBorder(Color.vaktGlow.opacity(isEnabled ? 0.28 : 0.1), lineWidth: 0.6)
+                    .strokeBorder(Color.vaktGlow.opacity(isActive ? 0.28 : 0.1), lineWidth: 0.6)
             )
         }
         .buttonStyle(VaktPressStyle())
     }
 
     private var masterTitle: String {
-        authorizationStatus == .denied
+        state == .denied
             ? L10n.string("reminder.master.denied.title")
             : L10n.string("reminder.master.title")
     }
 
     private var masterDetail: String {
-        if authorizationStatus == .denied {
+        switch state {
+        case .denied:
             return L10n.string("reminder.master.denied.detail")
+        case .notRequested:
+            return L10n.string("reminder.master.permission.detail")
+        case .enabled:
+            return L10n.string("reminder.master.enabled.detail")
+        case .paused:
+            return L10n.string("reminder.master.disabled.detail")
         }
-        return isEnabled
-            ? L10n.string("reminder.master.enabled.detail")
-            : L10n.string("reminder.master.disabled.detail")
+    }
+
+    private var isActive: Bool {
+        state == .enabled
+    }
+
+    private var masterIcon: String {
+        switch state {
+        case .enabled:
+            return "bell.badge.fill"
+        case .paused:
+            return "bell"
+        case .notRequested:
+            return "bell.badge"
+        case .denied:
+            return "bell.slash"
+        }
     }
 }
 

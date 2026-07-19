@@ -3,6 +3,25 @@ import UserNotifications
 @testable import Vakt
 
 final class PrayerNotificationSchedulerTests: XCTestCase {
+    func testReminderStateRequiresSystemPermissionBeforeBecomingEnabled() {
+        XCTAssertEqual(
+            ReminderState(preferenceEnabled: true, authorizationStatus: .notDetermined),
+            .notRequested
+        )
+        XCTAssertEqual(
+            ReminderState(preferenceEnabled: true, authorizationStatus: .denied),
+            .denied
+        )
+        XCTAssertEqual(
+            ReminderState(preferenceEnabled: true, authorizationStatus: .authorized),
+            .enabled
+        )
+        XCTAssertEqual(
+            ReminderState(preferenceEnabled: false, authorizationStatus: .authorized),
+            .paused
+        )
+    }
+
     func testSchedulesCheckInForPrayerAlreadyInProgress() {
         let now = date(2026, 7, 12, 14, 0)
         let prayers = [

@@ -247,10 +247,10 @@ struct OnboardingView: View {
             )
         case .reminders:
             OnboardingPermissionStatus(
-                icon: notificationManager.isReminderEnabled ? "bell.badge.fill" : "bell",
+                icon: notificationManager.areRemindersActive ? "bell.badge.fill" : "bell",
                 title: reminderStatusTitle,
                 detail: reminderStatusDetail,
-                isActive: notificationManager.isReminderEnabled
+                isActive: notificationManager.areRemindersActive
             )
         }
     }
@@ -304,21 +304,29 @@ struct OnboardingView: View {
     }
 
     private var reminderStatusTitle: String {
-        if notificationManager.authorizationStatus == .denied {
+        switch notificationManager.reminderState {
+        case .denied:
             return L10n.string("onboarding.reminders.off")
+        case .notRequested:
+            return L10n.string("action.allow_prayer_reminders")
+        case .enabled:
+            return L10n.string("onboarding.reminders.on")
+        case .paused:
+            return L10n.string("onboarding.reminders.paused")
         }
-
-        return notificationManager.isReminderEnabled ? L10n.string("onboarding.reminders.on") : L10n.string("onboarding.reminders.paused")
     }
 
     private var reminderStatusDetail: String {
-        if notificationManager.authorizationStatus == .denied {
+        switch notificationManager.reminderState {
+        case .denied:
             return L10n.string("onboarding.reminders.denied_detail")
+        case .notRequested:
+            return L10n.string("reminder.master.permission.detail")
+        case .enabled:
+            return L10n.string("onboarding.reminders.on_detail")
+        case .paused:
+            return L10n.string("onboarding.reminders.paused_detail")
         }
-
-        return notificationManager.isReminderEnabled
-            ? L10n.string("onboarding.reminders.on_detail")
-            : L10n.string("onboarding.reminders.paused_detail")
     }
 
     private func handlePrimaryAction() {

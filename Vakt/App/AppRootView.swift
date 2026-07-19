@@ -111,6 +111,7 @@ struct AppRootView: View {
             }
             schedulePrayerNotifications()
         }
+        .modifier(NotificationAuthorizationLifecycleModifier(manager: notificationManager))
         .onChange(of: notificationManager.isReminderEnabled) { _, _ in
             schedulePrayerNotifications()
         }
@@ -409,6 +410,18 @@ struct AppRootView: View {
             outcome: action.outcome,
             markedAt: Date()
         )
+    }
+}
+
+private struct NotificationAuthorizationLifecycleModifier: ViewModifier {
+    @Environment(\.scenePhase) private var scenePhase
+    @ObservedObject var manager: NotificationManager
+
+    func body(content: Content) -> some View {
+        content.onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            manager.refreshAuthorizationStatus()
+        }
     }
 }
 

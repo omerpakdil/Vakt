@@ -38706,6 +38706,23 @@
         }
       }
     },
+    "profile.dock.permission_required": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "يلزم الإذن" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Berechtigung nötig" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Permission needed" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Permiso necesario" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Autorisation requise" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Izin diperlukan" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Autorizzazione richiesta" } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Toestemming nodig" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Permissão necessária" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Нужно разрешение" } },
+        "tr": { "stringUnit": { "state": "translated", "value": "İzin gerekli" } },
+        "ur": { "stringUnit": { "state": "translated", "value": "اجازت درکار" } }
+      }
+    },
     "profile.dock.prayer_times": {
       "extractionState": "manual",
       "localizations": {
@@ -48177,6 +48194,23 @@
         }
       }
     },
+    "reminder.action.allow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "السماح" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Erlauben" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Allow" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Permitir" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Autoriser" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Izinkan" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Consenti" } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Toestaan" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Permitir" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Разрешить" } },
+        "tr": { "stringUnit": { "state": "translated", "value": "İzin ver" } },
+        "ur": { "stringUnit": { "state": "translated", "value": "اجازت دیں" } }
+      }
+    },
     "reminder.action.done": {
       "extractionState": "manual",
       "localizations": {
@@ -49253,6 +49287,23 @@
             "value": "Vakt نیچے منتخب اوقات پر اطلاع بھیجے گا۔"
           }
         }
+      }
+    },
+    "reminder.master.permission.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "اسمح بالإشعارات لتصلك التذكيرات التي تختارها." } },
+        "de": { "stringUnit": { "state": "translated", "value": "Erlaube Mitteilungen, um deine ausgewählten Erinnerungen zu erhalten." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Allow notifications to receive the reminders you choose." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Permite las notificaciones para recibir los recordatorios que elijas." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Autorise les notifications pour recevoir les rappels choisis." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Izinkan notifikasi untuk menerima pengingat yang kamu pilih." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Consenti le notifiche per ricevere i promemoria che scegli." } },
+        "nl": { "stringUnit": { "state": "translated", "value": "Sta meldingen toe om je gekozen herinneringen te ontvangen." } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Permite notificações para receber os lembretes que escolheres." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Разреши уведомления, чтобы получать выбранные напоминания." } },
+        "tr": { "stringUnit": { "state": "translated", "value": "Seçtiğin hatırlatmaları almak için bildirimlere izin ver." } },
+        "ur": { "stringUnit": { "state": "translated", "value": "اپنی منتخب یاد دہانیاں پانے کے لیے اطلاعات کی اجازت دیں۔" } }
       }
     },
     "reminder.master.title": {
