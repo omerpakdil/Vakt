@@ -22,6 +22,7 @@ actor SupabaseReferralRepository: ReferralRepository {
         do {
             let session = try await client.auth.session
             _ = try await Purchases.shared.logIn(session.user.id.uuidString)
+            _ = try await Purchases.shared.syncPurchases()
             try await client.functions.invoke("sync-referral-subscription")
         } catch {
             throw mapReferralError(error)

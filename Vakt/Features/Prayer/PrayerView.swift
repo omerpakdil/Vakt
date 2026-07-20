@@ -233,45 +233,54 @@ private struct PrayerPreparationHeader: View {
     let status: PrayerTrackingStatus
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(L10n.string("prayer.preparation.eyebrow"))
                     .font(VaktFont.eyebrow(9))
                     .foregroundStyle(Color.vaktMuted)
                     .tracking(1.8)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
 
-                Text(title)
-                    .font(VaktFont.title(31))
+                Spacer(minLength: 8)
+
+                Text(prayerTime.prayer.displayName)
+                    .font(VaktFont.body(14))
                     .foregroundStyle(Color.vaktPrimary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.78)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
 
+            Text(title)
+                .font(VaktFont.title(31))
+                .foregroundStyle(Color.vaktPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(alignment: .top, spacing: 14) {
                 Text(subtitle)
                     .font(VaktFont.body(12))
                     .foregroundStyle(Color.vaktMuted)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
                     .fixedSize(horizontal: false, vertical: true)
-            }
-            .layoutPriority(1)
+                    .layoutPriority(1)
 
-            Spacer(minLength: 4)
+                Spacer(minLength: 4)
 
-            VStack(alignment: .trailing, spacing: 6) {
-                Text(prayerTime.prayer.displayName)
-                    .font(VaktFont.body(14))
-                    .foregroundStyle(Color.vaktPrimary)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(VaktTimeFormatter.string(from: prayerTime.time, timeZone: prayerTime.timeZone))
+                        .font(VaktFont.timeDisplay(17))
+                        .foregroundStyle(Color.vaktGlow)
+                        .monospacedDigit()
 
-                Text(VaktTimeFormatter.string(from: prayerTime.time, timeZone: prayerTime.timeZone))
-                    .font(VaktFont.timeDisplay(17))
-                    .foregroundStyle(Color.vaktGlow)
-                    .monospacedDigit()
-
-                Text(remainingText)
-                    .font(VaktFont.caption(9))
-                    .foregroundStyle(Color.vaktMuted)
-                    .monospacedDigit()
+                    Text(remainingText)
+                        .font(VaktFont.caption(9))
+                        .foregroundStyle(Color.vaktMuted)
+                        .monospacedDigit()
+                }
+                .fixedSize(horizontal: true, vertical: false)
             }
         }
     }
@@ -729,19 +738,20 @@ private struct PrayerContextLine: View {
     let onMakeup: () -> Void
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .center, spacing: 16) {
             HStack(spacing: 8) {
                 Image(systemName: "person.2")
                     .font(.system(size: 12, weight: .light))
 
                 Text(circleText)
                     .font(VaktFont.caption(10))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(Color.vaktMuted)
+            .layoutPriority(1)
 
-            Spacer()
+            Spacer(minLength: 0)
 
             if makeupCount > 0 {
                 Button {
@@ -751,16 +761,22 @@ private struct PrayerContextLine: View {
                     HStack(spacing: 6) {
                         Text(makeupText)
                             .font(VaktFont.caption(10))
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 9, weight: .semibold))
                     }
                     .foregroundStyle(Color.vaktMuted)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(VaktPressStyle())
+                .frame(maxWidth: 132, alignment: .trailing)
             }
         }
-        .frame(height: 34)
+        .frame(minHeight: 44)
     }
 
     private var circleText: String {

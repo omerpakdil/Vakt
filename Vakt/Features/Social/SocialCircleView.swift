@@ -7,7 +7,6 @@ struct SocialCircleView: View {
     @ObservedObject var subscriptionStore: SubscriptionStore
 
     @State private var addFriendPresented = false
-    @State private var allFriendsPresented = false
     @State private var referralPresented = false
     @State private var friendshipFeedback: FriendshipEventFeedback?
     @State private var acceptingRequestID: UUID?
@@ -39,14 +38,16 @@ struct SocialCircleView: View {
                     )
 
                     friendsSection(prayerTime: circlePrayer)
-
-                    Spacer(minLength: 0)
+                        .frame(maxHeight: .infinity, alignment: .top)
                 }
                 .padding(.horizontal, VaktSpace.lg)
                 .padding(.top, max(18, geometry.safeAreaInsets.top + 12))
                 .padding(.bottom, max(10, geometry.safeAreaInsets.bottom + 8))
-                .frame(width: geometry.size.width, alignment: .top)
-                .frame(minHeight: geometry.size.height, alignment: .top)
+                .frame(
+                    width: geometry.size.width,
+                    height: geometry.size.height,
+                    alignment: .top
+                )
 
                 if let friendshipFeedback {
                     FriendshipEventToast(feedback: friendshipFeedback)
@@ -66,13 +67,6 @@ struct SocialCircleView: View {
                 onRequestCompleted: { feedback in
                     showFriendshipFeedback(.request(feedback))
                 }
-            )
-        }
-        .sheet(isPresented: $allFriendsPresented) {
-            AllFriendsSheet(
-                store: socialPrayerStore,
-                prayerTime: circlePrayer,
-                nudgeIsEligible: nudgeIsEligible(for: circlePrayer)
             )
         }
         .sheet(isPresented: $referralPresented) {
@@ -200,26 +194,26 @@ struct SocialCircleView: View {
                     onInvite: openReferrals
                 )
             } else {
-                VStack(spacing: 7) {
-                    ForEach(Array(socialPrayerStore.friendSummaries.prefix(3))) { friend in
-                        FriendPrayerRow(
-                            friend: friend,
-                            prayerTime: prayerTime,
-                            nudgeState: nudgeState(for: friend, prayerTime: prayerTime),
-                            onNudge: {
-                                socialPrayerStore.sendNudge(to: friend, prayerTime: prayerTime)
-                            }
-                        )
-                    }
-
-                    if socialPrayerStore.friendSummaries.count > 3 {
-                        MoreFriendsRow(count: socialPrayerStore.friendSummaries.count - 3) {
-                            allFriendsPresented = true
+                ScrollView(.vertical) {
+                    LazyVStack(spacing: 7) {
+                        ForEach(socialPrayerStore.friendSummaries) { friend in
+                            FriendPrayerRow(
+                                friend: friend,
+                                prayerTime: prayerTime,
+                                nudgeState: nudgeState(for: friend, prayerTime: prayerTime),
+                                onNudge: {
+                                    socialPrayerStore.sendNudge(to: friend, prayerTime: prayerTime)
+                                }
+                            )
                         }
                     }
+                    .padding(.bottom, 2)
                 }
+                .scrollIndicators(.visible)
+                .scrollBounceBehavior(.basedOnSize)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 
     private func openReferrals() {

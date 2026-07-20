@@ -262,22 +262,32 @@ final class MosqueFinderStore: NSObject, ObservableObject, CLLocationManagerDele
 
     private static func searchNearbyMosques(around location: CLLocation) async throws -> [SearchResult] {
         let radii: [CLLocationDistance] = [3_000, 8_000, 20_000]
+        let countryCode = await resolvedCountryCode(for: location)
+        let queries = searchQueries(for: countryCode)
+        let discoveryQueries = nearbyDiscoveryQueries(for: countryCode)
         var collected: [MKMapItem] = []
 
         for radius in radii {
             try Task.checkCancellation()
-            for query in searchQueries {
-                let request = MKLocalSearch.Request()
-                request.naturalLanguageQuery = query
-                request.resultTypes = .pointOfInterest
-                request.region = MKCoordinateRegion(
+            for query in queries {
+                collected.append(contentsOf: await searchMapItems(
+                    query: query,
                     center: location.coordinate,
-                    latitudinalMeters: radius * 2,
-                    longitudinalMeters: radius * 2
-                )
+                    radius: radius
+                ))
+            }
 
-                if let response = try? await MKLocalSearch(request: request).start() {
-                    collected.append(contentsOf: response.mapItems)
+            // Local Search ranks prominent places and can omit a small mosque even
+            // when it is very close. Smaller overlapping regions improve local coverage.
+            if radius == radii[0] {
+                for center in nearbySearchCenters(around: location.coordinate) {
+                    for query in discoveryQueries {
+                        collected.append(contentsOf: await searchMapItems(
+                            query: query,
+                            center: center,
+                            radius: 1_100
+                        ))
+                    }
                 }
             }
 
@@ -308,36 +318,114 @@ final class MosqueFinderStore: NSObject, ObservableObject, CLLocationManagerDele
         return []
     }
 
-    private static var searchQueries: [String] {
-        let local: String = switch VaktLocalization.languageCode {
-        case "tr": "cami"
-        case "ar": "مسجد"
-        case "de": "Moschee"
-        case "es": "mezquita"
-        case "fr": "mosquée"
-        case "id": "masjid"
-        case "it": "moschea"
-        case "nl": "moskee"
-        case "pt": "mesquita"
-        case "ru": "мечеть"
-        case "ur": "مسجد"
-        default: "mosque"
+    private static func resolvedCountryCode(for location: CLLocation) async -> String? {
+        if let placemarks = try? await CLGeocoder().reverseGeocodeLocation(location),
+           let countryCode = placemarks.first?.isoCountryCode {
+            return countryCode.uppercased()
         }
-        let localPrayerSpace: String = switch VaktLocalization.languageCode {
-        case "tr": "mescit"
-        case "ar": "مصلى"
-        case "de": "muslimischer Gebetsraum"
-        case "es": "sala de oración musulmana"
-        case "fr": "salle de prière musulmane"
-        case "id": "musala"
-        case "it": "sala di preghiera musulmana"
-        case "nl": "islamitische gebedsruimte"
-        case "pt": "sala de oração muçulmana"
-        case "ru": "мусульманская молельная комната"
-        case "ur": "مصلی"
-        default: "Muslim prayer room"
+        return Locale.current.region?.identifier.uppercased()
+    }
+
+    private static func searchMapItems(
+        query: String,
+        center: CLLocationCoordinate2D,
+        radius: CLLocationDistance
+    ) async -> [MKMapItem] {
+        guard !Task.isCancelled else { return [] }
+
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = query
+        request.resultTypes = .pointOfInterest
+        request.region = MKCoordinateRegion(
+            center: center,
+            latitudinalMeters: radius * 2,
+            longitudinalMeters: radius * 2
+        )
+        guard let response = try? await MKLocalSearch(request: request).start() else {
+            return []
         }
-        return Array(Set([local, localPrayerSpace, "mosque", "masjid"]))
+        return response.mapItems
+    }
+
+    private static func nearbySearchCenters(
+        around coordinate: CLLocationCoordinate2D
+    ) -> [CLLocationCoordinate2D] {
+        let offsetMeters = 750.0
+        let latitudeOffset = offsetMeters / 111_000
+        let longitudeScale = max(0.2, cos(coordinate.latitude * .pi / 180))
+        let longitudeOffset = offsetMeters / (111_000 * longitudeScale)
+
+        return [
+            CLLocationCoordinate2D(
+                latitude: coordinate.latitude + latitudeOffset,
+                longitude: coordinate.longitude
+            ),
+            CLLocationCoordinate2D(
+                latitude: coordinate.latitude - latitudeOffset,
+                longitude: coordinate.longitude
+            ),
+            CLLocationCoordinate2D(
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude + longitudeOffset
+            ),
+            CLLocationCoordinate2D(
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude - longitudeOffset
+            )
+        ]
+    }
+
+    private static func searchQueries(for countryCode: String?) -> [String] {
+        orderedUnique(
+            geographicSearchQueries(for: countryCode) +
+                localizedSearchQueries +
+                ["mosque", "masjid"]
+        )
+    }
+
+    private static func nearbyDiscoveryQueries(for countryCode: String?) -> [String] {
+        let localQueries = geographicSearchQueries(for: countryCode)
+        return orderedUnique(Array((localQueries + localizedSearchQueries).prefix(1)))
+    }
+
+    private static func geographicSearchQueries(for countryCode: String?) -> [String] {
+        switch countryCode {
+        case "TR": ["cami", "camii", "mescit"]
+        case "DE", "AT", "CH": ["Moschee"]
+        case "ES", "MX", "AR", "CL", "CO", "PE": ["mezquita"]
+        case "FR", "BE": ["mosquée"]
+        case "ID", "MY": ["masjid", "musala"]
+        case "IT": ["moschea"]
+        case "NL": ["moskee"]
+        case "PT", "BR": ["mesquita"]
+        case "RU": ["мечеть"]
+        case "PK": ["مسجد", "مصلی"]
+        case "SA", "AE", "QA", "KW", "BH", "OM", "EG", "JO", "IQ", "LB": ["مسجد", "مصلى"]
+        default: []
+        }
+    }
+
+    private static var localizedSearchQueries: [String] {
+        switch VaktLocalization.languageCode {
+        case "tr": ["cami", "camii", "mescit"]
+        case "ar": ["مسجد", "مصلى"]
+        case "de": ["Moschee", "muslimischer Gebetsraum"]
+        case "es": ["mezquita", "sala de oración musulmana"]
+        case "fr": ["mosquée", "salle de prière musulmane"]
+        case "id": ["masjid", "musala"]
+        case "it": ["moschea", "sala di preghiera musulmana"]
+        case "nl": ["moskee", "islamitische gebedsruimte"]
+        case "pt": ["mesquita", "sala de oração muçulmana"]
+        case "ru": ["мечеть", "мусульманская молельная комната"]
+        case "ur": ["مسجد", "مصلی"]
+        default: ["mosque", "masjid", "Muslim prayer room"]
+        }
+    }
+
+    private static func orderedUnique(_ values: [String]) -> [String] {
+        values.reduce(into: [String]()) { result, value in
+            if !result.contains(value) { result.append(value) }
+        }
     }
 
     private static func deduplicated(

@@ -36,7 +36,10 @@ struct HomeView: View {
 
         GeometryReader { geometry in
             ZStack {
-                HomeDayAtmosphere(snapshot: atmosphere)
+                HomeDayAtmosphere(
+                    snapshot: atmosphere,
+                    topBarTop: max(14, geometry.safeAreaInsets.top + 8)
+                )
 
                 VStack(spacing: 0) {
                     HomeTopBar(
@@ -388,6 +391,7 @@ private struct HomeAtmospherePalette {
 
 private struct HomeDayAtmosphere: View {
     let snapshot: HomeAtmosphereSnapshot
+    let topBarTop: CGFloat
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -469,6 +473,23 @@ private struct HomeDayAtmosphere: View {
     }
 
     private func celestialBody(palette: HomeAtmospherePalette, size: CGSize) -> some View {
+        let sunPosition = safeCelestialPosition(
+            desired: CGPoint(
+                x: size.width * palette.celestialX,
+                y: size.height * palette.celestialY
+            ),
+            bodyRadius: 44,
+            canvasSize: size
+        )
+        let moonPosition = safeCelestialPosition(
+            desired: CGPoint(
+                x: size.width * palette.moonX,
+                y: size.height * palette.moonY - 12
+            ),
+            bodyRadius: 34,
+            canvasSize: size
+        )
+
         ZStack {
             ZStack {
                 Circle()
@@ -488,10 +509,7 @@ private struct HomeDayAtmosphere: View {
                     .frame(width: 34, height: 34)
                     .opacity(palette.sunOpacity)
             }
-            .position(
-                x: size.width * palette.celestialX,
-                y: size.height * palette.celestialY
-            )
+            .position(sunPosition)
 
             ZStack {
                 Circle()
@@ -506,11 +524,42 @@ private struct HomeDayAtmosphere: View {
                     .shadow(color: palette.glow.color.opacity(0.36), radius: 8)
             }
             .opacity(palette.moonOpacity)
-            .position(
-                x: size.width * palette.moonX,
-                y: size.height * palette.moonY - 12
-            )
+            .position(moonPosition)
         }
+    }
+
+    private func safeCelestialPosition(
+        desired: CGPoint,
+        bodyRadius: CGFloat,
+        canvasSize: CGSize
+    ) -> CGPoint {
+        let utilityGroupWidth: CGFloat = 139
+        let utilityGroupHeight: CGFloat = 50
+        let clearance: CGFloat = 12
+        let protectedFrame = CGRect(
+            x: canvasSize.width - VaktSpace.lg - utilityGroupWidth,
+            y: topBarTop,
+            width: utilityGroupWidth,
+            height: utilityGroupHeight
+        ).insetBy(dx: -clearance, dy: -clearance)
+        let celestialFrame = CGRect(
+            x: desired.x - bodyRadius,
+            y: desired.y - bodyRadius,
+            width: bodyRadius * 2,
+            height: bodyRadius * 2
+        )
+
+        guard celestialFrame.intersects(protectedFrame) else { return desired }
+
+        let leadingPosition = protectedFrame.minX - bodyRadius - clearance
+        if leadingPosition - bodyRadius >= VaktSpace.lg {
+            return CGPoint(x: leadingPosition, y: desired.y)
+        }
+
+        return CGPoint(
+            x: min(max(desired.x, bodyRadius + VaktSpace.lg), canvasSize.width - bodyRadius - VaktSpace.lg),
+            y: protectedFrame.maxY + bodyRadius + clearance
+        )
     }
 
     private func starCoordinate(seed: Int) -> Double {
@@ -979,8 +1028,11 @@ private struct HomePrayerActions: View {
             .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktMuted)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(isSelected ? Color.vaktElevated.opacity(0.48) : Color.clear)
+            .contentShape(Rectangle())
         }
         .buttonStyle(VaktPressStyle())
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
     }
 
     private var isOpen: Bool {
