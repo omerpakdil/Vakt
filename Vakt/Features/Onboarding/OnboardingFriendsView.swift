@@ -121,9 +121,9 @@ private struct FriendsReminderScene: View {
 
     private var friends: [OnboardingFriend] {
         [
-            OnboardingFriend(id: "ayse", name: "Ayşe", initials: "A", statusKey: "onboarding.friends.status.dhuhr_prayed", isComplete: true),
-            OnboardingFriend(id: "yusuf", name: "Yusuf", initials: "Y", statusKey: "onboarding.friends.status.asr_unmarked", isComplete: false),
-            OnboardingFriend(id: "meryem", name: "Meryem", initials: "M", statusKey: "onboarding.friends.status.asr_prayed", isComplete: true)
+            OnboardingFriend(id: "ayse", nameKey: "onboarding.friends.name.first", statusKey: "onboarding.friends.status.dhuhr_prayed", isComplete: true),
+            OnboardingFriend(id: "yusuf", nameKey: "onboarding.friends.name.second", statusKey: "onboarding.friends.status.asr_unmarked", isComplete: false),
+            OnboardingFriend(id: "meryem", nameKey: "onboarding.friends.name.third", statusKey: "onboarding.friends.status.asr_prayed", isComplete: true)
         ]
     }
 
@@ -276,10 +276,17 @@ private struct FriendsReminderScene: View {
 
 private struct OnboardingFriend: Identifiable {
     let id: String
-    let name: String
-    let initials: String
+    let nameKey: String
     let statusKey: String
     let isComplete: Bool
+
+    var name: String {
+        L10n.string(nameKey)
+    }
+
+    var initials: String {
+        String(name.prefix(1))
+    }
 
     var status: String {
         L10n.string(statusKey)
