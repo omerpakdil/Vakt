@@ -1,4 +1,5 @@
 import XCTest
+import CoreLocation
 import UserNotifications
 @testable import Vakt
 
@@ -30,18 +31,38 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
         let store = PermissionSetupStore(defaults: defaults)
 
         XCTAssertEqual(
-            store.nextStep(hasUsablePrayerSchedule: false, notificationStatus: .notDetermined),
+            store.nextStep(
+                hasUsablePrayerSchedule: false,
+                locationStatus: .authorizedWhenInUse,
+                notificationStatus: .notDetermined
+            ),
             .location
         )
         XCTAssertEqual(
-            store.nextStep(hasUsablePrayerSchedule: true, notificationStatus: .notDetermined),
+            store.nextStep(
+                hasUsablePrayerSchedule: true,
+                locationStatus: .notDetermined,
+                notificationStatus: .notDetermined
+            ),
+            .location
+        )
+        XCTAssertEqual(
+            store.nextStep(
+                hasUsablePrayerSchedule: true,
+                locationStatus: .authorizedWhenInUse,
+                notificationStatus: .notDetermined
+            ),
             .notifications
         )
 
         store.completeNotificationDecision()
 
         XCTAssertNil(
-            store.nextStep(hasUsablePrayerSchedule: true, notificationStatus: .notDetermined)
+            store.nextStep(
+                hasUsablePrayerSchedule: true,
+                locationStatus: .authorizedWhenInUse,
+                notificationStatus: .notDetermined
+            )
         )
     }
 
@@ -129,6 +150,95 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
             sunrise.addingTimeInterval(-20 * 60).timeIntervalSince1970,
             accuracy: 1
         )
+    }
+
+    func testSchedulesPreparationOpeningPrayerTimeAndCheckIn() throws {
+        let now = date(2026, 7, 12, 12, 0)
+        let dhuhr = prayer(.dhuhr, at: date(2026, 7, 12, 13, 10))
+        let asr = prayer(.asr, at: date(2026, 7, 12, 17, 5))
+
+        let requests = PrayerNotificationScheduler().requests(
+            prayers: [dhuhr, asr],
+            now: now,
+            liveMemberCount: 0,
+            preferences: .default,
+            quietSoundEnabled: true
+        ).filter {
+            $0.content.userInfo["prayer"] as? String == Prayer.dhuhr.rawValue
+        }
+
+        XCTAssertEqual(
+            Set(requests.compactMap { $0.content.userInfo["type"] as? String }),
+            ["prayerPreparation", "prayerOpening", "prayerTime", "prayerCheckIn"]
+        )
+
+        let prayerTimeRequest = try XCTUnwrap(requests.first {
+            $0.content.userInfo["type"] as? String == "prayerTime"
+        })
+        XCTAssertNotNil(prayerTimeRequest.content.sound)
+
+        let preparationRequest = try XCTUnwrap(requests.first {
+            $0.content.userInfo["type"] as? String == "prayerPreparation"
+        })
+        XCTAssertNil(preparationRequest.content.sound)
+        XCTAssertEqual(
+            try fireDate(for: preparationRequest).timeIntervalSince1970,
+            dhuhr.time.addingTimeInterval(-30 * 60).timeIntervalSince1970,
+            accuracy: 1
+        )
+    }
+
+    func testFajrWakeReplacesDuplicateThirtyMinutePreparation() {
+        let now = date(2026, 7, 12, 3, 0)
+        let fajr = prayer(.fajr, at: date(2026, 7, 12, 4, 41))
+        var preferences = NotificationPreferences.default
+        preferences.checkInEnabled = false
+        preferences.enabledPrayers = [.fajr]
+
+        let requests = PrayerNotificationScheduler().requests(
+            prayers: [fajr],
+            now: now,
+            liveMemberCount: 0,
+            preferences: preferences,
+            quietSoundEnabled: true
+        )
+        let types = requests.compactMap { $0.content.userInfo["type"] as? String }
+
+        XCTAssertFalse(types.contains("prayerPreparation"))
+        XCTAssertEqual(types.filter { $0 == "fajrWake" }.count, 1)
+        XCTAssertTrue(types.contains("prayerOpening"))
+        XCTAssertTrue(types.contains("prayerTime"))
+    }
+
+    func testDecodingLegacyPreferencesPreservesExistingChoices() throws {
+        let legacyJSON = """
+        {
+          "enabled": true,
+          "prayerOpeningEnabled": false,
+          "prayerTimeEnabled": true,
+          "fajrWakeEnabled": false,
+          "checkInEnabled": true,
+          "minutesBeforePrayer": 10,
+          "fajrWakeMinutesBefore": 30,
+          "checkInMinutesBeforeNextPrayer": 20,
+          "enabledPrayers": ["dhuhr", "asr"]
+        }
+        """.data(using: .utf8)!
+
+        let preferences = try JSONDecoder().decode(NotificationPreferences.self, from: legacyJSON)
+
+        XCTAssertFalse(preferences.prayerOpeningEnabled)
+        XCTAssertFalse(preferences.fajrWakeEnabled)
+        XCTAssertTrue(preferences.prayerPreparationEnabled)
+        XCTAssertEqual(preferences.preparationMinutesBeforePrayer, 30)
+        XCTAssertEqual(preferences.enabledPrayers, [.dhuhr, .asr])
+    }
+
+    private func fireDate(for request: UNNotificationRequest) throws -> Date {
+        let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Istanbul")!
+        return try XCTUnwrap(calendar.date(from: trigger.dateComponents))
     }
 
     private func prayer(_ prayer: Prayer, at time: Date, endsAt: Date? = nil) -> PrayerTime {

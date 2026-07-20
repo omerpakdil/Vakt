@@ -8,7 +8,10 @@ struct HomeView: View {
     @ObservedObject var socialPrayerStore: SocialPrayerStore
 
     @StateObject private var qiblaStore = QiblaCompassStore()
+    @StateObject private var mosqueFinderStore = MosqueFinderStore()
     @State private var qiblaPresented = false
+    @State private var mosquesPresented = false
+    @State private var systemSurfacesPresented = false
     #if DEBUG
     @AppStorage(HomeAtmospherePhase.previewStorageKey)
     private var developerAtmosphereRawValue = HomeAtmospherePhase.automaticPreviewValue
@@ -17,7 +20,7 @@ struct HomeView: View {
     var body: some View {
         let nextPrayer = prayerStore.nextPrayer
         let activeWindow = prayerStore.activePrayerWindow
-        let currentPrayer = activeWindow?.prayerTime
+        let currentPrayer = activeWindow?.prayerTime ?? prayerStore.latestStartedPrayer
         let selectedOutcome = currentPrayer.flatMap { reflectionStore.outcome(for: $0) } ?? .missed
         let trackingStatus = currentPrayer.map {
             reflectionStore.trackingStatus(
@@ -36,10 +39,16 @@ struct HomeView: View {
                 HomeDayAtmosphere(snapshot: atmosphere)
 
                 VStack(spacing: 0) {
-                    HomeTopBar(now: prayerStore.now, onQibla: { qiblaPresented = true })
+                    HomeTopBar(
+                        now: prayerStore.now,
+                        onSystemSurfaces: { systemSurfacesPresented = true },
+                        onMosques: { mosquesPresented = true },
+                        onQibla: { qiblaPresented = true }
+                    )
 
                     HomePrayerFocus(
                         activeWindow: activeWindow,
+                        latestPrayerTime: currentPrayer,
                         nextPrayerTime: nextPrayer,
                         now: prayerStore.now,
                         trackingStatus: trackingStatus
@@ -81,6 +90,15 @@ struct HomeView: View {
         }
         .sheet(isPresented: $qiblaPresented) {
             QiblaSheet(store: qiblaStore)
+        }
+        .fullScreenCover(isPresented: $mosquesPresented) {
+            NearbyMosquesView(store: mosqueFinderStore)
+        }
+        .sheet(isPresented: $systemSurfacesPresented) {
+            SystemSurfacesView()
+                .presentationDetents([.fraction(0.84)])
+                .presentationDragIndicator(.hidden)
+                .presentationCornerRadius(28)
         }
         .onAppear {
             refreshSocialPrayer(for: currentPrayer)
@@ -490,7 +508,7 @@ private struct HomeDayAtmosphere: View {
             .opacity(palette.moonOpacity)
             .position(
                 x: size.width * palette.moonX,
-                y: size.height * palette.moonY
+                y: size.height * palette.moonY - 12
             )
         }
     }
@@ -503,7 +521,12 @@ private struct HomeDayAtmosphere: View {
 
 private struct HomeTopBar: View {
     let now: Date
+    let onSystemSurfaces: () -> Void
+    let onMosques: () -> Void
     let onQibla: () -> Void
+
+    @AppStorage("vakt.surfaces.discovery-dismissed.v1")
+    private var hasSeenSystemSurfaces = false
 
     var body: some View {
         HStack {
@@ -519,21 +542,82 @@ private struct HomeTopBar: View {
 
             Spacer()
 
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                onQibla()
-            } label: {
-                Image(systemName: "location.north.line")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.vaktPrimary.opacity(0.9))
-                    .frame(width: 38, height: 38)
-                    .background(Color.vaktSurface.opacity(0.45))
-                    .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(Color.vaktBorderStrong.opacity(0.6), lineWidth: 0.5))
+            HStack(spacing: 0) {
+                utilityButton(
+                    accessibilityLabel: L10n.string("surfaces.title"),
+                    showsDiscoveryDot: !hasSeenSystemSurfaces,
+                    action: onSystemSurfaces
+                ) {
+                    Image(systemName: "rectangle.on.rectangle")
+                        .font(.system(size: 12, weight: .medium))
+                }
+
+                utilityDivider
+
+                utilityButton(
+                    accessibilityLabel: L10n.string("mosques.title"),
+                    action: onMosques
+                ) {
+                    VaktMosqueGlyph()
+                        .stroke(
+                            Color.vaktPrimary.opacity(0.92),
+                            style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+                        )
+                        .frame(width: 17, height: 15)
+                }
+
+                utilityDivider
+
+                utilityButton(
+                    accessibilityLabel: L10n.string("home.open_qibla"),
+                    action: onQibla
+                ) {
+                    Image(systemName: "location.north.line")
+                        .font(.system(size: 13, weight: .medium))
+                }
             }
-            .buttonStyle(VaktPressStyle())
-            .accessibilityLabel(L10n.string("home.open_qibla"))
+            .padding(3)
+            .foregroundStyle(Color.vaktPrimary.opacity(0.92))
+            .background(Color.vaktSurface.opacity(0.45))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.vaktBorderStrong.opacity(0.6), lineWidth: 0.5)
+            }
         }
+    }
+
+    private var utilityDivider: some View {
+        Rectangle()
+            .fill(Color.vaktBorderStrong.opacity(0.52))
+            .frame(width: 0.5, height: 20)
+    }
+
+    private func utilityButton<Icon: View>(
+        accessibilityLabel: String,
+        showsDiscoveryDot: Bool = false,
+        action: @escaping () -> Void,
+        @ViewBuilder icon: () -> Icon
+    ) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            action()
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                icon()
+                    .frame(width: 38, height: 38)
+
+                if showsDiscoveryDot {
+                    Circle()
+                        .fill(Color.vaktGlow)
+                        .frame(width: 5, height: 5)
+                        .overlay(Circle().stroke(Color.vaktBg.opacity(0.8), lineWidth: 1))
+                        .offset(x: -2, y: 2)
+                }
+            }
+        }
+        .buttonStyle(VaktPressStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private var greeting: String {
@@ -559,6 +643,7 @@ private struct HomeTopBar: View {
 
 private struct HomePrayerFocus: View {
     let activeWindow: ActivePrayerWindow?
+    let latestPrayerTime: PrayerTime?
     let nextPrayerTime: PrayerTime
     let now: Date
     let trackingStatus: PrayerTrackingStatus?
@@ -566,9 +651,48 @@ private struct HomePrayerFocus: View {
     var body: some View {
         if let activeWindow, let trackingStatus {
             activePrayerFocus(activeWindow, trackingStatus: trackingStatus)
+        } else if let latestPrayerTime, let trackingStatus {
+            latestPrayerFocus(latestPrayerTime, trackingStatus: trackingStatus)
         } else {
             upcomingPrayerFocus
         }
+    }
+
+    private func latestPrayerFocus(
+        _ prayerTime: PrayerTime,
+        trackingStatus: PrayerTrackingStatus
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack {
+                Text(L10n.string("home.last_prayer")
+                    .uppercased(with: VaktLocalization.appLocale))
+                    .font(VaktFont.eyebrow(9))
+                    .foregroundStyle(Color.vaktMuted)
+                    .tracking(1.8)
+
+                Spacer()
+
+                HomeQuietStatus(status: trackingStatus)
+            }
+
+            Text(prayerTime.prayer.displayName)
+                .font(VaktFont.prayerDisplay(64))
+                .foregroundStyle(Color.vaktPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .contentTransition(.opacity)
+
+            HomePrayerWindowRail(
+                window: ActivePrayerWindow(
+                    prayerTime: prayerTime,
+                    endsAt: nextPrayerTime.time,
+                    endingPrayer: nextPrayerTime.prayer
+                ),
+                now: now
+            )
+            .padding(.top, 10)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private func activePrayerFocus(
@@ -703,7 +827,7 @@ private struct HomeBetweenPrayersNote: View {
                 .font(.system(size: 15, weight: .light))
                 .foregroundStyle(Color.vaktGlow)
 
-            Text(L10n.string("home.between_prayers"))
+            Text(L10n.string("schedule.refreshing"))
                 .font(VaktFont.body(12))
                 .foregroundStyle(Color.vaktSecondary)
 
@@ -948,8 +1072,10 @@ private struct HomeSocialLine: View {
                     Text(summary)
                         .font(VaktFont.caption(10))
                         .foregroundStyle(Color.vaktMuted)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .layoutPriority(1)
 
                 Spacer()
 

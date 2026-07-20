@@ -1636,6 +1636,13 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         activePrayerWindow?.prayerTime
     }
 
+    /// The latest prayer whose start time has passed. Unlike `activePrayer`, this
+    /// remains available between canonical prayer windows so the prayer flow is
+    /// never artificially locked.
+    var latestStartedPrayer: PrayerTime? {
+        loadedPrayers.last { $0.time <= now }
+    }
+
     var nextCountdown: TimeInterval {
         max(0, nextPrayer.time.timeIntervalSince(now))
     }

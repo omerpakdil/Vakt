@@ -636,11 +636,11 @@ private struct PaywallJourney: View {
 }
 
 private struct PaywallReasons: View {
-    private var reasons: [(icon: String, title: String, detail: String)] {
+    private var reasons: [(kind: PaywallReasonKind, title: String, detail: String)] {
         [
-            ("clock", L10n.string("paywall.reason.reminders.title"), L10n.string("paywall.reason.reminders.detail")),
-            ("calendar", L10n.string("paywall.reason.makeup.title"), L10n.string("paywall.reason.makeup.detail")),
-            ("hand.raised", L10n.string("paywall.reason.support.title"), L10n.string("paywall.reason.support.detail"))
+            (.widget, L10n.string("paywall.reason.surface.title"), L10n.string("paywall.reason.surface.detail")),
+            (.liveActivity, L10n.string("paywall.reason.live.title"), L10n.string("paywall.reason.live.detail")),
+            (.mosques, L10n.string("paywall.reason.mosques.title"), L10n.string("paywall.reason.mosques.detail"))
         ]
     }
 
@@ -648,10 +648,8 @@ private struct PaywallReasons: View {
         VStack(spacing: 0) {
             ForEach(Array(reasons.enumerated()), id: \.offset) { index, reason in
                 HStack(spacing: 12) {
-                    Image(systemName: reason.icon)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color.vaktSecondary)
-                        .frame(width: 24)
+                    PaywallReasonGlyph(kind: reason.kind)
+                        .frame(width: 24, height: 24)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(reason.title)
@@ -680,6 +678,52 @@ private struct PaywallReasons: View {
             }
         }
         .accessibilityElement(children: .contain)
+    }
+}
+
+private enum PaywallReasonKind {
+    case widget
+    case liveActivity
+    case mosques
+}
+
+private struct PaywallReasonGlyph: View {
+    let kind: PaywallReasonKind
+
+    var body: some View {
+        ZStack {
+            switch kind {
+            case .widget:
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .strokeBorder(Color.vaktSecondary, lineWidth: 1)
+                    .frame(width: 20, height: 16)
+                    .overlay(alignment: .bottomTrailing) {
+                        Circle()
+                            .fill(Color.vaktSecondary)
+                            .frame(width: 6, height: 6)
+                            .overlay {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 3.5, weight: .bold))
+                                    .foregroundStyle(Color.vaktDeep)
+                            }
+                            .offset(x: 2, y: 2)
+                    }
+            case .liveActivity:
+                Capsule()
+                    .fill(Color.vaktSecondary.opacity(0.15))
+                    .frame(width: 22, height: 9)
+                    .overlay {
+                        HStack(spacing: 5) {
+                            Circle().fill(Color.vaktSecondary).frame(width: 3, height: 3)
+                            Capsule().fill(Color.vaktSecondary).frame(width: 7, height: 1.5)
+                        }
+                    }
+            case .mosques:
+                VaktMosqueGlyph()
+                    .stroke(Color.vaktSecondary, style: StrokeStyle(lineWidth: 1.45, lineCap: .round, lineJoin: .round))
+                    .frame(width: 15, height: 19)
+            }
+        }
     }
 }
 

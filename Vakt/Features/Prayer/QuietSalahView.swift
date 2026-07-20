@@ -3,6 +3,7 @@ import SwiftUI
 struct QuietSalahView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage("vakt.surfaces.live-hint-seen.v1") private var hasSeenLiveActivityHint = false
 
     let session: PrayerQuietSession
     @ObservedObject var reflectionStore: PrayerReflectionStore
@@ -58,6 +59,15 @@ struct QuietSalahView: View {
                     Text(L10n.string("quiet.with_intention"))
                         .font(VaktFont.body(13))
                         .foregroundStyle(Color.vaktAccent.opacity(0.48))
+
+                    if !hasSeenLiveActivityHint {
+                        Text(L10n.string("surfaces.live.detail"))
+                            .font(VaktFont.caption(9))
+                            .foregroundStyle(Color.vaktMuted.opacity(0.72))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .padding(.top, 4)
+                    }
                 }
                 .opacity(appeared && introVisible ? 1 : 0)
                 .offset(y: appeared && introVisible ? 0 : 8)
@@ -128,6 +138,7 @@ struct QuietSalahView: View {
         }
         .onDisappear {
             hideControlsTask?.cancel()
+            hasSeenLiveActivityHint = true
         }
     }
 
@@ -181,6 +192,12 @@ struct QuietSalahView: View {
         guard !checkInPresented else { return }
 
         quietEndedAt = Date()
+        Task {
+            await PrayerLiveActivityManager.shared.finish(
+                sessionID: session.id,
+                at: quietEndedAt
+            )
+        }
         checkInCompleted = false
         completionIsLeaving = false
 

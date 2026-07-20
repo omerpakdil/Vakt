@@ -52,6 +52,19 @@ final class SocialPrayerStore: ObservableObject {
         }
     }
 
+    func markNotYet(_ prayerTime: PrayerTime, markedAt: Date = Date()) {
+        guard let repositories else { return }
+
+        Task { [weak self] in
+            guard let self else { return }
+            await self.syncNotYet(
+                repositories: repositories,
+                prayerTime: prayerTime,
+                markedAt: markedAt
+            )
+        }
+    }
+
     func completeMakeupPrayer(_ makeup: MakeupPrayer, completedAt: Date = Date()) {
         #if DEBUG
         if repositories == nil {
@@ -320,6 +333,31 @@ final class SocialPrayerStore: ObservableObject {
                 )
             }
 
+            await refresh(repositories: repositories, day: day)
+        } catch {
+            lastErrorMessage = error.localizedDescription
+        }
+
+        isSyncing = false
+    }
+
+    private func syncNotYet(
+        repositories: SocialRepositories,
+        prayerTime: PrayerTime,
+        markedAt: Date
+    ) async {
+        isSyncing = true
+        lastErrorMessage = nil
+
+        do {
+            let day = Self.localDay(for: prayerTime.time, timeZone: prayerTime.timeZone)
+            _ = try await repositories.prayerStatuses.upsertStatus(
+                prayer: PrayerKey(prayerTime.prayer),
+                day: day,
+                timeZoneIdentifier: prayerTime.timeZone.identifier,
+                status: .notMarked,
+                markedAt: markedAt
+            )
             await refresh(repositories: repositories, day: day)
         } catch {
             lastErrorMessage = error.localizedDescription

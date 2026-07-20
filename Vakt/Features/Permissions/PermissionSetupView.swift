@@ -84,7 +84,7 @@ private struct LocationPermissionSetupView: View {
                 }
                 .padding(.top, 24)
 
-                PrayerTimeResolverField(status: prayerStore.status)
+                LocationPurposeList()
                     .padding(.top, 28)
 
                 Spacer(minLength: 18)
@@ -163,68 +163,58 @@ private struct LocationPermissionSetupView: View {
     }
 }
 
-private struct PrayerTimeResolverField: View {
-    let status: PrayerScheduleStatus
-
-    private let prayers: [Prayer] = [.fajr, .dhuhr, .asr, .maghrib, .isha]
+private struct LocationPurposeList: View {
+    private let purposes: [(icon: String, titleKey: String, detailKey: String)] = [
+        ("clock", "profile.dock.prayer_times", "permission.location.prayer_times.detail"),
+        ("location.north.line", "qibla", "permission.location.qibla.detail"),
+        ("building.columns", "mosques.title", "permission.location.mosques.detail")
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(Array(prayers.enumerated()), id: \.element) { index, prayer in
-                HStack(spacing: 13) {
-                    ZStack {
-                        Circle()
-                            .fill(markerColor(for: index))
-                            .frame(width: 7, height: 7)
-
-                        if isResolving && index == 2 {
-                            Circle()
-                                .stroke(Color.vaktGlow.opacity(0.3), lineWidth: 0.7)
-                                .frame(width: 22, height: 22)
+            ForEach(Array(purposes.enumerated()), id: \.offset) { index, purpose in
+                HStack(spacing: 15) {
+                    Group {
+                        if index == 2 {
+                            VaktMosqueGlyph()
+                                .stroke(
+                                    Color.vaktGlow,
+                                    style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+                                )
+                                .frame(width: 18, height: 16)
+                        } else {
+                            Image(systemName: purpose.icon)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.vaktGlow)
                         }
                     }
-                    .frame(width: 24)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color.vaktElevated.opacity(0.78)))
 
-                    Text(prayer.displayName)
-                        .font(VaktFont.body(14))
-                        .foregroundStyle(Color.vaktPrimary)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(L10n.string(purpose.titleKey))
+                            .font(VaktFont.body(14))
+                            .foregroundStyle(Color.vaktPrimary)
 
-                    Spacer()
+                        Text(L10n.string(purpose.detailKey))
+                            .font(VaktFont.caption(10))
+                            .foregroundStyle(Color.vaktMuted)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                    Text(verbatim: "--:--")
-                        .font(VaktFont.body(13))
-                        .foregroundStyle(Color.vaktMuted.opacity(0.72))
-                        .monospacedDigit()
+                    Spacer(minLength: 0)
                 }
-                .frame(height: 48)
+                .frame(minHeight: 72)
 
-                if index < prayers.count - 1 {
+                if index < purposes.count - 1 {
                     Rectangle()
-                        .fill(Color.vaktBorder.opacity(0.58))
+                        .fill(Color.vaktBorder.opacity(0.55))
                         .frame(height: 0.5)
-                        .padding(.leading, 37)
+                        .padding(.leading, 51)
                 }
             }
         }
-        .overlay(alignment: .leading) {
-            Rectangle()
-                .fill(Color.vaktBorderStrong.opacity(0.52))
-                .frame(width: 0.5)
-                .padding(.vertical, 22)
-                .offset(x: 11.75)
-        }
-    }
-
-    private var isResolving: Bool {
-        switch status {
-        case .locating, .loading: true
-        case .ready, .usingSavedTimes, .denied, .failed: false
-        }
-    }
-
-    private func markerColor(for index: Int) -> Color {
-        if isResolving && index == 2 { return .vaktGlow }
-        return Color.vaktAccent.opacity(0.48)
     }
 }
 
@@ -347,10 +337,14 @@ private struct ReminderMomentTimeline: View {
             (
                 "hourglass",
                 L10n.string("reminder.before.title"),
-                L10n.formatString(
-                    "reminder.minutes_before",
-                    10.formatted(.number.locale(VaktLocalization.appLocale))
-                )
+                [30, 10]
+                    .map {
+                        L10n.formatString(
+                            "reminder.minutes_before",
+                            $0.formatted(.number.locale(VaktLocalization.appLocale))
+                        )
+                    }
+                    .joined(separator: " · ")
             ),
             (
                 "clock",

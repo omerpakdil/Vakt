@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import WidgetKit
 
 @MainActor
 final class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
@@ -90,7 +91,7 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
                 quietSoundEnabled: quietSoundEnabled
             )
 
-            await replaceScheduledPrayerNotifications(with: requests, generation: generation)
+            await reconcileScheduledPrayerNotifications(with: requests, generation: generation)
         }
     }
 
@@ -116,6 +117,10 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
 
     func setPrayerOpeningEnabled(_ isEnabled: Bool) {
         updatePreferences { $0.prayerOpeningEnabled = isEnabled }
+    }
+
+    func setPrayerPreparationEnabled(_ isEnabled: Bool) {
+        updatePreferences { $0.prayerPreparationEnabled = isEnabled }
     }
 
     func setPrayerTimeEnabled(_ isEnabled: Bool) {
@@ -192,8 +197,8 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
             options: []
         )
 
-        let missedAction = UNNotificationAction(
-            identifier: PrayerNotificationScheduler.markMissedActionIdentifier,
+        let notYetAction = UNNotificationAction(
+            identifier: PrayerNotificationScheduler.markNotYetActionIdentifier,
             title: L10n.string("notification.action.missed"),
             options: []
         )
@@ -207,7 +212,7 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
 
         let checkInCategory = UNNotificationCategory(
             identifier: PrayerNotificationScheduler.checkInCategoryIdentifier,
-            actions: [prayedAction, missedAction],
+            actions: [prayedAction, notYetAction],
             intentIdentifiers: [],
             options: []
         )
@@ -215,32 +220,49 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         center.setNotificationCategories([prayerCategory, checkInCategory])
     }
 
-    private func replaceScheduledPrayerNotifications(
+    private func reconcileScheduledPrayerNotifications(
         with requests: [UNNotificationRequest],
         generation: Int
     ) async {
         let pending = await center.pendingNotificationRequests()
         guard generation == schedulingGeneration else { return }
-        let existingIdentifiers = pending
-            .map(\.identifier)
-            .filter { $0.hasPrefix(PrayerNotificationScheduler.identifierPrefix) }
 
-        center.removePendingNotificationRequests(withIdentifiers: existingIdentifiers)
+        let desiredIdentifiers = Set(requests.map(\.identifier))
+        let existingPrayerRequests = pending.filter {
+            $0.identifier.hasPrefix(PrayerNotificationScheduler.identifierPrefix)
+        }
 
-        var scheduledCount = 0
         var schedulingErrors: [String] = []
+
+        // Adding an existing identifier replaces it atomically, so an imminent
+        // notification is never removed before its replacement is available.
         for request in requests {
             guard generation == schedulingGeneration else { return }
             do {
                 try await center.add(request)
-                scheduledCount += 1
             } catch {
                 schedulingErrors.append(error.localizedDescription)
             }
         }
 
         guard generation == schedulingGeneration else { return }
-        pendingPrayerNotificationCount = scheduledCount
+        let preservationCutoff = Date().addingTimeInterval(60)
+        let obsoleteIdentifiers = existingPrayerRequests.compactMap { request -> String? in
+            guard !desiredIdentifiers.contains(request.identifier) else { return nil }
+            if let trigger = request.trigger as? UNCalendarNotificationTrigger,
+               let fireDate = trigger.nextTriggerDate(),
+               fireDate <= preservationCutoff {
+                return nil
+            }
+            return request.identifier
+        }
+        center.removePendingNotificationRequests(withIdentifiers: obsoleteIdentifiers)
+
+        let reconciled = await center.pendingNotificationRequests()
+        guard generation == schedulingGeneration else { return }
+        pendingPrayerNotificationCount = reconciled.filter {
+            $0.identifier.hasPrefix(PrayerNotificationScheduler.identifierPrefix)
+        }.count
         lastSchedulingError = schedulingErrors.first
     }
 
@@ -306,16 +328,45 @@ final class NotificationManager: NSObject, ObservableObject, UNUserNotificationC
         await MainActor.run {
             switch response.actionIdentifier {
             case PrayerNotificationScheduler.markPrayedActionIdentifier:
+                let prayerDate = prayerDate ?? Date()
+                let surfaceAction = PrayerSurfaceAction(
+                    kind: .markPrayed,
+                    prayer: PrayerSurfacePrayerID(prayer),
+                    prayerDate: prayerDate
+                )
+                let surfaceStore = PrayerSurfaceStore.shared
+                _ = surfaceStore.enqueue(surfaceAction)
+                _ = surfaceStore.markPrayerPrayed(
+                    prayer: surfaceAction.prayer,
+                    prayerDate: prayerDate
+                )
+                WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
                 lastPrayerAction = PrayerNotificationAction(
+                    id: surfaceAction.id,
                     prayer: prayer,
                     prayerDate: prayerDate,
                     outcome: .prayed
                 )
-            case PrayerNotificationScheduler.markMissedActionIdentifier:
+            case PrayerNotificationScheduler.markNotYetActionIdentifier,
+                 PrayerNotificationScheduler.legacyMarkMissedActionIdentifier:
+                let prayerDate = prayerDate ?? Date()
+                let surfaceAction = PrayerSurfaceAction(
+                    kind: .markNotYet,
+                    prayer: PrayerSurfacePrayerID(prayer),
+                    prayerDate: prayerDate
+                )
+                let surfaceStore = PrayerSurfaceStore.shared
+                _ = surfaceStore.enqueue(surfaceAction)
+                _ = surfaceStore.markPrayerNotYet(
+                    prayer: surfaceAction.prayer,
+                    prayerDate: prayerDate
+                )
+                WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
                 lastPrayerAction = PrayerNotificationAction(
+                    id: surfaceAction.id,
                     prayer: prayer,
                     prayerDate: prayerDate,
-                    outcome: .missed
+                    outcome: .notYet
                 )
             default:
                 lastDeepLink = .prayer(prayer)
@@ -364,18 +415,25 @@ enum NotificationDeepLink: Equatable {
 }
 
 struct PrayerNotificationAction: Equatable {
-    let id = UUID()
+    enum Outcome: Equatable {
+        case prayed
+        case notYet
+    }
+
+    let id: UUID
     let prayer: Prayer
     let prayerDate: Date?
-    let outcome: PrayerReflectionOutcome
+    let outcome: Outcome
 }
 
 struct NotificationPreferences: Codable, Equatable {
     var enabled: Bool
+    var prayerPreparationEnabled: Bool
     var prayerOpeningEnabled: Bool
     var prayerTimeEnabled: Bool
     var fajrWakeEnabled: Bool
     var checkInEnabled: Bool
+    var preparationMinutesBeforePrayer: Int
     var minutesBeforePrayer: Int
     var fajrWakeMinutesBefore: Int
     var checkInMinutesBeforeNextPrayer: Int
@@ -383,15 +441,82 @@ struct NotificationPreferences: Codable, Equatable {
 
     static let `default` = NotificationPreferences(
         enabled: true,
+        prayerPreparationEnabled: true,
         prayerOpeningEnabled: true,
         prayerTimeEnabled: true,
         fajrWakeEnabled: true,
         checkInEnabled: true,
+        preparationMinutesBeforePrayer: 30,
         minutesBeforePrayer: 10,
         fajrWakeMinutesBefore: 30,
         checkInMinutesBeforeNextPrayer: 20,
         enabledPrayers: Set(Prayer.allCases)
     )
+
+    private enum CodingKeys: String, CodingKey {
+        case enabled
+        case prayerPreparationEnabled
+        case prayerOpeningEnabled
+        case prayerTimeEnabled
+        case fajrWakeEnabled
+        case checkInEnabled
+        case preparationMinutesBeforePrayer
+        case minutesBeforePrayer
+        case fajrWakeMinutesBefore
+        case checkInMinutesBeforeNextPrayer
+        case enabledPrayers
+    }
+
+    init(
+        enabled: Bool,
+        prayerPreparationEnabled: Bool,
+        prayerOpeningEnabled: Bool,
+        prayerTimeEnabled: Bool,
+        fajrWakeEnabled: Bool,
+        checkInEnabled: Bool,
+        preparationMinutesBeforePrayer: Int,
+        minutesBeforePrayer: Int,
+        fajrWakeMinutesBefore: Int,
+        checkInMinutesBeforeNextPrayer: Int,
+        enabledPrayers: Set<Prayer>
+    ) {
+        self.enabled = enabled
+        self.prayerPreparationEnabled = prayerPreparationEnabled
+        self.prayerOpeningEnabled = prayerOpeningEnabled
+        self.prayerTimeEnabled = prayerTimeEnabled
+        self.fajrWakeEnabled = fajrWakeEnabled
+        self.checkInEnabled = checkInEnabled
+        self.preparationMinutesBeforePrayer = preparationMinutesBeforePrayer
+        self.minutesBeforePrayer = minutesBeforePrayer
+        self.fajrWakeMinutesBefore = fajrWakeMinutesBefore
+        self.checkInMinutesBeforeNextPrayer = checkInMinutesBeforeNextPrayer
+        self.enabledPrayers = enabledPrayers
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        prayerPreparationEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .prayerPreparationEnabled
+        ) ?? true
+        prayerOpeningEnabled = try container.decodeIfPresent(Bool.self, forKey: .prayerOpeningEnabled) ?? true
+        prayerTimeEnabled = try container.decodeIfPresent(Bool.self, forKey: .prayerTimeEnabled) ?? true
+        fajrWakeEnabled = try container.decodeIfPresent(Bool.self, forKey: .fajrWakeEnabled) ?? true
+        checkInEnabled = try container.decodeIfPresent(Bool.self, forKey: .checkInEnabled) ?? true
+        preparationMinutesBeforePrayer = try container.decodeIfPresent(
+            Int.self,
+            forKey: .preparationMinutesBeforePrayer
+        ) ?? 30
+        minutesBeforePrayer = try container.decodeIfPresent(Int.self, forKey: .minutesBeforePrayer) ?? 10
+        fajrWakeMinutesBefore = try container.decodeIfPresent(Int.self, forKey: .fajrWakeMinutesBefore) ?? 30
+        checkInMinutesBeforeNextPrayer = try container.decodeIfPresent(
+            Int.self,
+            forKey: .checkInMinutesBeforeNextPrayer
+        ) ?? 20
+        enabledPrayers = try container.decodeIfPresent(Set<Prayer>.self, forKey: .enabledPrayers)
+            ?? Set(Prayer.allCases)
+    }
 }
 
 struct PrayerNotificationScheduler {
@@ -400,7 +525,8 @@ struct PrayerNotificationScheduler {
     static let checkInCategoryIdentifier = "VAKT_PRAYER_CHECK_IN"
     static let openPrayerActionIdentifier = "VAKT_OPEN_PRAYER"
     static let markPrayedActionIdentifier = "VAKT_MARK_PRAYED"
-    static let markMissedActionIdentifier = "VAKT_MARK_MISSED"
+    static let markNotYetActionIdentifier = "VAKT_MARK_NOT_YET"
+    static let legacyMarkMissedActionIdentifier = "VAKT_MARK_MISSED"
 
     func requests(
         prayers: [PrayerTime],
@@ -439,6 +565,27 @@ struct PrayerNotificationScheduler {
         guard preferences.enabledPrayers.contains(prayerTime.prayer) else { return [] }
 
         var requests: [UNNotificationRequest] = []
+
+        let fajrWakeReplacesPreparation = prayerTime.prayer == .fajr
+            && preferences.fajrWakeEnabled
+            && preferences.fajrWakeMinutesBefore == preferences.preparationMinutesBeforePrayer
+
+        if preferences.prayerPreparationEnabled, !fajrWakeReplacesPreparation {
+            let preparationDate = prayerTime.time.addingTimeInterval(
+                TimeInterval(-preferences.preparationMinutesBeforePrayer * 60)
+            )
+            if let request = request(
+                type: .prayerPreparation,
+                prayerTime: prayerTime,
+                fireDate: preparationDate,
+                now: now,
+                liveMemberCount: liveMemberCount,
+                minutesBefore: preferences.preparationMinutesBeforePrayer,
+                quietSoundEnabled: quietSoundEnabled
+            ) {
+                requests.append(request)
+            }
+        }
 
         if preferences.prayerOpeningEnabled {
             let openDate = prayerTime.time.addingTimeInterval(TimeInterval(-preferences.minutesBeforePrayer * 60))
@@ -513,7 +660,7 @@ struct PrayerNotificationScheduler {
         minutesBefore: Int,
         quietSoundEnabled: Bool
     ) -> UNNotificationRequest? {
-        guard fireDate.timeIntervalSince(now) > 5 else { return nil }
+        guard fireDate.timeIntervalSince(now) > 1 else { return nil }
 
         let content = UNMutableNotificationContent()
         content.title = type.title(for: prayerTime.prayer, minutesBefore: minutesBefore)
@@ -553,6 +700,7 @@ struct PrayerNotificationScheduler {
 }
 
 private enum PrayerNotificationType: String {
+    case prayerPreparation
     case prayerOpening
     case prayerTime
     case fajrWake
@@ -560,6 +708,8 @@ private enum PrayerNotificationType: String {
 
     func title(for prayer: Prayer, minutesBefore: Int) -> String {
         switch self {
+        case .prayerPreparation:
+            return L10n.notificationTitle(type: .prayerOpening, prayer: prayer, minutesBefore: minutesBefore)
         case .prayerOpening:
             return L10n.notificationTitle(type: .prayerOpening, prayer: prayer, minutesBefore: minutesBefore)
         case .prayerTime:
@@ -575,6 +725,13 @@ private enum PrayerNotificationType: String {
         let companionCount = max(liveMemberCount - 1, 6)
 
         switch self {
+        case .prayerPreparation:
+            return L10n.notificationBody(
+                type: .prayerOpening,
+                prayer: prayer,
+                companionCount: companionCount,
+                minutesBefore: minutesBefore
+            )
         case .prayerOpening:
             return L10n.notificationBody(
                 type: .prayerOpening,
@@ -605,9 +762,9 @@ private enum PrayerNotificationType: String {
         guard quietSoundEnabled else { return nil }
 
         switch self {
-        case .prayerOpening, .fajrWake:
+        case .prayerOpening, .prayerTime, .fajrWake:
             return .default
-        case .prayerTime, .prayerCheckIn:
+        case .prayerPreparation, .prayerCheckIn:
             return nil
         }
     }

@@ -1,6 +1,8 @@
+import ActivityKit
 import SwiftUI
 import UserNotifications
 import AuthenticationServices
+import WidgetKit
 
 struct ProfileView: View {
     @Binding var selectedTab: VaktTab
@@ -28,6 +30,7 @@ struct ProfileView: View {
     @State private var isDeletionAuthorizationPresented = false
     @State private var isDeveloperPresented = false
     @State private var isReferralPresented = false
+    @State private var isSystemSurfacesPresented = false
 
     var body: some View {
         ZStack {
@@ -55,6 +58,12 @@ struct ProfileView: View {
         }
         .navigationDestination(isPresented: $isMakeupPresented) {
             MakeupPrayerCenterView(store: socialPrayerStore)
+        }
+        .sheet(isPresented: $isSystemSurfacesPresented) {
+            SystemSurfacesView()
+                .presentationDetents([.fraction(0.84)])
+                .presentationDragIndicator(.hidden)
+                .presentationCornerRadius(28)
         }
         .sheet(isPresented: $isAccountPresented) {
             ProfileAccountSheet(
@@ -110,6 +119,9 @@ struct ProfileView: View {
                     isDeveloperPresented = false
                     isMakeupPreviewPresented = true
                 },
+                onRefreshWidget: refreshWidgetPreview,
+                onStartLiveActivity: startLiveActivityPreview,
+                onFinishLiveActivity: finishLiveActivityPreview,
                 onPreviewAtmosphere: { phase in
                     UserDefaults.standard.set(
                         phase?.rawValue ?? HomeAtmospherePhase.automaticPreviewValue,
@@ -143,6 +155,7 @@ struct ProfileView: View {
             PersonalVaktHeader(
                 name: profileDisplayName,
                 username: profileUsername,
+                onSystemSurfaces: { isSystemSurfacesPresented = true },
                 onSettings: { isAccountPresented = true }
             )
 
@@ -266,6 +279,39 @@ struct ProfileView: View {
             presentDeveloperModal(action)
         }
     }
+
+    #if DEBUG
+    private func refreshWidgetPreview() {
+        guard !prayerStore.prayersForDeadlineSync.isEmpty else { return }
+        let snapshot = PrayerSurfaceSnapshotBuilder.make(
+            prayers: prayerStore.prayersForDeadlineSync,
+            now: prayerStore.now,
+            reflectionStore: reflectionStore,
+            sessionStore: sessionStore
+        )
+        if PrayerSurfaceStore.shared.saveSnapshot(snapshot) {
+            WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
+        }
+    }
+
+    private func startLiveActivityPreview() {
+        let prayerTime = prayerStore.activePrayerWindow?.prayerTime ?? prayerStore.nextPrayer
+        Task {
+            await PrayerLiveActivityManager.shared.start(
+                sessionID: UUID(),
+                prayer: PrayerSurfacePrayerID(prayerTime.prayer),
+                prayerDate: prayerTime.time,
+                startedAt: Date()
+            )
+        }
+    }
+
+    private func finishLiveActivityPreview() {
+        Task {
+            await PrayerLiveActivityManager.shared.finishAll()
+        }
+    }
+    #endif
 
     private var profileDisplayName: String {
         socialAccountStore.profile?.displayName ?? "Vakt"
@@ -653,6 +699,7 @@ private struct PrayerAsrChoice: View {
 private struct PersonalVaktHeader: View {
     let name: String
     let username: String
+    let onSystemSurfaces: () -> Void
     let onSettings: () -> Void
 
     var body: some View {
@@ -676,6 +723,21 @@ private struct PersonalVaktHeader: View {
 
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onSystemSurfaces()
+            } label: {
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.vaktGlow)
+                    .frame(width: 38, height: 38)
+                    .background(Color.vaktSurface.opacity(0.64))
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(Color.vaktGlow.opacity(0.2), lineWidth: 0.5))
+            }
+            .buttonStyle(VaktPressStyle())
+            .accessibilityLabel(L10n.string("surfaces.title"))
+
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 onSettings()
             } label: {
                 Image(systemName: "gearshape")
@@ -689,6 +751,218 @@ private struct PersonalVaktHeader: View {
             .buttonStyle(VaktPressStyle())
             .accessibilityLabel(L10n.string("profile.main.settings"))
         }
+    }
+}
+
+struct SystemSurfacesView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
+    @State private var refreshPulse = false
+
+    private var liveActivitiesEnabled: Bool {
+        ActivityAuthorizationInfo().areActivitiesEnabled
+    }
+
+    private var widgetIsReady: Bool {
+        PrayerSurfaceStore.shared.loadSnapshot() != nil
+    }
+
+    var body: some View {
+        ZStack {
+            Color.vaktBg.ignoresSafeArea()
+
+            GeometryReader { geometry in
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(L10n.string("surfaces.title"))
+                                .font(VaktFont.title(27))
+                                .foregroundStyle(Color.vaktPrimary)
+
+                            Text(L10n.string("surfaces.subtitle"))
+                                .font(VaktFont.body(12))
+                                .foregroundStyle(Color.vaktMuted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        Spacer(minLength: 4)
+
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Color.vaktPrimary)
+                                .frame(width: 36, height: 36)
+                                .background(Color.vaktSurface.opacity(0.72))
+                                .clipShape(Circle())
+                                .overlay(Circle().strokeBorder(Color.vaktBorder.opacity(0.7), lineWidth: 0.5))
+                        }
+                        .buttonStyle(VaktPressStyle())
+                        .accessibilityLabel(L10n.string("common.close"))
+                    }
+
+                    HStack(spacing: 10) {
+                        SurfacePreviewCard(
+                            icon: "rectangle.grid.1x2",
+                            title: L10n.string("surfaces.widget.title"),
+                            detail: L10n.string("widget.gallery.description"),
+                            isActive: widgetIsReady
+                        )
+                        SurfacePreviewCard(
+                            icon: "waveform.path",
+                            title: L10n.string("surfaces.live.title"),
+                            detail: L10n.string("surfaces.live.detail"),
+                            isActive: liveActivitiesEnabled
+                        )
+                    }
+
+                    VStack(spacing: 0) {
+                        SurfaceInstructionRow(index: 1, text: L10n.string("surfaces.step.home"))
+                        Divider().overlay(Color.vaktBorder.opacity(0.55))
+                        SurfaceInstructionRow(index: 2, text: L10n.string("surfaces.step.lock"))
+                        Divider().overlay(Color.vaktBorder.opacity(0.55))
+                        SurfaceInstructionRow(index: 3, text: L10n.string("surfaces.step.live"))
+                    }
+                    .background(Color.vaktSurface.opacity(0.48))
+                    .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
+                            .strokeBorder(Color.vaktBorder.opacity(0.62), lineWidth: 0.6)
+                    }
+
+                    Spacer(minLength: 4)
+
+                    HStack(spacing: 9) {
+                        Button {
+                            WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            withAnimation(.easeOut(duration: 0.25)) { refreshPulse = true }
+                            Task { @MainActor in
+                                try? await Task.sleep(for: .milliseconds(700))
+                                withAnimation(.easeIn(duration: 0.25)) { refreshPulse = false }
+                            }
+                        } label: {
+                            Label(
+                                refreshPulse
+                                    ? L10n.string("common.done")
+                                    : L10n.string("surfaces.refresh"),
+                                systemImage: refreshPulse ? "checkmark" : "arrow.clockwise"
+                            )
+                            .font(VaktFont.button(12))
+                            .foregroundStyle(Color.vaktPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .background(Color.vaktSurface.opacity(0.68))
+                            .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+                        }
+                        .buttonStyle(VaktPressStyle())
+
+                        Button {
+                            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                            openURL(url)
+                        } label: {
+                            Label(L10n.string("common.settings"), systemImage: "gearshape")
+                                .font(VaktFont.button(12))
+                                .foregroundStyle(Color.vaktBg)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 46)
+                                .background(Color.vaktPrimary)
+                                .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+                        }
+                        .buttonStyle(VaktPressStyle())
+                    }
+                }
+                .padding(.horizontal, VaktSpace.lg)
+                .padding(.top, 12)
+                .padding(.bottom, max(14, geometry.safeAreaInsets.bottom + 8))
+                .frame(minHeight: geometry.size.height, alignment: .top)
+            }
+        }
+        .onAppear {
+            UserDefaults.standard.set(true, forKey: "vakt.surfaces.discovery-dismissed.v1")
+        }
+    }
+}
+
+private struct SurfacePreviewCard: View {
+    let icon: String
+    let title: String
+    let detail: String
+    let isActive: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                ZStack {
+                    Circle()
+                        .fill(Color.vaktGlow.opacity(0.09))
+                        .frame(width: 34, height: 34)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.vaktGlow)
+                }
+
+                Spacer()
+
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(isActive ? Color.vaktGlow : Color.vaktMuted.opacity(0.4))
+                        .frame(width: 5, height: 5)
+
+                    Text(L10n.string(isActive ? "common.on" : "common.off"))
+                        .font(VaktFont.caption(8))
+                        .foregroundStyle(isActive ? Color.vaktGlow : Color.vaktMuted)
+                }
+            }
+
+            Text(title)
+                .font(VaktFont.body(14))
+                .foregroundStyle(Color.vaktPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+
+            Text(detail)
+                .font(VaktFont.caption(9))
+                .foregroundStyle(Color.vaktMuted)
+                .lineLimit(3)
+                .minimumScaleFactor(0.72)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+        .background(Color.vaktElevated.opacity(0.42))
+        .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
+                .strokeBorder(Color.vaktBorder.opacity(0.65), lineWidth: 0.6)
+        }
+    }
+}
+
+private struct SurfaceInstructionRow: View {
+    let index: Int
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(index.formatted())
+                .font(VaktFont.caption(10))
+                .foregroundStyle(Color.vaktGlow)
+                .frame(width: 26, height: 26)
+                .background(Color.vaktGlow.opacity(0.08))
+                .clipShape(Circle())
+
+            Text(text)
+                .font(VaktFont.body(11))
+                .foregroundStyle(Color.vaktSecondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.74)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 13)
+        .frame(height: 54)
     }
 }
 
@@ -1093,12 +1367,27 @@ private struct ReminderSettingsSheet: View {
 
                     VStack(spacing: 0) {
                         ReminderPreferenceRow(
+                            icon: "timer",
+                            title: L10n.formatString(
+                                "reminder.minutes_before",
+                                ProfileNumberFormatter.string(manager.preferences.preparationMinutesBeforePrayer)
+                            ),
+                            detail: L10n.string("reminder.before.title"),
+                            isOn: manager.preferences.prayerPreparationEnabled,
+                            isEnabled: manager.areRemindersActive
+                        ) {
+                            manager.setPrayerPreparationEnabled(!manager.preferences.prayerPreparationEnabled)
+                        }
+
+                        VaktDivider().padding(.leading, 48)
+
+                        ReminderPreferenceRow(
                             icon: "hourglass",
-                            title: L10n.string("reminder.before.title"),
-                            detail: L10n.formatString(
+                            title: L10n.formatString(
                                 "reminder.minutes_before",
                                 ProfileNumberFormatter.string(manager.preferences.minutesBeforePrayer)
                             ),
+                            detail: L10n.string("reminder.before.title"),
                             isOn: manager.preferences.prayerOpeningEnabled,
                             isEnabled: manager.areRemindersActive
                         ) {
@@ -1820,7 +2109,12 @@ private struct ProfileDeveloperSheet: View {
     let onShowRatePrompt: () -> Void
     let onPreviewSplash: () -> Void
     let onPreviewMakeup: () -> Void
+    let onRefreshWidget: () -> Void
+    let onStartLiveActivity: () -> Void
+    let onFinishLiveActivity: () -> Void
     let onPreviewAtmosphere: (HomeAtmospherePhase?) -> Void
+
+    @State private var surfaceFeedback: String?
 
     @AppStorage(HomeAtmospherePhase.previewStorageKey)
     private var selectedAtmosphere = HomeAtmospherePhase.automaticPreviewValue
@@ -1833,6 +2127,7 @@ private struct ProfileDeveloperSheet: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         atmospherePreviewSection
+                        surfacePreviewSection
 
                         developerRow(icon: "arrow.counterclockwise", title: "Reset onboarding", detail: "Splash ve onboarding akışını yeniden aç", action: onResetOnboarding)
                         developerRow(icon: "trash", title: "Clear entries", detail: "Cihazdaki namaz kayıtlarını temizle", action: onClearEntries)
@@ -1854,6 +2149,100 @@ private struct ProfileDeveloperSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    private var surfacePreviewSection: some View {
+        VStack(alignment: .leading, spacing: 11) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Sistem yüzeyleri")
+                    .font(VaktFont.body(13))
+                    .foregroundStyle(Color.vaktPrimary)
+
+                Text(surfaceFeedback ?? "Widget ve Live Activity'yi aktif vakit beklemeden test et")
+                    .font(VaktFont.caption(9))
+                    .foregroundStyle(surfaceFeedback == nil ? Color.vaktMuted : Color.vaktGlow)
+                    .animation(.easeInOut(duration: 0.2), value: surfaceFeedback)
+            }
+
+            HStack(spacing: 7) {
+                surfaceButton(
+                    icon: "rectangle.grid.1x2",
+                    title: "Widget",
+                    action: {
+                        onRefreshWidget()
+                        showSurfaceFeedback("Widget verisi yenilendi")
+                    }
+                )
+
+                surfaceButton(
+                    icon: "wave.3.right",
+                    title: "Başlat",
+                    action: {
+                        onStartLiveActivity()
+                        showSurfaceFeedback("Live Activity başlatıldı")
+                    }
+                )
+
+                surfaceButton(
+                    icon: "checkmark",
+                    title: "Tamamla",
+                    action: {
+                        onFinishLiveActivity()
+                        showSurfaceFeedback("Live Activity tamamlandı")
+                    }
+                )
+            }
+        }
+        .padding(13)
+        .background(Color.vaktSurface.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
+                .strokeBorder(Color.vaktBorderStrong.opacity(0.5), lineWidth: 0.5)
+        )
+    }
+
+    private func surfaceButton(
+        icon: String,
+        title: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            action()
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .medium))
+
+                Text(title)
+                    .font(VaktFont.caption(9))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(Color.vaktSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 54)
+            .background(Color.vaktElevated.opacity(0.52))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.vaktGlow.opacity(0.12), lineWidth: 0.5)
+            )
+        }
+        .buttonStyle(VaktPressStyle())
+    }
+
+    private func showSurfaceFeedback(_ message: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            surfaceFeedback = message
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            guard surfaceFeedback == message else { return }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                surfaceFeedback = nil
+            }
+        }
     }
 
     private var atmospherePreviewSection: some View {

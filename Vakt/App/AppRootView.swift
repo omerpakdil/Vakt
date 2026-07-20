@@ -1,9 +1,11 @@
 import SwiftUI
 import UIKit
+import WidgetKit
 
 struct AppRootView: View {
     @State private var selectedTab: VaktTab = .home
     @State private var hasStartedAppServices = false
+    @State private var prayerLaunchRequest: PrayerLaunchRequest?
     @StateObject private var onboardingStore = OnboardingStore()
     @StateObject private var permissionSetupStore = PermissionSetupStore()
     @StateObject private var subscriptionStore = SubscriptionStore()
@@ -32,8 +34,30 @@ struct AppRootView: View {
     }
 
     var body: some View {
-        ZStack {
-            if isPaywallPreview {
+        AnyView(
+            ZStack {
+            if isOnboardingPromisePreview {
+                OnboardingPromiseView(
+                    stepIndex: 5,
+                    stepCount: OnboardingStore.plannedPageCount,
+                    reduceMotion: false,
+                    onContinue: {}
+                )
+                .transition(.opacity)
+            } else if isLocationPermissionPreview {
+                PermissionSetupView(
+                    step: .location,
+                    prayerStore: prayerStore,
+                    notificationManager: notificationManager,
+                    onRequestLocation: requestPermissionSetupLocation,
+                    onOpenLocationSettings: openSystemSettings,
+                    onCompleteNotificationDecision: {}
+                )
+                .transition(.opacity)
+            } else if isMosquesPreview {
+                NearbyMosquesView(store: MosqueFinderStore())
+                    .transition(.opacity)
+            } else if isPaywallPreview {
                 PaywallView(store: subscriptionStore, referralStore: referralStore)
                     .transition(.opacity)
             } else if isSignInPreview {
@@ -60,11 +84,11 @@ struct AppRootView: View {
             } else {
                 subscriptionGate
             }
-        }
-        .environment(\.locale, VaktLocalization.appLocale)
-        .environment(\.layoutDirection, VaktLocalization.layoutDirection)
-        .preferredColorScheme(.dark)
-        .task {
+            }
+            .environment(\.locale, VaktLocalization.appLocale)
+            .environment(\.layoutDirection, VaktLocalization.layoutDirection)
+            .preferredColorScheme(.dark)
+            .task {
             notificationManager.start()
             updatePrayerCalculationSettings()
             spiritualContentStore.prepare(languageCode: VaktLocalization.languageCode)
@@ -78,12 +102,10 @@ struct AppRootView: View {
             startAppServicesIfAllowed()
         }
         .onChange(of: subscriptionStore.entitlement) { _, entitlement in
-            guard entitlement == .active else {
-                hasStartedAppServices = false
-                return
-            }
-
-            startAppServicesIfAllowed()
+            handleSurfaceEntitlementChange(entitlement)
+        }
+        .onChange(of: subscriptionStore.summary) { _, summary in
+            handleSurfaceSubscriptionSummaryChange(summary)
         }
         .onChange(of: isSignedIn) { _, signedIn in
             guard signedIn else { return }
@@ -101,10 +123,12 @@ struct AppRootView: View {
             }
             syncPrayerDeadlines()
         }
-        .onChange(of: prayerStore.scheduleVersion) { _, _ in
-            schedulePrayerNotifications()
-            syncPrayerDeadlines()
-        }
+            .onChange(of: prayerStore.scheduleVersion) { _, _ in
+                schedulePrayerNotifications()
+                syncPrayerDeadlines()
+                consumePendingSurfaceActions()
+            }
+        )
         .onChange(of: notificationManager.authorizationStatus) { _, _ in
             if notificationManager.authorizationStatus.allowsPrayerNotifications {
                 UIApplication.shared.registerForRemoteNotifications()
@@ -152,6 +176,16 @@ struct AppRootView: View {
             guard let action else { return }
             handlePrayerNotificationAction(action)
         }
+        .modifier(
+            PrayerSurfacePublicationModifier(
+                prayerStore: prayerStore,
+                reflectionStore: reflectionStore,
+                sessionStore: sessionStore
+            )
+        )
+        .modifier(PrayerLiveActivityReconciliationModifier(sessionStore: sessionStore))
+        .modifier(SurfaceActionForegroundModifier(onActive: consumePendingSurfaceActions))
+        .onOpenURL(perform: handleDeepLink)
         .onReceive(NotificationCenter.default.publisher(for: .vaktDidRegisterRemoteNotificationToken)) { notification in
             guard let token = notification.object as? String else { return }
             socialPrayerStore.registerDeviceToken(token)
@@ -207,9 +241,33 @@ struct AppRootView: View {
         #endif
     }
 
+    private var isOnboardingPromisePreview: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--vakt-onboarding-promise-preview")
+        #else
+        false
+        #endif
+    }
+
     private var isSignInPreview: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("--vakt-sign-in-preview")
+        #else
+        false
+        #endif
+    }
+
+    private var isMosquesPreview: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--vakt-mosques-preview")
+        #else
+        false
+        #endif
+    }
+
+    private var isLocationPermissionPreview: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--vakt-location-permission-preview")
         #else
         false
         #endif
@@ -253,6 +311,7 @@ struct AppRootView: View {
     private var permissionSetupStep: PermissionSetupStore.Step? {
         permissionSetupStore.nextStep(
             hasUsablePrayerSchedule: prayerStore.hasUsablePrayerSchedule,
+            locationStatus: prayerStore.locationAuthorizationStatus,
             notificationStatus: notificationManager.authorizationStatus
         )
     }
@@ -287,6 +346,7 @@ struct AppRootView: View {
                     sessionStore: sessionStore,
                     socialPrayerStore: socialPrayerStore,
                     spiritualContentStore: spiritualContentStore,
+                    launchRequest: $prayerLaunchRequest,
                     onReviewOpportunity: considerReviewPrompt
                 )
             }
@@ -389,6 +449,7 @@ struct AppRootView: View {
     }
 
     private func handlePrayerNotificationAction(_ action: PrayerNotificationAction) {
+        defer { _ = PrayerSurfaceStore.shared.removePendingAction(id: action.id) }
         let prayerDate = action.prayerDate ?? Date()
         let prayerTime = PrayerTime(
             prayer: action.prayer,
@@ -399,19 +460,201 @@ struct AppRootView: View {
 
         if action.outcome == .prayed {
             sessionStore.markPrayerCompleted(for: prayerTime)
+            reflectionStore.mark(
+                prayer: action.prayer,
+                prayerDate: prayerDate,
+                outcome: .prayed
+            )
+            socialPrayerStore.mark(
+                prayerTime,
+                outcome: .prayed,
+                markedAt: Date()
+            )
+        } else {
+            socialPrayerStore.markNotYet(prayerTime, markedAt: Date())
+        }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard onboardingStore.hasCompletedOnboarding,
+              subscriptionStore.entitlement == .active,
+              let deepLink = VaktDeepLink(url: url) else {
+            return
         }
 
-        reflectionStore.mark(
-            prayer: action.prayer,
-            prayerDate: prayerDate,
-            outcome: action.outcome
+        selectedTab = .prayer
+        if case .startPrayer(let prayer, let prayerDate) = deepLink {
+            prayerLaunchRequest = PrayerLaunchRequest(
+                prayer: prayer,
+                prayerDate: prayerDate
+            )
+        }
+    }
+
+    private func consumePendingSurfaceActions() {
+        guard onboardingStore.hasCompletedOnboarding,
+              subscriptionStore.entitlement == .active else { return }
+
+        let store = PrayerSurfaceStore.shared
+        for action in store.pendingActions() {
+            let prayer = action.prayer.prayer
+            let prayerTime = prayerStore.prayerTime(for: prayer, on: action.prayerDate) ?? PrayerTime(
+                prayer: prayer,
+                time: action.prayerDate,
+                countdown: max(0, action.prayerDate.timeIntervalSince(prayerStore.now)),
+                timeZoneIdentifier: TimeZone.autoupdatingCurrent.identifier
+            )
+
+            switch action.kind {
+            case .markPrayed:
+                sessionStore.markPrayerCompleted(for: prayerTime, at: action.createdAt)
+                reflectionStore.mark(
+                    prayer: prayer,
+                    prayerDate: prayerTime.time,
+                    outcome: .prayed
+                )
+                socialPrayerStore.mark(
+                    prayerTime,
+                    outcome: .prayed,
+                    markedAt: action.createdAt
+                )
+            case .markNotYet:
+                socialPrayerStore.markNotYet(
+                    prayerTime,
+                    markedAt: action.createdAt
+                )
+            case .startSalah:
+                selectedTab = .prayer
+                prayerLaunchRequest = PrayerLaunchRequest(
+                    prayer: action.prayer,
+                    prayerDate: action.prayerDate
+                )
+            }
+
+            _ = store.removePendingAction(id: action.id)
+        }
+    }
+
+    private func handleSurfaceEntitlementChange(_ entitlement: SubscriptionStore.Entitlement) {
+        guard entitlement == .active else {
+            hasStartedAppServices = false
+            PrayerSurfaceStore.shared.updateAccess(
+                isActive: false,
+                expirationDate: subscriptionStore.summary?.expirationDate
+            )
+            PrayerSurfaceStore.shared.clearSnapshot()
+            WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
+            return
+        }
+
+        PrayerSurfaceStore.shared.updateAccess(
+            isActive: true,
+            expirationDate: subscriptionStore.summary?.expirationDate
         )
-        socialPrayerStore.mark(
-            prayerTime,
-            outcome: action.outcome,
-            markedAt: Date()
+        startAppServicesIfAllowed()
+        consumePendingSurfaceActions()
+    }
+
+    private func handleSurfaceSubscriptionSummaryChange(_ summary: SubscriptionStore.Summary?) {
+        guard subscriptionStore.entitlement == .active else { return }
+        PrayerSurfaceStore.shared.updateAccess(
+            isActive: true,
+            expirationDate: summary?.expirationDate
+        )
+        WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
+    }
+
+}
+
+private struct SurfaceActionForegroundModifier: ViewModifier {
+    @Environment(\.scenePhase) private var scenePhase
+    let onActive: () -> Void
+
+    func body(content: Content) -> some View {
+        content.onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            onActive()
+        }
+    }
+}
+
+private struct PrayerSurfacePublicationModifier: ViewModifier {
+    @ObservedObject var prayerStore: PrayerScheduleStore
+    @ObservedObject var reflectionStore: PrayerReflectionStore
+    @ObservedObject var sessionStore: PrayerSessionStore
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear(perform: publish)
+            .onChange(of: prayerStore.scheduleVersion) { _, _ in publish() }
+            .onReceive(reflectionStore.$entries) { _ in publish() }
+            .onReceive(sessionStore.$sessions) { _ in publish() }
+    }
+
+    private func publish() {
+        guard !prayerStore.prayersForDeadlineSync.isEmpty else { return }
+
+        let snapshot = PrayerSurfaceSnapshotBuilder.make(
+            prayers: prayerStore.prayersForDeadlineSync,
+            now: prayerStore.now,
+            reflectionStore: reflectionStore,
+            sessionStore: sessionStore
+        )
+        let surfaceStore = PrayerSurfaceStore.shared
+        let previous = surfaceStore.loadSnapshot()
+        if surfaceStore.saveSnapshot(snapshot), previous?.timelineContent != snapshot.timelineContent {
+            WidgetCenter.shared.reloadTimelines(ofKind: "VaktPrayerWidget")
+        }
+    }
+}
+
+private struct PrayerLiveActivityReconciliationModifier: ViewModifier {
+    @ObservedObject var sessionStore: PrayerSessionStore
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                reconcile(sessionStore.sessions)
+            }
+            .onReceive(sessionStore.$sessions) { sessions in
+                reconcile(sessions)
+            }
+    }
+
+    private func reconcile(_ sessions: [PrayerQuietSession]) {
+        let now = Date()
+        let liveSessionIDs = Set(
+            sessions
+                .filter {
+                    $0.isOpen &&
+                        now.timeIntervalSince($0.startedAt) < PrayerLiveActivityManager.maximumSessionDuration
+                }
+                .map(\.id)
+        )
+        Task {
+            await PrayerLiveActivityManager.shared.reconcile(openSessionIDs: liveSessionIDs)
+        }
+    }
+}
+
+private extension PrayerSurfaceSnapshot {
+    var timelineContent: PrayerSurfaceTimelineContent {
+        PrayerSurfaceTimelineContent(
+            phase: phase,
+            currentPrayer: currentPrayer,
+            nextPrayer: nextPrayer,
+            schedule: schedule,
+            hasPendingActions: hasPendingActions
         )
     }
+}
+
+private struct PrayerSurfaceTimelineContent: Equatable {
+    let phase: PrayerSurfacePhase
+    let currentPrayer: PrayerSurfacePrayer?
+    let nextPrayer: PrayerSurfacePrayer?
+    let schedule: [PrayerSurfacePrayer]
+    let hasPendingActions: Bool
 }
 
 private struct NotificationAuthorizationLifecycleModifier: ViewModifier {

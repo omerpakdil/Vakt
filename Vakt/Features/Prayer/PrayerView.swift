@@ -6,6 +6,7 @@ struct PrayerView: View {
     @ObservedObject var sessionStore: PrayerSessionStore
     @ObservedObject var socialPrayerStore: SocialPrayerStore
     @ObservedObject var spiritualContentStore: SpiritualContentStore
+    @Binding var launchRequest: PrayerLaunchRequest?
     let onReviewOpportunity: (Int) -> Void
 
     @State private var activeSession: PrayerQuietSession?
@@ -13,10 +14,11 @@ struct PrayerView: View {
 
     var body: some View {
         let activeWindow = prayerStore.activePrayerWindow
+        let prayerTime = activeWindow?.prayerTime ?? prayerStore.latestStartedPrayer
 
         Group {
-            if let activeWindow {
-                activePrayerContent(activeWindow)
+            if let prayerTime {
+                prayerContent(prayerTime, window: activeWindow)
             } else {
                 PrayerBetweenTimesView(
                     nextPrayer: prayerStore.nextPrayer,
@@ -39,15 +41,19 @@ struct PrayerView: View {
             )
         }
         .onAppear {
-            refreshSocialPrayer(for: activeWindow?.prayerTime)
+            refreshSocialPrayer(for: prayerTime)
+            consumeLaunchRequestIfPossible()
         }
-        .onChange(of: activeWindow?.prayerTime.time) { _, _ in
-            refreshSocialPrayer(for: prayerStore.activePrayer)
+        .onChange(of: prayerTime?.time) { _, _ in
+            refreshSocialPrayer(for: prayerStore.activePrayer ?? prayerStore.latestStartedPrayer)
+            consumeLaunchRequestIfPossible()
+        }
+        .onChange(of: launchRequest) { _, _ in
+            consumeLaunchRequestIfPossible()
         }
     }
 
-    private func activePrayerContent(_ window: ActivePrayerWindow) -> some View {
-        let prayerTime = window.prayerTime
+    private func prayerContent(_ prayerTime: PrayerTime, window: ActivePrayerWindow?) -> some View {
         let trackingStatus = reflectionStore.trackingStatus(
             for: prayerTime,
             sessionStatus: sessionStore.status(for: prayerTime)
@@ -60,7 +66,7 @@ struct PrayerView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     PrayerPreparationHeader(
                         prayerTime: prayerTime,
-                        countdown: window.remaining(at: prayerStore.now),
+                        countdown: window?.remaining(at: prayerStore.now),
                         status: trackingStatus
                     )
 
@@ -101,7 +107,30 @@ struct PrayerView: View {
 
     private func beginQuietPrayer(prayerTime: PrayerTime) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        activeSession = sessionStore.beginSession(for: prayerTime, companionCount: 0)
+        let session = sessionStore.beginSession(for: prayerTime, companionCount: 0)
+        activeSession = session
+        Task {
+            await PrayerLiveActivityManager.shared.start(
+                sessionID: session.id,
+                prayer: PrayerSurfacePrayerID(session.prayer),
+                prayerDate: session.prayerDate,
+                startedAt: session.startedAt
+            )
+        }
+    }
+
+    private func consumeLaunchRequestIfPossible() {
+        guard activeSession == nil,
+              let request = launchRequest,
+              let prayerTime = prayerStore.prayerTime(
+                for: request.prayer.prayer,
+                on: request.prayerDate
+              ) else {
+            return
+        }
+
+        launchRequest = nil
+        beginQuietPrayer(prayerTime: prayerTime)
     }
 }
 
@@ -146,7 +175,7 @@ private struct PrayerBetweenTimesView: View {
                         .font(.system(size: 30, weight: .ultraLight))
                         .foregroundStyle(Color.vaktGlow)
 
-                    Text(L10n.string("home.between_prayers"))
+                    Text(L10n.string("schedule.refreshing"))
                         .font(VaktFont.body(13))
                         .foregroundStyle(Color.vaktSecondary)
                         .multilineTextAlignment(.center)
@@ -200,7 +229,7 @@ private struct PrayerPreparationAtmosphere: View {
 
 private struct PrayerPreparationHeader: View {
     let prayerTime: PrayerTime
-    let countdown: TimeInterval
+    let countdown: TimeInterval?
     let status: PrayerTrackingStatus
 
     var body: some View {
@@ -214,13 +243,18 @@ private struct PrayerPreparationHeader: View {
                 Text(title)
                     .font(VaktFont.title(31))
                     .foregroundStyle(Color.vaktPrimary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(subtitle)
                     .font(VaktFont.body(12))
                     .foregroundStyle(Color.vaktMuted)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .layoutPriority(1)
 
             Spacer(minLength: 4)
 
@@ -259,6 +293,9 @@ private struct PrayerPreparationHeader: View {
     }
 
     private var remainingText: String {
+        guard let countdown else {
+            return L10n.string("prayer.header.available")
+        }
         let minutes = max(0, Int(ceil(countdown / 60)))
         return L10n.timeRemaining(minutes: minutes)
     }

@@ -31,73 +31,73 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يستخدم Vakt موقعك التقريبي لحساب مواقيت الصلاة."
+            "value" : "يستخدم Vakt موقعك لمواقيت الصلاة المحلية واتجاه القبلة والمساجد القريبة."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt verwendet deinen ungefähren Standort, um Gebetszeiten zu berechnen."
+            "value" : "Vakt verwendet deinen Standort für lokale Gebetszeiten, die Qibla-Richtung und Moscheen in der Nähe."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt uses your approximate location to calculate prayer times."
+            "value" : "Vakt uses your location for local prayer times, qibla direction, and nearby mosques."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt usa tu ubicación aproximada para calcular los horarios de oración."
+            "value" : "Vakt usa tu ubicación para los horarios locales de oración, la dirección de la alquibla y las mezquitas cercanas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt utilise votre position approximative pour calculer les heures de prière."
+            "value" : "Vakt utilise votre position pour les heures de prière locales, la direction de la qibla et les mosquées à proximité."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt menggunakan perkiraan lokasi Anda untuk menghitung waktu salat."
+            "value" : "Vakt menggunakan lokasi Anda untuk waktu salat setempat, arah kiblat, dan masjid terdekat."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt usa la tua posizione approssimativa per calcolare gli orari di preghiera."
+            "value" : "Vakt usa la tua posizione per gli orari di preghiera locali, la direzione della qibla e le moschee vicine."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt gebruikt je geschatte locatie om gebedstijden te berekenen."
+            "value" : "Vakt gebruikt je locatie voor lokale gebedstijden, de qibla-richting en moskeeën in de buurt."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt usa sua localização aproximada para calcular os horários de oração."
+            "value" : "Vakt usa sua localização para horários locais de oração, direção da qibla e mesquitas próximas."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt использует ваше приблизительное местоположение для расчета времени молитв."
+            "value" : "Vakt использует ваше местоположение для местного времени молитв, направления киблы и поиска ближайших мечетей."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt, namaz vakitlerini hesaplamak için yaklaşık konumunu kullanır."
+            "value" : "Vakt konumunu yerel namaz vakitleri, kıble yönü ve yakındaki camiler için kullanır."
           }
         },
         "ur" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vakt نماز کے اوقات کے حساب کے لیے آپ کا اندازاً مقام استعمال کرتا ہے۔"
+            "value" : "Vakt آپ کا مقام مقامی نماز کے اوقات، قبلہ کی سمت اور قریبی مساجد کے لیے استعمال کرتا ہے۔"
           }
         }
       }
