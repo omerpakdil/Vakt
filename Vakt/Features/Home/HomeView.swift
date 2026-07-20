@@ -583,6 +583,7 @@ private struct HomeTopBar: View {
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(Color.vaktBorderStrong.opacity(0.6), lineWidth: 0.5)
+                    .allowsHitTesting(false)
             }
         }
     }
@@ -591,6 +592,7 @@ private struct HomeTopBar: View {
         Rectangle()
             .fill(Color.vaktBorderStrong.opacity(0.52))
             .frame(width: 0.5, height: 20)
+            .allowsHitTesting(false)
     }
 
     private func utilityButton<Icon: View>(
@@ -605,7 +607,6 @@ private struct HomeTopBar: View {
         } label: {
             ZStack(alignment: .topTrailing) {
                 icon()
-                    .frame(width: 38, height: 38)
 
                 if showsDiscoveryDot {
                     Circle()
@@ -615,6 +616,8 @@ private struct HomeTopBar: View {
                         .offset(x: -2, y: 2)
                 }
             }
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(VaktPressStyle())
         .accessibilityLabel(accessibilityLabel)
