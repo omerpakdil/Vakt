@@ -490,7 +490,7 @@ private struct HomeDayAtmosphere: View {
             canvasSize: size
         )
 
-        ZStack {
+        return ZStack {
             ZStack {
                 Circle()
                     .fill(palette.glow.color.opacity(0.14 * palette.sunOpacity))
