@@ -17,6 +17,7 @@ struct ProfileView: View {
     @ObservedObject var socialAccountStore: SocialAccountStore
     @ObservedObject var socialPrayerStore: SocialPrayerStore
     @ObservedObject var referralStore: ReferralStore
+    let onReviewOpportunity: (Int) -> Void
 
     @Environment(\.openURL) private var openURL
     @State private var modal: VaktModalState?
@@ -229,6 +230,7 @@ struct ProfileView: View {
     }
 
     private func markPrayer(_ prayerTime: PrayerTime, outcome: PrayerReflectionOutcome) {
+        let previousCompletionCount = reflectionStore.startedTogetherCount
         if outcome == .prayed {
             sessionStore.markPrayerCompleted(for: prayerTime)
         }
@@ -238,6 +240,11 @@ struct ProfileView: View {
             outcome: outcome
         )
         socialPrayerStore.mark(prayerTime, outcome: outcome)
+
+        let completedPrayerCount = reflectionStore.startedTogetherCount
+        if outcome == .prayed, completedPrayerCount > previousCompletionCount {
+            onReviewOpportunity(completedPrayerCount)
+        }
     }
 
     private func requestSignOut() {

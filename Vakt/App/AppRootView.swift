@@ -345,7 +345,8 @@ struct AppRootView: View {
                 prayerStore: prayerStore,
                 sessionStore: sessionStore,
                 reflectionStore: reflectionStore,
-                socialPrayerStore: socialPrayerStore
+                socialPrayerStore: socialPrayerStore,
+                onReviewOpportunity: considerReviewPrompt
             )
                 .tabItem {
                     Label(L10n.text(.tabHome), systemImage: "line.3.horizontal")
@@ -395,7 +396,8 @@ struct AppRootView: View {
                     reviewPromptStore: reviewPromptStore,
                     socialAccountStore: socialAccountStore,
                     socialPrayerStore: socialPrayerStore,
-                    referralStore: referralStore
+                    referralStore: referralStore,
+                    onReviewOpportunity: considerReviewPrompt
                 )
             }
                 .tabItem {
@@ -458,7 +460,10 @@ struct AppRootView: View {
         guard onboardingStore.hasCompletedOnboarding,
               subscriptionStore.entitlement == .active else { return }
 
-        reviewPromptStore.considerPrompt(completedPrayerCount: completedPrayerCount)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(700))
+            reviewPromptStore.considerPrompt(completedPrayerCount: completedPrayerCount)
+        }
     }
 
     private func handlePrayerNotificationAction(_ action: PrayerNotificationAction) {
@@ -472,6 +477,7 @@ struct AppRootView: View {
         )
 
         if action.outcome == .prayed {
+            let previousCompletionCount = reflectionStore.startedTogetherCount
             sessionStore.markPrayerCompleted(for: prayerTime)
             reflectionStore.mark(
                 prayer: action.prayer,
@@ -483,6 +489,7 @@ struct AppRootView: View {
                 outcome: .prayed,
                 markedAt: Date()
             )
+            presentReviewPromptIfCompletionWasAdded(after: previousCompletionCount)
         } else {
             socialPrayerStore.markNotYet(prayerTime, markedAt: Date())
         }
@@ -520,6 +527,7 @@ struct AppRootView: View {
 
             switch action.kind {
             case .markPrayed:
+                let previousCompletionCount = reflectionStore.startedTogetherCount
                 sessionStore.markPrayerCompleted(for: prayerTime, at: action.createdAt)
                 reflectionStore.mark(
                     prayer: prayer,
@@ -531,6 +539,7 @@ struct AppRootView: View {
                     outcome: .prayed,
                     markedAt: action.createdAt
                 )
+                presentReviewPromptIfCompletionWasAdded(after: previousCompletionCount)
             case .markNotYet:
                 socialPrayerStore.markNotYet(
                     prayerTime,
@@ -546,6 +555,12 @@ struct AppRootView: View {
 
             _ = store.removePendingAction(id: action.id)
         }
+    }
+
+    private func presentReviewPromptIfCompletionWasAdded(after previousCount: Int) {
+        let completedPrayerCount = reflectionStore.startedTogetherCount
+        guard completedPrayerCount > previousCount else { return }
+        considerReviewPrompt(completedPrayerCount: completedPrayerCount)
     }
 
     private func handleSurfaceEntitlementChange(_ entitlement: SubscriptionStore.Entitlement) {

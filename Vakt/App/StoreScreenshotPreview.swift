@@ -123,7 +123,8 @@ struct StoreScreenshotPreviewRoot: View {
                 prayerStore: prayerStore,
                 sessionStore: sessionStore,
                 reflectionStore: reflectionStore,
-                socialPrayerStore: socialPrayerStore
+                socialPrayerStore: socialPrayerStore,
+                onReviewOpportunity: { _ in }
             )
             .tabItem { Label(L10n.text(.tabHome), systemImage: "line.3.horizontal") }
             .tag(VaktTab.home)

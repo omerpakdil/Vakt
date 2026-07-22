@@ -6,6 +6,7 @@ struct HomeView: View {
     @ObservedObject var sessionStore: PrayerSessionStore
     @ObservedObject var reflectionStore: PrayerReflectionStore
     @ObservedObject var socialPrayerStore: SocialPrayerStore
+    let onReviewOpportunity: (Int) -> Void
 
     @StateObject private var qiblaStore = QiblaCompassStore()
     @StateObject private var mosqueFinderStore = MosqueFinderStore()
@@ -126,6 +127,7 @@ struct HomeView: View {
 
     private func mark(_ prayerTime: PrayerTime, outcome: PrayerReflectionOutcome) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let previousCompletionCount = reflectionStore.startedTogetherCount
 
         if outcome == .prayed {
             sessionStore.markPrayerCompleted(for: prayerTime)
@@ -137,6 +139,11 @@ struct HomeView: View {
             outcome: outcome
         )
         socialPrayerStore.mark(prayerTime, outcome: outcome)
+
+        let completedPrayerCount = reflectionStore.startedTogetherCount
+        if outcome == .prayed, completedPrayerCount > previousCompletionCount {
+            onReviewOpportunity(completedPrayerCount)
+        }
     }
 }
 
