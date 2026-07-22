@@ -40,7 +40,7 @@ final class SubscriptionStore: ObservableObject {
 
         let id: String
         let cadence: Cadence
-        let displayPrice: String
+        let displayPrice: String?
         let billingDescription: String
 
         var title: String {
@@ -372,13 +372,13 @@ final class SubscriptionStore: ObservableObject {
         Plan(
             id: SubscriptionStore.monthlyProductID,
             cadence: .monthly,
-            displayPrice: "$19.99",
+            displayPrice: nil,
             billingDescription: L10n.string("paywall.billing.monthly")
         ),
         Plan(
             id: SubscriptionStore.yearlyProductID,
             cadence: .yearly,
-            displayPrice: "$99.99",
+            displayPrice: nil,
             billingDescription: L10n.string("paywall.billing.yearly")
         )
     ]

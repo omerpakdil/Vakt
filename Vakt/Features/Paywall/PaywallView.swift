@@ -811,23 +811,21 @@ private struct PaywallPlanRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    if let originalPrice {
-                        Text(originalPrice)
-                            .font(VaktFont.caption(9))
-                            .foregroundStyle(
-                                isSelected ? Color.vaktMuted.opacity(0.92) : Color.vaktMuted.opacity(0.74)
-                            )
-                            .strikethrough(true)
+                    if let displayPrice = plan.displayPrice {
+                        Text(L10n.formatString(
+                            isYearly ? "paywall.price.year" : "paywall.price.month",
+                            displayPrice
+                        ))
+                            .font(VaktFont.button(isSelected ? 15 : 14))
+                            .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktSecondary.opacity(0.9))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
+                    } else {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(Color.vaktMuted.opacity(isSelected ? 0.24 : 0.16))
+                            .frame(width: 74, height: 13)
+                            .accessibilityHidden(true)
                     }
-
-                    Text(L10n.formatString(
-                        isYearly ? "paywall.price.year" : "paywall.price.month",
-                        plan.displayPrice
-                    ))
-                        .font(VaktFont.button(isSelected ? 15 : 14))
-                        .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktSecondary.opacity(0.9))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.78)
                 }
             }
             .padding(.horizontal, 11)
@@ -853,24 +851,14 @@ private struct PaywallPlanRow: View {
         .accessibilityLabel(L10n.formatString(
             "paywall.plan.accessibility",
             plan.title,
-            plan.displayPrice,
+            plan.displayPrice ?? L10n.string("paywall.loading"),
             planDetail
         ))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private var originalPrice: String? {
-        guard plan.displayPrice.contains("$") else { return nil }
-        return isYearly ? "$249.99" : "$29.99"
-    }
-
     private var planDetail: String {
-        if isYearly {
-            return plan.displayPrice.contains("$")
-                ? L10n.string("paywall.yearly_month")
-                : L10n.string("paywall.billing.yearly")
-        }
-        return L10n.string("paywall.billing.monthly")
+        plan.billingDescription
     }
 }
 
