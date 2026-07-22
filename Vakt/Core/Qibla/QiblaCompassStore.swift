@@ -116,6 +116,14 @@ final class QiblaCompassStore: NSObject, ObservableObject, CLLocationManagerDele
     }
 
 #if DEBUG
+    func configureStoreScreenshotPreview() {
+        coordinate = Coordinate(latitude: 39.9243965, longitude: 32.8701553)
+        usesSavedLocation = false
+        isUsingDebugHeading = true
+        debugHeading = 142
+        publishReadingIfPossible(locationAccuracy: 12)
+    }
+
     func startDebugHeadingSimulation() {
         isUsingDebugHeading = true
 
@@ -208,6 +216,13 @@ final class QiblaCompassStore: NSObject, ObservableObject, CLLocationManagerDele
     }
 
     private func requestLocationIfAllowed() {
+#if DEBUG
+        if isUsingDebugHeading {
+            publishReadingIfPossible(locationAccuracy: 12)
+            return
+        }
+#endif
+
         guard CLLocationManager.locationServicesEnabled() else {
             status = coordinate == nil ? .denied : .calibrating
             return

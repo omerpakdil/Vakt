@@ -19,6 +19,9 @@ final class MosqueFinderStore: NSObject, ObservableObject, CLLocationManagerDele
     private var lastSearchLocation: CLLocation?
     private var lastSearchDate: Date?
     private var hasStarted = false
+    #if DEBUG
+    private var isStoreScreenshotPreview = false
+    #endif
 
     override init() {
         super.init()
@@ -38,6 +41,12 @@ final class MosqueFinderStore: NSObject, ObservableObject, CLLocationManagerDele
     }
 
     func start() {
+        #if DEBUG
+        if isStoreScreenshotPreview {
+            state = .ready
+            return
+        }
+        #endif
         hasStarted = true
         guard CLLocationManager.locationServicesEnabled() else {
             state = .denied
@@ -78,8 +87,49 @@ final class MosqueFinderStore: NSObject, ObservableObject, CLLocationManagerDele
     }
 
     func refresh() {
+        #if DEBUG
+        if isStoreScreenshotPreview { return }
+        #endif
         requestLocation(forceSearch: true)
     }
+
+    #if DEBUG
+    func configureStoreScreenshotPreview() {
+        isStoreScreenshotPreview = true
+        let origin = CLLocationCoordinate2D(latitude: 39.9244, longitude: 32.8702)
+        userCoordinate = origin
+        places = [
+            MosquePlace(
+                id: "maltepe",
+                name: "Maltepe Camii",
+                coordinate: CLLocationCoordinate2D(latitude: 39.9258, longitude: 32.8727),
+                address: "Çankaya",
+                distanceMeters: 310
+            ),
+            MosquePlace(
+                id: "camlik",
+                name: "Çamlıtepe Camii",
+                coordinate: CLLocationCoordinate2D(latitude: 39.9222, longitude: 32.8683),
+                address: "Çamlıtepe, Çankaya",
+                distanceMeters: 420
+            ),
+            MosquePlace(
+                id: "kocatepe",
+                name: "Kocatepe Camii",
+                coordinate: CLLocationCoordinate2D(latitude: 39.9164, longitude: 32.8606),
+                address: "Kızılay, Çankaya",
+                distanceMeters: 1_280
+            )
+        ]
+        travelEstimates = [
+            "maltepe": MosqueTravelEstimate(walking: 4 * 60, driving: 2 * 60),
+            "camlik": MosqueTravelEstimate(walking: 6 * 60, driving: 3 * 60),
+            "kocatepe": MosqueTravelEstimate(walking: 17 * 60, driving: 7 * 60)
+        ]
+        selectedPlaceID = places.first?.id
+        state = .ready
+    }
+    #endif
 
     func select(_ place: MosquePlace) {
         selectedPlaceID = place.id

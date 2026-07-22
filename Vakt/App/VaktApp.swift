@@ -49,7 +49,9 @@ struct VaktApp: App {
     @UIApplicationDelegateAdaptor(VaktAppDelegate.self) private var appDelegate
 
     init() {
-        RevenueCatConfiguration.configure()
+        if StoreScreenshotRuntime.scene == nil {
+            RevenueCatConfiguration.configure()
+        }
     }
 
     var body: some Scene {

@@ -3,8 +3,18 @@ import SwiftUI
 struct MakeupPrayerCenterView: View {
     @ObservedObject var store: SocialPrayerStore
 
-    @State private var visibleMonth = Date()
+    @State private var visibleMonth: Date
     @State private var selectedDay: LocalPrayerDay?
+
+    init(
+        store: SocialPrayerStore,
+        initialDate: Date = Date(),
+        initialSelectedDay: LocalPrayerDay? = nil
+    ) {
+        self.store = store
+        _visibleMonth = State(initialValue: initialDate)
+        _selectedDay = State(initialValue: initialSelectedDay)
+    }
 
     private var calendar: Calendar {
         var calendar = Calendar.autoupdatingCurrent
@@ -361,7 +371,9 @@ struct MakeupPrayerCenterView: View {
     }
 
     private func loadMonth() {
-        selectedDay = nil
+        if let selectedDay, !isDayVisible(selectedDay) {
+            self.selectedDay = nil
+        }
         store.loadMakeupCalendar(for: visibleMonth, calendar: calendar)
     }
 

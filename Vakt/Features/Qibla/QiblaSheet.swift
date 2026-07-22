@@ -32,6 +32,13 @@ struct QiblaSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .onAppear {
+            #if DEBUG
+            if StoreScreenshotRuntime.scene == .qibla {
+                store.startDebugHeadingSimulation()
+                store.setDebugHeading(142)
+                return
+            }
+            #endif
             store.start()
         }
         .onDisappear {
@@ -100,7 +107,9 @@ struct QiblaSheet: View {
     private var simulatorDebugControls: some View {
 #if DEBUG
 #if targetEnvironment(simulator)
-        QiblaSimulatorControls(store: store)
+        if StoreScreenshotRuntime.scene == nil {
+            QiblaSimulatorControls(store: store)
+        }
 #else
         EmptyView()
 #endif

@@ -146,6 +146,88 @@ final class SocialPrayerStore: ObservableObject {
         makeupMonth = MakeupPrayerMonth(date: Date(), calendar: calendar)
         rebuildMakeupDaySummaries()
     }
+
+    func configureStoreScreenshotPreview(
+        referenceDate: Date,
+        calendar: Calendar,
+        friendNames: [(displayName: String, username: String)]
+    ) {
+        let userID = VaktUserID(
+            rawValue: UUID(uuidString: "00000000-0000-4000-8000-000000000001")!
+        )
+        let day = LocalPrayerDay(date: referenceDate, calendar: calendar)
+
+        friendSummaries = friendNames.enumerated().map { index, friend in
+            let id = VaktUserID(
+                rawValue: UUID(uuidString: String(format: "00000000-0000-4000-8000-%012d", index + 11))!
+            )
+            let statuses: [PrayerKey: SocialPrayerStatus] = [
+                .fajr: .prayedOnTime,
+                .dhuhr: index == 1 ? .notMarked : .prayedOnTime,
+                .asr: index == 0 ? .prayedOnTime : .notMarked,
+                .maghrib: .notMarked,
+                .isha: .notMarked
+            ]
+            return FriendPrayerSummary(
+                id: id,
+                profile: SocialProfile(
+                    id: id,
+                    displayName: friend.displayName,
+                    username: friend.username,
+                    avatarURL: nil,
+                    isPrayerStatusVisible: true,
+                    profileCompletedAt: referenceDate.addingTimeInterval(-86_400)
+                ),
+                statuses: statuses,
+                lastMarkedAt: referenceDate.addingTimeInterval(TimeInterval(-900 * (index + 1)))
+            )
+        }
+
+        todayEntries = [
+            SocialPrayerStatusEntry(
+                id: UUID(uuidString: "00000000-0000-4000-8000-000000000101")!,
+                userID: userID,
+                localDay: day,
+                prayer: .dhuhr,
+                timeZoneIdentifier: calendar.timeZone.identifier,
+                status: .prayedOnTime,
+                markedAt: referenceDate.addingTimeInterval(-1_200)
+            )
+        ]
+
+        let datesAndPrayers: [(Int, [PrayerKey])] = [
+            (-1, [.fajr, .dhuhr, .asr, .maghrib, .isha]),
+            (-5, [.fajr, .isha]),
+            (-9, [.dhuhr, .maghrib]),
+            (-14, [.asr])
+        ]
+        openMakeupPrayers = datesAndPrayers.flatMap { dayOffset, prayers in
+            let date = calendar.date(byAdding: .day, value: dayOffset, to: referenceDate) ?? referenceDate
+            let localDay = LocalPrayerDay(date: date, calendar: calendar)
+            return prayers.enumerated().map { prayerIndex, prayer in
+                MakeupPrayer(
+                    id: UUID(uuidString: String(
+                        format: "00000000-0000-4000-8100-%06d%06d",
+                        abs(dayOffset),
+                        prayerIndex + 1
+                    )) ?? UUID(),
+                    userID: userID,
+                    originalLocalDay: localDay,
+                    prayer: prayer,
+                    timeZoneIdentifier: calendar.timeZone.identifier,
+                    status: .open,
+                    createdAt: date,
+                    completedAt: nil
+                )
+            }
+        }
+        openMakeupPrayerCount = openMakeupPrayers.count
+        makeupMonth = MakeupPrayerMonth(date: referenceDate, calendar: calendar)
+        rebuildMakeupDaySummaries()
+        pendingRequests = []
+        sentNudges = []
+        lastErrorMessage = nil
+    }
     #endif
 
     func registerDeviceToken(_ token: String, languageCode: String = VaktLocalization.languageCode) {

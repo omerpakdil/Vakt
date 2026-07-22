@@ -16,3 +16,11 @@ dist/
 
 # Generated localization QA screenshots
 LocalizationQA/
+
+# Generated App Store screenshot artifacts
+.derivedData-store-shots/
+AppStoreScreenshots/raw/
+AppStoreScreenshots/output/
+AppStoreScreenshots/output-modern/
+AppStoreScreenshots/contact-sheets/
+AppStoreScreenshots/reports/

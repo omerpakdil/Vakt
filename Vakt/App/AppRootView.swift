@@ -36,7 +36,10 @@ struct AppRootView: View {
     var body: some View {
         AnyView(
             ZStack {
-            if isOnboardingPromisePreview {
+            if let storeScreenshotScene = StoreScreenshotRuntime.scene {
+                storeScreenshotPreview(storeScreenshotScene)
+                    .transition(.opacity)
+            } else if isOnboardingPromisePreview {
                 OnboardingPromiseView(
                     stepIndex: 5,
                     stepCount: OnboardingStore.plannedPageCount,
@@ -87,8 +90,9 @@ struct AppRootView: View {
             }
             .environment(\.locale, VaktLocalization.appLocale)
             .environment(\.layoutDirection, VaktLocalization.layoutDirection)
-            .preferredColorScheme(.dark)
-            .task {
+        .preferredColorScheme(.dark)
+        .task {
+            guard StoreScreenshotRuntime.scene == nil else { return }
             notificationManager.start()
             updatePrayerCalculationSettings()
             spiritualContentStore.prepare(languageCode: VaktLocalization.languageCode)
@@ -206,6 +210,15 @@ struct AppRootView: View {
                 }
             )
         }
+    }
+
+    @ViewBuilder
+    private func storeScreenshotPreview(_ scene: StoreScreenshotScene) -> some View {
+        #if DEBUG
+        StoreScreenshotPreviewRoot(scene: scene)
+        #else
+        EmptyView()
+        #endif
     }
 
     private var reviewPromptBinding: Binding<Bool> {

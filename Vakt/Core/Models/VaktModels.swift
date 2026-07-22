@@ -1664,6 +1664,19 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         requestLocationIfAllowed()
     }
 
+    #if DEBUG
+    func configureStoreScreenshotPreview(now: Date, prayers: [PrayerTime]) {
+        clockTask?.cancel()
+        clockTask = nil
+        refreshTask?.cancel()
+        refreshTask = nil
+        self.now = now
+        loadedPrayers = prayers.sorted { $0.time < $1.time }
+        status = .ready
+        scheduleVersion += 1
+    }
+    #endif
+
     func requestLocationPermission() {
         hasRequestedLocationPermission = true
         UserDefaults.standard.set(true, forKey: Self.locationPermissionRequestedKey)

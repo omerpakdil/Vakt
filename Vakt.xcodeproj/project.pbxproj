@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A70000000000000000000001 /* StoreScreenshotPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* StoreScreenshotPreview.swift */; };
 		F40000000000000000000001 /* MosqueFinderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000001 /* MosqueFinderModels.swift */; };
 		F40000000000000000000002 /* MosqueFinderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000002 /* MosqueFinderStore.swift */; };
 		F40000000000000000000003 /* NearbyMosquesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000003 /* NearbyMosquesView.swift */; };
@@ -149,6 +150,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A71000000000000000000001 /* StoreScreenshotPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreScreenshotPreview.swift; sourceTree = "<group>"; };
 		F41000000000000000000001 /* MosqueFinderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MosqueFinderModels.swift; sourceTree = "<group>"; };
 		F41000000000000000000002 /* MosqueFinderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MosqueFinderStore.swift; sourceTree = "<group>"; };
 		F41000000000000000000003 /* NearbyMosquesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyMosquesView.swift; sourceTree = "<group>"; };
@@ -529,6 +531,7 @@
 			isa = PBXGroup;
 			children = (
 				D7E3F8520CB87A94974C984D /* AppRootView.swift */,
+				A71000000000000000000001 /* StoreScreenshotPreview.swift */,
 				313155176F6E9E6E78CF30ED /* VaktApp.swift */,
 			);
 			path = App;
@@ -928,6 +931,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A70000000000000000000001 /* StoreScreenshotPreview.swift in Sources */,
 				A10000000000000000000001 /* PrayerSurfaceModels.swift in Sources */,
 				A10000000000000000000002 /* PrayerSurfaceStore.swift in Sources */,
 				A10000000000000000000003 /* PrayerSurfaceSnapshotBuilder.swift in Sources */,
@@ -1033,7 +1037,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = VaktWidgets/VaktWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				INFOPLIST_FILE = VaktWidgets/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1059,7 +1063,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = VaktWidgets/VaktWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				INFOPLIST_FILE = VaktWidgets/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1244,7 +1248,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
@@ -1270,7 +1274,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;

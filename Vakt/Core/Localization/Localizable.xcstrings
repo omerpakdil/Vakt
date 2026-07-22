@@ -61465,13 +61465,13 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "الصلاة"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Gebet"
           }
         },
         "en" : {
@@ -61483,43 +61483,43 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Oración"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Prière"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Salat"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Preghiera"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Gebed"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Oração"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "Намаз"
           }
         },
         "tr" : {
@@ -61531,7 +61531,7 @@
         "ur" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prayer"
+            "value" : "نماز"
           }
         }
       }
