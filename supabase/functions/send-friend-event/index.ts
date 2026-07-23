@@ -69,7 +69,7 @@ Deno.serve(async (request) => {
       const payload = {
         aps: {
           alert,
-          sound: "default",
+          sound: "vakt-gentle.caf",
           "thread-id": "vakt-friends",
         },
         deep_link: "circle",

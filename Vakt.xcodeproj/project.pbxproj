@@ -32,6 +32,8 @@
 		0A0EB4C127E8BF371E082E7C /* InMemoryPresenceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8081F97783F6D49AF274BFB /* InMemoryPresenceRepository.swift */; };
 		D20000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* PrivacyInfo.xcprivacy */; };
 		D20000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* PrivacyInfo.xcprivacy */; };
+		E60000000000000000000001 /* vakt-time.caf in Resources */ = {isa = PBXBuildFile; fileRef = E61000000000000000000001 /* vakt-time.caf */; };
+		E60000000000000000000002 /* vakt-gentle.caf in Resources */ = {isa = PBXBuildFile; fileRef = E61000000000000000000002 /* vakt-gentle.caf */; };
 		0ED94935949120E7B1170581 /* VaktModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831B1BB56790783DFD52F1B9 /* VaktModels.swift */; };
 		10C04294DAC4CA245EB99D9A /* VaktLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571CEF3096D7A5FDB544075D /* VaktLocalization.swift */; };
 		1492160C910BDA922A314E9E /* SupabasePrayerSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABF37E3D71745AD6D4C9BA1 /* SupabasePrayerSessionRepository.swift */; };
@@ -200,6 +202,8 @@
 		4A2F87FA3C38918AB70A601B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4C7D562C7C1ECB3B11326FC7 /* ReviewPromptPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptPolicyTests.swift; sourceTree = "<group>"; };
 		4DF040BBB92E2E0AAB5DEC65 /* PrayerNotificationSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerNotificationSchedulerTests.swift; sourceTree = "<group>"; };
+		E61000000000000000000001 /* vakt-time.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sounds/vakt-time.caf"; sourceTree = "<group>"; };
+		E61000000000000000000002 /* vakt-gentle.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sounds/vakt-gentle.caf"; sourceTree = "<group>"; };
 		5232BD4A10A9EF12491E3CB5 /* SocialPrayerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPrayerModels.swift; sourceTree = "<group>"; };
 		53B30E44D4A40A93E7009743 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		571CEF3096D7A5FDB544075D /* VaktLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaktLocalization.swift; sourceTree = "<group>"; };
@@ -541,6 +545,8 @@
 			isa = PBXGroup;
 			children = (
 				7784F3611879DAB7584552D3 /* Assets.xcassets */,
+				E61000000000000000000001 /* vakt-time.caf */,
+				E61000000000000000000002 /* vakt-gentle.caf */,
 				D20000000000000000000003 /* PrivacyInfo.xcprivacy */,
 				7FD9F19AFF4F46705E95E3A5 /* Backend.xcconfig */,
 				F47FFE0D15BB1D356D9C5BF6 /* Backend.xcconfig.example */,
@@ -885,6 +891,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF64C21687A07EBE6007FD5E /* Assets.xcassets in Resources */,
+				E60000000000000000000001 /* vakt-time.caf in Resources */,
+				E60000000000000000000002 /* vakt-gentle.caf in Resources */,
 				D20000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 				2DEFEC737F5CAD4BD543FFBC /* InfoPlist.xcstrings in Resources */,
 				58E42876130AEA696756DE1F /* Localizable.xcstrings in Resources */,
@@ -1037,7 +1045,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = VaktWidgets/VaktWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				INFOPLIST_FILE = VaktWidgets/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1063,7 +1071,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = VaktWidgets/VaktWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				INFOPLIST_FILE = VaktWidgets/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1248,7 +1256,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;
@@ -1274,7 +1282,7 @@
 				CODE_SIGN_ENTITLEMENTS = Vakt/Resources/Vakt.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = HJD426RPSC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Vakt/Resources/Info.plist;

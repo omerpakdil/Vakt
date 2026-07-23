@@ -67,7 +67,7 @@ Deno.serve(async (request) => {
       const payload = {
         aps: {
           alert: nudgeCopy(language, sender?.display_name, nudge.prayer_name),
-          sound: "default",
+          sound: "vakt-gentle.caf",
           "thread-id": `vakt-${nudge.prayer_name}`,
         },
         deep_link: "prayer",

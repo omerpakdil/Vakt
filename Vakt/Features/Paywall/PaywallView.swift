@@ -806,12 +806,28 @@ private struct PaywallPlanRow: View {
                     Text(planDetail)
                         .font(VaktFont.caption(10))
                         .foregroundStyle(isSelected ? Color.vaktSecondary : Color.vaktMuted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    if let displayPrice = plan.displayPrice {
+                    if let introductoryPrice = plan.introductoryDisplayPrice,
+                       let regularPrice = plan.displayPrice {
+                        Text(regularPrice)
+                            .font(VaktFont.caption(9))
+                            .foregroundStyle(
+                                isSelected ? Color.vaktMuted.opacity(0.92) : Color.vaktMuted.opacity(0.74)
+                            )
+                            .strikethrough(true)
+
+                        Text(L10n.formatString("paywall.intro.first_year", introductoryPrice))
+                            .font(VaktFont.button(isSelected ? 15 : 14))
+                            .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktSecondary.opacity(0.9))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                    } else if let displayPrice = plan.displayPrice {
                         Text(L10n.formatString(
                             isYearly ? "paywall.price.year" : "paywall.price.month",
                             displayPrice
@@ -851,14 +867,18 @@ private struct PaywallPlanRow: View {
         .accessibilityLabel(L10n.formatString(
             "paywall.plan.accessibility",
             plan.title,
-            plan.displayPrice ?? L10n.string("paywall.loading"),
+            plan.introductoryDisplayPrice ?? plan.displayPrice ?? L10n.string("paywall.loading"),
             planDetail
         ))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var planDetail: String {
-        plan.billingDescription
+        if plan.introductoryDisplayPrice != nil,
+           let regularPrice = plan.displayPrice {
+            return L10n.formatString("paywall.intro.renews", regularPrice)
+        }
+        return plan.billingDescription
     }
 }
 

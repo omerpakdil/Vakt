@@ -41,6 +41,7 @@ final class SubscriptionStore: ObservableObject {
         let id: String
         let cadence: Cadence
         let displayPrice: String?
+        let introductoryDisplayPrice: String?
         let billingDescription: String
 
         var title: String {
@@ -194,12 +195,20 @@ final class SubscriptionStore: ObservableObject {
             let offerings = try await fetchOfferings()
             let offering = offerings.offering(identifier: offeringID) ?? offerings.current
             let packages = offering?.availablePackages ?? []
+            let eligibilityByProductID = await Purchases.shared.checkTrialOrIntroDiscountEligibility(
+                productIdentifiers: packages.map(\.storeProduct.productIdentifier)
+            )
 
             packagesByPlanID = Dictionary(uniqueKeysWithValues: packages.compactMap { package in
-                guard let plan = makePlan(package: package) else { return nil }
+                let eligibility = eligibilityByProductID[package.storeProduct.productIdentifier]?.status ?? .unknown
+                guard let plan = makePlan(package: package, introEligibility: eligibility) else { return nil }
                 return (plan.id, package)
             })
-            plans = packages.compactMap(makePlan).sorted { $0.cadence < $1.cadence }
+            plans = packages.compactMap { package in
+                let eligibility = eligibilityByProductID[package.storeProduct.productIdentifier]?.status ?? .unknown
+                return makePlan(package: package, introEligibility: eligibility)
+            }
+            .sorted { $0.cadence < $1.cadence }
         } catch {
             packagesByPlanID = [:]
             plans = []
@@ -283,7 +292,10 @@ final class SubscriptionStore: ObservableObject {
         apply(customerInfo: result.customerInfo)
     }
 
-    private func makePlan(package: RevenueCat.Package) -> Plan? {
+    private func makePlan(
+        package: RevenueCat.Package,
+        introEligibility: IntroEligibilityStatus = .unknown
+    ) -> Plan? {
         let productID = package.storeProduct.productIdentifier
 
         let cadence: Plan.Cadence
@@ -307,8 +319,27 @@ final class SubscriptionStore: ObservableObject {
             id: productID,
             cadence: cadence,
             displayPrice: package.storeProduct.localizedPriceString,
+            introductoryDisplayPrice: introductoryPrice(
+                for: package,
+                cadence: cadence,
+                eligibility: introEligibility
+            ),
             billingDescription: billingDescription(for: cadence)
         )
+    }
+
+    private func introductoryPrice(
+        for package: RevenueCat.Package,
+        cadence: Plan.Cadence,
+        eligibility: IntroEligibilityStatus
+    ) -> String? {
+        guard cadence == .yearly,
+              eligibility == .eligible,
+              let discount = package.storeProduct.introductoryDiscount,
+              discount.paymentMode == .payUpFront else {
+            return nil
+        }
+        return discount.localizedPriceString
     }
 
     private func billingDescription(for cadence: Plan.Cadence) -> String {
@@ -373,12 +404,14 @@ final class SubscriptionStore: ObservableObject {
             id: SubscriptionStore.monthlyProductID,
             cadence: .monthly,
             displayPrice: nil,
+            introductoryDisplayPrice: nil,
             billingDescription: L10n.string("paywall.billing.monthly")
         ),
         Plan(
             id: SubscriptionStore.yearlyProductID,
             cadence: .yearly,
             displayPrice: nil,
+            introductoryDisplayPrice: nil,
             billingDescription: L10n.string("paywall.billing.yearly")
         )
     ]

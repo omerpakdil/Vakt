@@ -521,6 +521,8 @@ struct NotificationPreferences: Codable, Equatable {
 
 struct PrayerNotificationScheduler {
     static let identifierPrefix = "vakt.prayer."
+    static let prayerTimeSoundName = UNNotificationSoundName(rawValue: "vakt-time.caf")
+    static let gentleSoundName = UNNotificationSoundName(rawValue: "vakt-gentle.caf")
     static let categoryIdentifier = "VAKT_PRAYER"
     static let checkInCategoryIdentifier = "VAKT_PRAYER_CHECK_IN"
     static let openPrayerActionIdentifier = "VAKT_OPEN_PRAYER"
@@ -762,9 +764,11 @@ private enum PrayerNotificationType: String {
         guard quietSoundEnabled else { return nil }
 
         switch self {
-        case .prayerOpening, .prayerTime, .fajrWake:
-            return .default
-        case .prayerPreparation, .prayerCheckIn:
+        case .prayerTime:
+            return UNNotificationSound(named: PrayerNotificationScheduler.prayerTimeSoundName)
+        case .prayerOpening, .fajrWake, .prayerCheckIn:
+            return UNNotificationSound(named: PrayerNotificationScheduler.gentleSoundName)
+        case .prayerPreparation:
             return nil
         }
     }

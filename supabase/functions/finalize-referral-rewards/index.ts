@@ -54,7 +54,7 @@ async function sendPush(
     body: JSON.stringify({
       aps: {
         alert: referralRewardCopy(language),
-        sound: "default",
+        sound: "vakt-gentle.caf",
         "thread-id": "vakt-referrals",
       },
       deep_link: "profile",
