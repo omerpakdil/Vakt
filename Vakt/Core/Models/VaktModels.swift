@@ -1221,6 +1221,11 @@ private struct CachedPrayerSchedule: Codable {
     let savedAt: Date
 }
 
+private struct ManualPrayerLocation: Codable {
+    let name: String
+    let coordinate: Coordinate
+}
+
 protocol PrayerTimeProviding {
     func prayerTimes(
         for date: Date,
@@ -1548,9 +1553,11 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
     @Published private(set) var now: Date
     @Published private(set) var status: PrayerScheduleStatus = .locating
     @Published private(set) var scheduleVersion = 0
+    @Published private(set) var manualLocationName: String?
 
     private static let cacheKey = "vakt.cachedPrayerSchedule.v1"
     private static let locationPermissionRequestedKey = "vakt.location.permissionRequested.v1"
+    private static let manualLocationKey = "vakt.prayer.manualLocation.v1"
 
     private let provider: any PrayerTimeProviding
     private let locationManager = CLLocationManager()
@@ -1560,12 +1567,16 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
     private var refreshTask: Task<Void, Never>?
     private var hasRequestedLocationPermission: Bool
     private var calculationSettings: PrayerCalculationSettings
+    private var manualLocationCoordinate: Coordinate?
 
     init(now: Date = Date(), provider: any PrayerTimeProviding = AlAdhanPrayerTimeProvider()) {
+        let manualLocation = Self.restoreManualLocation()
         self.now = now
         self.provider = provider
         self.hasRequestedLocationPermission = UserDefaults.standard.bool(forKey: Self.locationPermissionRequestedKey)
         self.calculationSettings = .default
+        self.manualLocationName = manualLocation?.name
+        self.manualLocationCoordinate = manualLocation?.coordinate
         super.init()
         locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
         locationManager.delegate = self
@@ -1680,8 +1691,27 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
     func requestLocationPermission() {
         hasRequestedLocationPermission = true
         UserDefaults.standard.set(true, forKey: Self.locationPermissionRequestedKey)
+        clearManualLocationPreference()
         startClock()
         requestLocationIfNeeded(allowPrompt: true)
+    }
+
+    func useManualLocation(name: String, coordinate: Coordinate) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        manualLocationName = trimmedName.isEmpty ? nil : trimmedName
+        manualLocationCoordinate = coordinate
+        persistManualLocation()
+        self.coordinate = coordinate
+        startClock()
+        refreshPrayerTimes(for: coordinate)
+    }
+
+    func retryPrayerTimes() {
+        guard let coordinate else {
+            requestLocationPermission()
+            return
+        }
+        refreshPrayerTimes(for: coordinate)
     }
 
     func updateCalculationSettings(_ settings: PrayerCalculationSettings) {
@@ -1713,6 +1743,7 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
             let needsTimeZoneMetadata = self.loadedPrayers.contains { $0.timeZoneIdentifier == nil }
             let needsSavedScheduleRefresh = self.status == .usingSavedTimes
             guard coordinateChanged || needsTimeZoneMetadata || needsSavedScheduleRefresh || self.loadedPrayers.isEmpty else { return }
+            self.clearManualLocationPreference()
             self.coordinate = nextCoordinate
             self.refreshPrayerTimes(for: nextCoordinate)
         }
@@ -1726,6 +1757,11 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
     }
 
     private func requestLocationIfAllowed() {
+        if manualLocationName != nil, let manualLocationCoordinate {
+            coordinate = manualLocationCoordinate
+            refreshPrayerTimes(for: manualLocationCoordinate)
+            return
+        }
         requestLocationIfNeeded(allowPrompt: false)
     }
 
@@ -1784,6 +1820,37 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
     private func refreshSavedCoordinateIfAvailable() {
         guard let coordinate, !loadedPrayers.isEmpty, status == .usingSavedTimes else { return }
         refreshPrayerTimes(for: coordinate)
+    }
+
+    private func clearManualLocationPreference() {
+        manualLocationName = nil
+        manualLocationCoordinate = nil
+        UserDefaults.standard.removeObject(forKey: Self.manualLocationKey)
+    }
+
+    private func persistManualLocation() {
+        guard
+            let manualLocationName,
+            let manualLocationCoordinate,
+            let data = try? JSONEncoder().encode(
+                ManualPrayerLocation(name: manualLocationName, coordinate: manualLocationCoordinate)
+            )
+        else {
+            UserDefaults.standard.removeObject(forKey: Self.manualLocationKey)
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: Self.manualLocationKey)
+    }
+
+    private static func restoreManualLocation() -> ManualPrayerLocation? {
+        guard
+            let data = UserDefaults.standard.data(forKey: manualLocationKey),
+            let location = try? JSONDecoder().decode(ManualPrayerLocation.self, from: data)
+        else {
+            return nil
+        }
+        return location
     }
 
     private func refreshPrayerTimes(for coordinate: Coordinate) {
@@ -1847,7 +1914,8 @@ final class PrayerScheduleStore: NSObject, ObservableObject, CLLocationManagerDe
         guard
             let data = UserDefaults.standard.data(forKey: Self.cacheKey),
             let cached = try? JSONDecoder().decode(CachedPrayerSchedule.self, from: data),
-            cached.prayers.allSatisfy({ $0.timeZoneIdentifier != nil })
+            cached.prayers.allSatisfy({ $0.timeZoneIdentifier != nil }),
+            manualLocationCoordinate == nil || cached.coordinate == manualLocationCoordinate
         else {
             return
         }

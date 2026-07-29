@@ -44,7 +44,15 @@ final class PrayerNotificationSchedulerTests: XCTestCase {
                 locationStatus: .notDetermined,
                 notificationStatus: .notDetermined
             ),
-            .location
+            .notifications
+        )
+        XCTAssertEqual(
+            store.nextStep(
+                hasUsablePrayerSchedule: true,
+                locationStatus: .denied,
+                notificationStatus: .notDetermined
+            ),
+            .notifications
         )
         XCTAssertEqual(
             store.nextStep(

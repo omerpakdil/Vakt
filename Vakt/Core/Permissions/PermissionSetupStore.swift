@@ -21,13 +21,9 @@ final class PermissionSetupStore: ObservableObject {
 
     func nextStep(
         hasUsablePrayerSchedule: Bool,
-        locationStatus: CLAuthorizationStatus,
+        locationStatus _: CLAuthorizationStatus,
         notificationStatus: UNAuthorizationStatus
     ) -> Step? {
-        if locationStatus == .notDetermined {
-            return .location
-        }
-
         guard hasUsablePrayerSchedule else { return .location }
 
         if notificationStatus == .notDetermined, !hasMadeNotificationDecision {

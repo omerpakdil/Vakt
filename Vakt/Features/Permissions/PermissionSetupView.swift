@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct PermissionSetupView: View {
     let step: PermissionSetupStore.Step
@@ -63,6 +64,7 @@ private struct LocationPermissionSetupView: View {
     @ObservedObject var prayerStore: PrayerScheduleStore
     let onRequestLocation: () -> Void
     let onOpenSettings: () -> Void
+    @State private var isCityPickerPresented = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -102,9 +104,46 @@ private struct LocationPermissionSetupView: View {
                     action: locationAction
                 )
                 .padding(.top, 14)
-                .padding(.bottom, max(18, proxy.safeAreaInsets.bottom + 10))
+
+                Button {
+                    isCityPickerPresented = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "building.2")
+                            .font(.system(size: 13, weight: .semibold))
+
+                        Text(L10n.string("permission.location.choose_city"))
+                            .font(VaktFont.button(14))
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(Color.vaktSecondary)
+                    .padding(.horizontal, 18)
+                    .frame(height: 48)
+                    .background(Color.vaktSurface.opacity(0.7))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Color.vaktBorderStrong.opacity(0.7), lineWidth: 0.6)
+                    )
+                }
+                .buttonStyle(VaktPressStyle())
+                .disabled(isLocating)
+                .padding(.top, 8)
+                .padding(.bottom, max(10, proxy.safeAreaInsets.bottom + 4))
             }
             .padding(.horizontal, VaktSpace.lg)
+        }
+        .sheet(isPresented: $isCityPickerPresented) {
+            PrayerCityPickerView { city in
+                prayerStore.useManualLocation(name: city.name, coordinate: city.coordinate)
+                isCityPickerPresented = false
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -145,6 +184,9 @@ private struct LocationPermissionSetupView: View {
     }
 
     private var locationActionTitle: String {
+        if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
+            return L10n.string("common.retry")
+        }
         if prayerStore.locationAccessNeedsSettings {
             return L10n.string("open_settings")
         }
@@ -155,11 +197,245 @@ private struct LocationPermissionSetupView: View {
     }
 
     private var locationActionIcon: String {
-        prayerStore.locationAccessNeedsSettings ? "gear" : "location.fill"
+        if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
+            return "arrow.clockwise"
+        }
+        return prayerStore.locationAccessNeedsSettings ? "gear" : "location.fill"
     }
 
     private var locationAction: () -> Void {
-        prayerStore.locationAccessNeedsSettings ? onOpenSettings : onRequestLocation
+        if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
+            return prayerStore.retryPrayerTimes
+        }
+        return prayerStore.locationAccessNeedsSettings ? onOpenSettings : onRequestLocation
+    }
+}
+
+struct PrayerCitySelection: Identifiable, Equatable {
+    let name: String
+    let detail: String
+    let coordinate: Coordinate
+
+    var id: String {
+        "\(name)|\(coordinate.latitude.rounded(toPlaces: 4))|\(coordinate.longitude.rounded(toPlaces: 4))"
+    }
+}
+
+@MainActor
+private final class PrayerCitySearchStore: ObservableObject {
+    @Published var query = ""
+    @Published private(set) var results: [PrayerCitySelection] = []
+    @Published private(set) var isSearching = false
+    @Published private(set) var errorMessage: String?
+
+    private var searchTask: Task<Void, Never>?
+
+    func queryDidChange() {
+        searchTask?.cancel()
+        errorMessage = nil
+
+        let searchText = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard searchText.count >= 2 else {
+            results = []
+            isSearching = false
+            return
+        }
+
+        searchTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            await self?.search(searchText)
+        }
+    }
+
+    private func search(_ searchText: String) async {
+        isSearching = true
+        defer { isSearching = false }
+
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchText
+        request.resultTypes = .address
+
+        do {
+            let response = try await MKLocalSearch(request: request).start()
+            var seen = Set<String>()
+
+            results = response.mapItems.compactMap { item in
+                let placemark = item.placemark
+                guard let cityName = Self.cityName(from: placemark) else { return nil }
+
+                let detail = Self.detail(from: placemark, excluding: cityName)
+                let coordinate = Coordinate(
+                    latitude: placemark.coordinate.latitude,
+                    longitude: placemark.coordinate.longitude
+                )
+                let deduplicationKey = [
+                    cityName.lowercased(),
+                    placemark.administrativeArea?.lowercased() ?? "",
+                    placemark.countryCode?.lowercased() ?? ""
+                ].joined(separator: "|")
+
+                guard seen.insert(deduplicationKey).inserted else { return nil }
+                return PrayerCitySelection(name: cityName, detail: detail, coordinate: coordinate)
+            }
+            .prefix(12)
+            .map { $0 }
+
+            errorMessage = results.isEmpty ? L10n.string("permission.location.city_empty") : nil
+        } catch is CancellationError {
+            return
+        } catch {
+            results = []
+            errorMessage = L10n.string("permission.location.city_error")
+        }
+    }
+
+    private static func cityName(from placemark: MKPlacemark) -> String? {
+        placemark.locality
+            ?? placemark.subAdministrativeArea
+            ?? placemark.administrativeArea
+    }
+
+    private static func detail(from placemark: MKPlacemark, excluding cityName: String) -> String {
+        [
+            placemark.subAdministrativeArea,
+            placemark.administrativeArea,
+            placemark.country
+        ]
+        .compactMap { $0 }
+        .filter { $0.caseInsensitiveCompare(cityName) != .orderedSame }
+        .reduce(into: [String]()) { values, value in
+            guard !values.contains(where: { $0.caseInsensitiveCompare(value) == .orderedSame }) else { return }
+            values.append(value)
+        }
+        .joined(separator: ", ")
+    }
+}
+
+struct PrayerCityPickerView: View {
+    let onSelect: (PrayerCitySelection) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var store = PrayerCitySearchStore()
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.vaktBg.ignoresSafeArea()
+
+                Group {
+                    if store.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                        citySearchPlaceholder
+                    } else if store.isSearching, store.results.isEmpty {
+                        ProgressView()
+                            .tint(Color.vaktGlow)
+                    } else if let errorMessage = store.errorMessage, store.results.isEmpty {
+                        ContentUnavailableView(
+                            L10n.string("permission.location.city_empty_title"),
+                            systemImage: "building.2",
+                            description: Text(errorMessage)
+                        )
+                        .foregroundStyle(Color.vaktSecondary)
+                    } else {
+                        cityResults
+                    }
+                }
+            }
+            .navigationTitle(L10n.string("permission.location.choose_city"))
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(
+                text: $store.query,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: L10n.string("permission.location.city_search_prompt")
+            )
+            .onChange(of: store.query) { _, _ in
+                store.queryDidChange()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.string("common.close")) {
+                        dismiss()
+                    }
+                    .foregroundStyle(Color.vaktGlow)
+                }
+            }
+        }
+    }
+
+    private var citySearchPlaceholder: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "globe.europe.africa")
+                .font(.system(size: 28, weight: .light))
+                .foregroundStyle(Color.vaktGlow)
+
+            Text(L10n.string("permission.location.city_search_title"))
+                .font(VaktFont.body(17))
+                .foregroundStyle(Color.vaktPrimary)
+
+            Text(L10n.string("permission.location.city_search_detail"))
+                .font(VaktFont.body(12))
+                .foregroundStyle(Color.vaktMuted)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.horizontal, 42)
+        }
+    }
+
+    private var cityResults: some View {
+        ScrollView {
+            LazyVStack(spacing: 8) {
+                ForEach(store.results) { city in
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        onSelect(city)
+                    } label: {
+                        HStack(spacing: 13) {
+                            Image(systemName: "building.2")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(Color.vaktGlow)
+                                .frame(width: 38, height: 38)
+                                .background(Color.vaktGlow.opacity(0.1))
+                                .clipShape(Circle())
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(city.name)
+                                    .font(VaktFont.body(15))
+                                    .foregroundStyle(Color.vaktPrimary)
+                                    .lineLimit(1)
+
+                                if !city.detail.isEmpty {
+                                    Text(city.detail)
+                                        .font(VaktFont.caption(10))
+                                        .foregroundStyle(Color.vaktMuted)
+                                        .lineLimit(1)
+                                }
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Color.vaktMuted)
+                        }
+                        .padding(.horizontal, 14)
+                        .frame(height: 62)
+                        .background(Color.vaktSurface.opacity(0.58))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(VaktPressStyle())
+                }
+            }
+            .padding(.horizontal, VaktSpace.lg)
+            .padding(.vertical, 12)
+        }
+    }
+}
+
+private extension Double {
+    func rounded(toPlaces places: Int) -> Double {
+        let divisor = pow(10, Double(places))
+        return (self * divisor).rounded() / divisor
     }
 }
 

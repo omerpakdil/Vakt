@@ -441,6 +441,7 @@ private struct PrayerMethodSettingsSheet: View {
     let onOpenSystemSettings: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var isCityPickerPresented = false
 
     var body: some View {
         NavigationStack {
@@ -452,7 +453,9 @@ private struct PrayerMethodSettingsSheet: View {
 
                     PrayerLocationStatus(
                         status: prayerStore.status,
-                        onOpenSettings: onOpenSystemSettings
+                        manualLocationName: prayerStore.manualLocationName,
+                        onChooseCity: { isCityPickerPresented = true },
+                        onUseDeviceLocation: useDeviceLocation
                     )
 
                     VStack(alignment: .leading, spacing: 9) {
@@ -527,6 +530,22 @@ private struct PrayerMethodSettingsSheet: View {
                 }
             }
         }
+        .sheet(isPresented: $isCityPickerPresented) {
+            PrayerCityPickerView { city in
+                prayerStore.useManualLocation(name: city.name, coordinate: city.coordinate)
+                isCityPickerPresented = false
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
+    }
+
+    private func useDeviceLocation() {
+        if prayerStore.locationAccessNeedsSettings {
+            onOpenSystemSettings()
+        } else {
+            prayerStore.requestLocationPermission()
+        }
     }
 
     private var header: some View {
@@ -549,7 +568,9 @@ private struct PrayerMethodSettingsSheet: View {
 
 private struct PrayerLocationStatus: View {
     let status: PrayerScheduleStatus
-    let onOpenSettings: () -> Void
+    let manualLocationName: String?
+    let onChooseCity: () -> Void
+    let onUseDeviceLocation: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -574,10 +595,26 @@ private struct PrayerLocationStatus: View {
 
             Spacer()
 
-            if status == .denied {
-                Button(L10n.string("prayer_settings.location.settings"), action: onOpenSettings)
-                    .font(VaktFont.caption(11))
+            Menu {
+                Button(action: onChooseCity) {
+                    Label(
+                        L10n.string("permission.location.choose_city"),
+                        systemImage: "building.2"
+                    )
+                }
+
+                Button(action: onUseDeviceLocation) {
+                    Label(
+                        L10n.string("action.use_location"),
+                        systemImage: "location.fill"
+                    )
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.vaktGlow)
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
             }
         }
         .padding(.horizontal, 14)
@@ -595,7 +632,11 @@ private struct PrayerLocationStatus: View {
     }
 
     private var detail: String {
-        switch status {
+        if let manualLocationName {
+            return L10n.formatString("prayer_settings.location.manual", manualLocationName)
+        }
+
+        return switch status {
         case .ready: L10n.string("prayer_settings.location.ready")
         case .usingSavedTimes: L10n.string("prayer_settings.location.saved")
         case .loading, .locating: L10n.string("prayer_settings.location.loading")
