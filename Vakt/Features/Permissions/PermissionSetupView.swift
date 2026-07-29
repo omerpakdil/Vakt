@@ -108,32 +108,16 @@ private struct LocationPermissionSetupView: View {
                 Button {
                     isCityPickerPresented = true
                 } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "building.2")
-                            .font(.system(size: 13, weight: .semibold))
-
-                        Text(L10n.string("permission.location.choose_city"))
-                            .font(VaktFont.button(14))
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .semibold))
-                    }
-                    .foregroundStyle(Color.vaktSecondary)
-                    .padding(.horizontal, 18)
-                    .frame(height: 48)
-                    .background(Color.vaktSurface.opacity(0.7))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(Color.vaktBorderStrong.opacity(0.7), lineWidth: 0.6)
-                    )
+                    Text(L10n.string("permission.location.continue_without"))
+                        .font(VaktFont.button(13))
+                        .foregroundStyle(Color.vaktMuted)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
-                .buttonStyle(VaktPressStyle())
+                .buttonStyle(.plain)
                 .disabled(isLocating)
-                .padding(.top, 8)
-                .padding(.bottom, max(10, proxy.safeAreaInsets.bottom + 4))
+                .padding(.top, 4)
+                .padding(.bottom, max(8, proxy.safeAreaInsets.bottom))
             }
             .padding(.horizontal, VaktSpace.lg)
         }
@@ -144,6 +128,11 @@ private struct LocationPermissionSetupView: View {
             }
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .onChange(of: prayerStore.locationAuthorizationStatus) { oldStatus, newStatus in
+            guard oldStatus == .notDetermined else { return }
+            guard newStatus == .denied || newStatus == .restricted else { return }
+            isCityPickerPresented = true
         }
     }
 
@@ -221,79 +210,97 @@ struct PrayerCitySelection: Identifiable, Equatable {
     }
 }
 
+private struct PrayerCitySuggestion: Identifiable {
+    let completion: MKLocalSearchCompletion
+
+    var id: String {
+        "\(completion.title)|\(completion.subtitle)"
+    }
+}
+
 @MainActor
-private final class PrayerCitySearchStore: ObservableObject {
+private final class PrayerCitySearchStore: NSObject, ObservableObject, @preconcurrency MKLocalSearchCompleterDelegate {
     @Published var query = ""
-    @Published private(set) var results: [PrayerCitySelection] = []
+    @Published private(set) var results: [PrayerCitySuggestion] = []
     @Published private(set) var isSearching = false
+    @Published private(set) var resolvingID: String?
     @Published private(set) var errorMessage: String?
 
-    private var searchTask: Task<Void, Never>?
+    private let completer = MKLocalSearchCompleter()
+
+    override init() {
+        super.init()
+        completer.delegate = self
+        completer.resultTypes = .address
+    }
 
     func queryDidChange() {
-        searchTask?.cancel()
         errorMessage = nil
 
         let searchText = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard searchText.count >= 2 else {
+            completer.queryFragment = ""
             results = []
             isSearching = false
             return
         }
 
-        searchTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(350))
-            guard !Task.isCancelled else { return }
-            await self?.search(searchText)
-        }
+        isSearching = true
+        completer.queryFragment = searchText
     }
 
-    private func search(_ searchText: String) async {
-        isSearching = true
-        defer { isSearching = false }
+    func resolve(_ suggestion: PrayerCitySuggestion) async -> PrayerCitySelection? {
+        resolvingID = suggestion.id
+        defer { resolvingID = nil }
 
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = searchText
-        request.resultTypes = .address
-
+        let request = MKLocalSearch.Request(completion: suggestion.completion)
         do {
             let response = try await MKLocalSearch(request: request).start()
-            var seen = Set<String>()
+            guard let placemark = response.mapItems.first?.placemark else {
+                errorMessage = L10n.string("permission.location.city_empty")
+                return nil
+            }
 
-            results = response.mapItems.compactMap { item in
-                let placemark = item.placemark
-                guard let cityName = Self.cityName(from: placemark) else { return nil }
-
-                let detail = Self.detail(from: placemark, excluding: cityName)
-                let coordinate = Coordinate(
+            let cityName = Self.cityName(from: placemark) ?? suggestion.completion.title
+            return PrayerCitySelection(
+                name: cityName,
+                detail: Self.detail(from: placemark, excluding: cityName),
+                coordinate: Coordinate(
                     latitude: placemark.coordinate.latitude,
                     longitude: placemark.coordinate.longitude
                 )
-                let deduplicationKey = [
-                    cityName.lowercased(),
-                    placemark.administrativeArea?.lowercased() ?? "",
-                    placemark.countryCode?.lowercased() ?? ""
-                ].joined(separator: "|")
-
-                guard seen.insert(deduplicationKey).inserted else { return nil }
-                return PrayerCitySelection(name: cityName, detail: detail, coordinate: coordinate)
-            }
-            .prefix(12)
-            .map { $0 }
-
-            errorMessage = results.isEmpty ? L10n.string("permission.location.city_empty") : nil
-        } catch is CancellationError {
-            return
+            )
         } catch {
-            results = []
             errorMessage = L10n.string("permission.location.city_error")
+            return nil
         }
+    }
+
+    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        var seen = Set<String>()
+        results = completer.results.compactMap { completion in
+            let key = "\(completion.title.lowercased())|\(completion.subtitle.lowercased())"
+            guard seen.insert(key).inserted else { return nil }
+            return PrayerCitySuggestion(completion: completion)
+        }
+        .prefix(15)
+        .map { $0 }
+
+        isSearching = false
+        errorMessage = results.isEmpty ? L10n.string("permission.location.city_empty") : nil
+    }
+
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        results = []
+        isSearching = false
+        errorMessage = L10n.string("permission.location.city_error")
     }
 
     private static func cityName(from placemark: MKPlacemark) -> String? {
         placemark.locality
             ?? placemark.subAdministrativeArea
             ?? placemark.administrativeArea
+            ?? placemark.name
     }
 
     private static func detail(from placemark: MKPlacemark, excluding cityName: String) -> String {
@@ -384,10 +391,13 @@ struct PrayerCityPickerView: View {
     private var cityResults: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach(store.results) { city in
+                ForEach(store.results) { suggestion in
                     Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        onSelect(city)
+                        Task {
+                            guard let city = await store.resolve(suggestion) else { return }
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            onSelect(city)
+                        }
                     } label: {
                         HStack(spacing: 13) {
                             Image(systemName: "building.2")
@@ -398,13 +408,13 @@ struct PrayerCityPickerView: View {
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(city.name)
+                                Text(suggestion.completion.title)
                                     .font(VaktFont.body(15))
                                     .foregroundStyle(Color.vaktPrimary)
                                     .lineLimit(1)
 
-                                if !city.detail.isEmpty {
-                                    Text(city.detail)
+                                if !suggestion.completion.subtitle.isEmpty {
+                                    Text(suggestion.completion.subtitle)
                                         .font(VaktFont.caption(10))
                                         .foregroundStyle(Color.vaktMuted)
                                         .lineLimit(1)
@@ -413,9 +423,14 @@ struct PrayerCityPickerView: View {
 
                             Spacer()
 
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Color.vaktMuted)
+                            if store.resolvingID == suggestion.id {
+                                ProgressView()
+                                    .tint(Color.vaktGlow)
+                            } else {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Color.vaktMuted)
+                            }
                         }
                         .padding(.horizontal, 14)
                         .frame(height: 62)
@@ -424,6 +439,7 @@ struct PrayerCityPickerView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(VaktPressStyle())
+                    .disabled(store.resolvingID != nil)
                 }
             }
             .padding(.horizontal, VaktSpace.lg)
