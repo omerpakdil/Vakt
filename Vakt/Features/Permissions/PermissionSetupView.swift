@@ -87,7 +87,7 @@ private struct LocationPermissionSetupView: View {
                 .padding(.top, 24)
 
                 LocationPurposeList()
-                    .padding(.top, 28)
+                    .padding(.top, 38)
 
                 Spacer(minLength: 18)
 
@@ -456,6 +456,9 @@ private extension Double {
 }
 
 private struct LocationPurposeList: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var activePurpose = 0
+
     private let purposes: [(icon: String, titleKey: String, detailKey: String)] = [
         ("clock", "profile.dock.prayer_times", "permission.location.prayer_times.detail"),
         ("location.north.line", "qibla", "permission.location.qibla.detail"),
@@ -470,18 +473,22 @@ private struct LocationPurposeList: View {
                         if index == 2 {
                             VaktMosqueGlyph()
                                 .stroke(
-                                    Color.vaktGlow,
+                                    index == activePurpose ? Color.vaktGlow : Color.vaktMuted,
                                     style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
                                 )
                                 .frame(width: 18, height: 16)
                         } else {
                             Image(systemName: purpose.icon)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.vaktGlow)
+                                .foregroundStyle(index == activePurpose ? Color.vaktGlow : Color.vaktMuted)
                         }
                     }
                         .frame(width: 36, height: 36)
-                        .background(Circle().fill(Color.vaktElevated.opacity(0.78)))
+                        .background(
+                            Circle().fill(
+                                Color.vaktElevated.opacity(index == activePurpose ? 0.9 : 0.42)
+                            )
+                        )
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(L10n.string(purpose.titleKey))
@@ -498,6 +505,7 @@ private struct LocationPurposeList: View {
                     Spacer(minLength: 0)
                 }
                 .frame(minHeight: 72)
+                .opacity(index == activePurpose ? 1 : 0.58)
 
                 if index < purposes.count - 1 {
                     Rectangle()
@@ -505,6 +513,22 @@ private struct LocationPurposeList: View {
                         .frame(height: 0.5)
                         .padding(.leading, 51)
                 }
+            }
+        }
+        .task { await animatePurposes() }
+    }
+
+    private func animatePurposes() async {
+        guard !reduceMotion else {
+            activePurpose = 0
+            return
+        }
+
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .milliseconds(1_450))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: 0.5)) {
+                activePurpose = (activePurpose + 1) % purposes.count
             }
         }
     }
