@@ -107,9 +107,6 @@ struct OnboardingView: View {
                     onContinue: {
                         prayerStore.requestLocationPermission()
                         store.advance()
-                    },
-                    onSkip: {
-                        store.advance()
                     }
                 )
                 .transition(.opacity)

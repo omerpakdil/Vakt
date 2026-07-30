@@ -6,9 +6,7 @@ struct OnboardingLocationView: View {
     @ObservedObject var prayerStore: PrayerScheduleStore
     let reduceMotion: Bool
     var showsPageMark = true
-    var allowsSkip = true
     let onContinue: () -> Void
-    let onSkip: () -> Void
 
     @State private var dayPosition: CGFloat = 0.58
     @State private var isDragging = false
@@ -55,10 +53,7 @@ struct OnboardingLocationView: View {
                             .lineSpacing(5)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        LocationQuietFact(
-                            status: prayerStore.status,
-                            onSkip: allowsSkip ? onSkip : nil
-                        )
+                        LocationQuietFact(status: prayerStore.status)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, VaktSpace.lg)
@@ -299,30 +294,12 @@ private struct LocationDayArcScene: View {
 
 private struct LocationQuietFact: View {
     let status: PrayerScheduleStatus
-    let onSkip: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: VaktSpace.sm) {
-            Text(statusText)
-                .font(VaktFont.caption(11))
-                .foregroundStyle(Color.vaktSecondary)
-
-            Spacer(minLength: VaktSpace.sm)
-
-            if let onSkip {
-                Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    onSkip()
-                } label: {
-                    Text(L10n.string("action.not_now"))
-                        .font(VaktFont.caption(11))
-                        .foregroundStyle(Color.vaktMuted)
-                        .padding(.horizontal, 6)
-                        .frame(minHeight: 44)
-                }
-                .buttonStyle(VaktPressStyle())
-            }
-        }
+        Text(statusText)
+            .font(VaktFont.caption(11))
+            .foregroundStyle(Color.vaktSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var statusText: String {
@@ -381,7 +358,7 @@ private struct LocationPrimaryActions: View {
         case .failed:
             return L10n.string("common.retry")
         case .locating, .loading:
-            return L10n.string("action.use_location")
+            return L10n.string("action.continue")
         }
     }
 
