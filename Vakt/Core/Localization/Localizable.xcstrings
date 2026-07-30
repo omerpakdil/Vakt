@@ -56848,79 +56848,79 @@
         }
       }
     },
-    "social.action.invite.hint" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "أنشئ رمز دعوتك وشاركه"
+    "social.action.invite.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شارك Vakt مع شخص تعرفه"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einladungscode erstellen und teilen"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teile Vakt mit jemandem"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create and share your invitation code"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Vakt with someone"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea y comparte tu código de invitación"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparte Vakt con alguien"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crée et partage ton code d’invitation"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partagez Vakt avec quelqu’un"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buat dan bagikan kode undanganmu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagikan Vakt dengan seseorang"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea e condividi il tuo codice invito"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condividi Vakt con qualcuno"
           }
         },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maak en deel je uitnodigingscode"
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deel Vakt met iemand"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cria e partilha o teu código de convite"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partilhe o Vakt com alguém"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать и поделиться кодом приглашения"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поделитесь Vakt с другом"
           }
         },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Davet kodunu oluşturup paylaş"
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vakt’i bir arkadaşınla paylaş"
           }
         },
-        "ur" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "دعوتی کوڈ بنائیں اور شیئر کریں"
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vakt کسی دوست کے ساتھ شیئر کریں"
           }
         }
       }
@@ -62471,6 +62471,83 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "نماز کے اوقات ایک نظر میں۔"
+          }
+        }
+      }
+    },
+    "subscription.offer_code.redeem": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استرداد رمز العرض"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angebotscode einlösen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redeem Offer Code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canjear código de oferta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser un code promotionnel"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tukarkan Kode Penawaran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilizza codice offerta"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wissel aanbiedingscode in"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resgatar código de oferta"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активировать код предложения"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teklif Kodunu Kullan"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آفر کوڈ استعمال کریں"
           }
         }
       }

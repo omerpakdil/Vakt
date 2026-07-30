@@ -3,11 +3,8 @@ import SwiftUI
 struct SocialCircleView: View {
     @ObservedObject var socialPrayerStore: SocialPrayerStore
     @ObservedObject var prayerStore: PrayerScheduleStore
-    @ObservedObject var referralStore: ReferralStore
-    @ObservedObject var subscriptionStore: SubscriptionStore
 
     @State private var addFriendPresented = false
-    @State private var referralPresented = false
     @State private var friendshipFeedback: FriendshipEventFeedback?
     @State private var acceptingRequestID: UUID?
 
@@ -62,15 +59,10 @@ struct SocialCircleView: View {
         .sheet(isPresented: $addFriendPresented) {
             AddFriendSheet(
                 store: socialPrayerStore,
-                referralStore: referralStore,
-                subscriptionStore: subscriptionStore,
                 onRequestCompleted: { feedback in
                     showFriendshipFeedback(.request(feedback))
                 }
             )
-        }
-        .sheet(isPresented: $referralPresented) {
-            ReferralCenterView(store: referralStore, subscriptionStore: subscriptionStore)
         }
         .onAppear {
             socialPrayerStore.refresh(for: circlePrayer.time, timeZone: circlePrayer.timeZone)
@@ -169,9 +161,7 @@ struct SocialCircleView: View {
                         .scaleEffect(0.7)
                 }
 
-                Button {
-                    openReferrals()
-                } label: {
+                ShareLink(item: shareURL) {
                     Label(L10n.string("social.action.invite"), systemImage: "square.and.arrow.up")
                         .font(VaktFont.caption(11))
                         .foregroundStyle(Color.vaktPrimary)
@@ -191,7 +181,7 @@ struct SocialCircleView: View {
             if socialPrayerStore.friendSummaries.isEmpty {
                 EmptyCircleState(
                     onAdd: { addFriendPresented = true },
-                    onInvite: openReferrals
+                    shareURL: shareURL
                 )
             } else {
                 ScrollView(.vertical) {
@@ -216,10 +206,8 @@ struct SocialCircleView: View {
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
-    private func openReferrals() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        referralStore.clearMessage()
-        referralPresented = true
+    private var shareURL: URL {
+        VaktExternalLinks.appStore ?? VaktExternalLinks.support
     }
 
     private func nudgeIsEligible(for prayerTime: PrayerTime) -> Bool {
@@ -649,7 +637,7 @@ private struct PendingRequestsBand: View {
 
 private struct EmptyCircleState: View {
     let onAdd: () -> Void
-    let onInvite: () -> Void
+    let shareURL: URL
 
     var body: some View {
         VStack(spacing: 11) {
@@ -694,9 +682,7 @@ private struct EmptyCircleState: View {
                 .background(Color.vaktPrimary)
                 .clipShape(Capsule())
 
-                Button {
-                    onInvite()
-                } label: {
+                ShareLink(item: shareURL) {
                     Label(L10n.string("social.action.invite_to_vakt"), systemImage: "square.and.arrow.up")
                         .frame(maxWidth: .infinity)
                         .lineLimit(1)
@@ -729,12 +715,9 @@ private struct EmptyCircleState: View {
 
 private struct AddFriendSheet: View {
     @ObservedObject var store: SocialPrayerStore
-    @ObservedObject var referralStore: ReferralStore
-    @ObservedObject var subscriptionStore: SubscriptionStore
     let onRequestCompleted: (FriendshipRequestFeedback) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
-    @State private var referralPresented = false
     @State private var requestingProfileID: VaktUserID?
 
     var body: some View {
@@ -754,10 +737,7 @@ private struct AddFriendSheet: View {
                             .lineSpacing(4)
                     }
 
-                    Button {
-                        referralStore.clearMessage()
-                        referralPresented = true
-                    } label: {
+                    ShareLink(item: VaktExternalLinks.appStore ?? VaktExternalLinks.support) {
                         HStack(spacing: 12) {
                             Image(systemName: "square.and.arrow.up")
                                 .font(.system(size: 15, weight: .medium))
@@ -848,9 +828,6 @@ private struct AddFriendSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $referralPresented) {
-            ReferralCenterView(store: referralStore, subscriptionStore: subscriptionStore)
-        }
     }
 
     private func requestFriendship(with profile: SocialProfile) {

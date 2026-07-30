@@ -2,15 +2,12 @@ import SwiftUI
 
 struct PaywallView: View {
     @ObservedObject var store: SubscriptionStore
-    @ObservedObject var referralStore: ReferralStore
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openURL) private var openURL
 
     @State private var selectedPlanID: String?
     @State private var journeyPhase: PaywallJourneyPhase = .remind
-    @State private var referralCodePresented = false
-    @State private var referralLinkedMomentPresented = false
 
     private var preferredPlan: SubscriptionStore.Plan? {
         store.plans.first { $0.cadence == .yearly } ?? store.plans.first
@@ -35,35 +32,13 @@ struct PaywallView: View {
                     .scrollBounceBehavior(.basedOnSize)
                 }
 
-                if referralLinkedMomentPresented,
-                   let invitation = referralStore.claimedInvitation {
-                    ReferralLinkedMoment(inviterName: invitation.inviterName)
-                        .transition(.opacity)
-                        .zIndex(20)
-                }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .preferredColorScheme(.dark)
         .onAppear { selectPreferredPlan() }
         .onChange(of: store.plans) { _, _ in selectPreferredPlanIfNeeded() }
-        .onChange(of: referralStore.claimedInvitation) { previous, invitation in
-            guard previous == nil, invitation != nil else { return }
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(180))
-                withAnimation(reduceMotion ? .none : .easeOut(duration: 0.24)) {
-                    referralLinkedMomentPresented = true
-                }
-                try? await Task.sleep(for: .milliseconds(1_500))
-                withAnimation(reduceMotion ? .none : .easeIn(duration: 0.32)) {
-                    referralLinkedMomentPresented = false
-                }
-            }
-        }
         .task { await runJourney() }
-        .sheet(isPresented: $referralCodePresented) {
-            ReferralCodeSheet(store: referralStore)
-        }
     }
 
     private func paywallContent(bottomInset: CGFloat) -> some View {
@@ -80,24 +55,15 @@ struct PaywallView: View {
             PaywallReasons()
                 .padding(.top, 8)
 
-            referralContext
-                .padding(.top, 11)
-
             Spacer(minLength: 7)
                 .frame(maxHeight: 18)
 
-            if let reward = referralStore.dashboard.readyRewards.first {
-                readyReward(reward)
-            } else {
-                planArea
-            }
+            planArea
 
             Spacer(minLength: 8)
                 .frame(maxHeight: 22)
 
-            if referralStore.dashboard.readyRewards.isEmpty {
-                purchaseArea
-            }
+            purchaseArea
 
             footer
                 .padding(.top, 10)
@@ -135,122 +101,6 @@ struct PaywallView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var referralContext: some View {
-        Group {
-            if let invitation = referralStore.claimedInvitation {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.vaktDeep)
-                        .frame(width: 30, height: 30)
-                        .background(Color.vaktPrimary)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(L10n.formatString(
-                            "paywall.referral.connected.title",
-                            invitation.inviterName
-                        ))
-                            .font(VaktFont.body(12))
-                            .foregroundStyle(Color.vaktPrimary)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.84)
-
-                        Text(L10n.string("paywall.referral.connected.visibility"))
-                            .font(VaktFont.caption(9))
-                            .foregroundStyle(Color.vaktSecondary)
-
-                        Text(L10n.string("paywall.referral.connected.reward"))
-                            .font(VaktFont.caption(9))
-                            .foregroundStyle(Color.vaktMuted)
-                    }
-
-                    Spacer(minLength: 0)
-                }
-                .padding(13)
-                .background(Color.vaktSurface.opacity(0.64))
-                .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
-                        .strokeBorder(Color.vaktPrimary.opacity(0.16), lineWidth: 0.7)
-                }
-            } else {
-                Button { referralCodePresented = true } label: {
-                    HStack(spacing: 10) {
-                        RoundedRectangle(cornerRadius: 1.5, style: .continuous)
-                            .fill(Color.vaktGlow)
-                            .frame(width: 3, height: 25)
-                            .shadow(color: Color.vaktGlow.opacity(0.38), radius: 5)
-
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(L10n.string("paywall.referral.prompt.title"))
-                                .font(VaktFont.body(11))
-                                .foregroundStyle(Color.vaktPrimary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.82)
-
-                            Text(L10n.string("paywall.referral.prompt.detail"))
-                                .font(VaktFont.caption(8))
-                                .foregroundStyle(Color.vaktMuted)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.76)
-                        }
-
-                        Spacer(minLength: 6)
-
-                        HStack(spacing: 4) {
-                            Text(L10n.string("paywall.referral.prompt.action"))
-                                .font(VaktFont.button(10))
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
-                        }
-                        .foregroundStyle(Color.vaktPrimary)
-                    }
-                    .padding(.horizontal, 12)
-                    .frame(height: 48)
-                    .background(Color.vaktSurface.opacity(0.34))
-                    .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous)
-                            .strokeBorder(Color.vaktGlow.opacity(0.18), lineWidth: 0.7)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(VaktPressStyle())
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func readyReward(_ reward: ReferralReward) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
-            Label(L10n.string("paywall.referral.reward_ready.title"), systemImage: "calendar.badge.plus")
-                .font(VaktFont.body(14))
-                .foregroundStyle(Color.vaktPrimary)
-
-            Text(L10n.string("paywall.referral.reward_ready.body"))
-                .font(VaktFont.caption(10))
-                .foregroundStyle(Color.vaktMuted)
-
-            Button {
-                Task { await referralStore.redeem(reward, using: store) }
-            } label: {
-                Text(L10n.string("paywall.referral.reward_ready.action"))
-                    .font(VaktFont.button(14))
-                    .foregroundStyle(Color.vaktDeep)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(Color.vaktPrimary)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-            .buttonStyle(VaktPressStyle())
-            .disabled(referralStore.activity != .idle)
-        }
-        .padding(15)
-        .background(Color.vaktSurface.opacity(0.82))
-        .clipShape(RoundedRectangle(cornerRadius: VaktRadius.md, style: .continuous))
     }
 
     @ViewBuilder
@@ -331,18 +181,32 @@ struct PaywallView: View {
     }
 
     private var footer: some View {
-        HStack(spacing: 11) {
-            footerButton(L10n.string("paywall.restore")) {
-                Task { await store.restorePurchases() }
+        VStack(spacing: 8) {
+            Button {
+                Task { await store.presentOfferCodeRedemption() }
+            } label: {
+                Label(L10n.string("subscription.offer_code.redeem"), systemImage: "ticket")
+                    .font(VaktFont.caption(10))
+                    .foregroundStyle(Color.vaktSecondary)
+                    .frame(minHeight: 28)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .disabled(store.purchaseState == .purchasing)
 
-            footerDivider
+            HStack(spacing: 11) {
+                footerButton(L10n.string("paywall.restore")) {
+                    Task { await store.restorePurchases() }
+                }
 
-            footerButton(L10n.string("common.terms")) { openURL(VaktExternalLinks.terms) }
+                footerDivider
 
-            footerDivider
+                footerButton(L10n.string("common.terms")) { openURL(VaktExternalLinks.terms) }
 
-            footerButton(L10n.string("common.privacy")) { openURL(VaktExternalLinks.privacy) }
+                footerDivider
+
+                footerButton(L10n.string("common.privacy")) { openURL(VaktExternalLinks.privacy) }
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -409,79 +273,6 @@ struct PaywallView: View {
                 try? await Task.sleep(for: .milliseconds(duration))
             }
         }
-    }
-}
-
-private struct ReferralLinkedMoment: View {
-    let inviterName: String
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var connected = false
-
-    var body: some View {
-        ZStack {
-            Color.vaktDeep.opacity(0.985)
-                .ignoresSafeArea()
-
-            VStack(spacing: 22) {
-                ZStack {
-                    Capsule()
-                        .fill(Color.vaktPrimary.opacity(0.38))
-                        .frame(width: connected ? 66 : 10, height: 1)
-
-                    personMark(systemImage: "person", x: connected ? -42 : -68)
-                    personMark(systemImage: "person.fill", x: connected ? 42 : 68)
-
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color.vaktDeep)
-                        .frame(width: 27, height: 27)
-                        .background(Color.vaktPrimary)
-                        .clipShape(Circle())
-                        .scaleEffect(connected ? 1 : 0.62)
-                        .opacity(connected ? 1 : 0)
-                }
-                .frame(height: 52)
-
-                VStack(spacing: 7) {
-                    Text(L10n.string("paywall.referral.linked_moment.title"))
-                        .font(VaktFont.title(27))
-                        .foregroundStyle(Color.vaktPrimary)
-
-                    Text(L10n.formatString("paywall.referral.linked_moment.body", inviterName))
-                        .font(VaktFont.body(12))
-                        .foregroundStyle(Color.vaktSecondary)
-                        .multilineTextAlignment(.center)
-                }
-                .opacity(connected ? 1 : 0)
-                .offset(y: connected ? 0 : 8)
-            }
-            .padding(.horizontal, 36)
-        }
-        .allowsHitTesting(false)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(L10n.formatString(
-            "paywall.referral.linked_moment.accessibility",
-            inviterName
-        ))
-        .onAppear {
-            withAnimation(reduceMotion ? .none : .easeInOut(duration: 0.42)) {
-                connected = true
-            }
-        }
-    }
-
-    private func personMark(systemImage: String, x: CGFloat) -> some View {
-        Image(systemName: systemImage)
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(Color.vaktPrimary)
-            .frame(width: 34, height: 34)
-            .background(Color.vaktElevated)
-            .clipShape(Circle())
-            .overlay {
-                Circle().strokeBorder(Color.vaktPrimary.opacity(0.3), lineWidth: 0.7)
-            }
-            .offset(x: x)
     }
 }
 
@@ -813,21 +604,7 @@ private struct PaywallPlanRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    if let introductoryPrice = plan.introductoryDisplayPrice,
-                       let regularPrice = plan.displayPrice {
-                        Text(regularPrice)
-                            .font(VaktFont.caption(9))
-                            .foregroundStyle(
-                                isSelected ? Color.vaktMuted.opacity(0.92) : Color.vaktMuted.opacity(0.74)
-                            )
-                            .strikethrough(true)
-
-                        Text(L10n.formatString("paywall.intro.first_year", introductoryPrice))
-                            .font(VaktFont.button(isSelected ? 15 : 14))
-                            .foregroundStyle(isSelected ? Color.vaktPrimary : Color.vaktSecondary.opacity(0.9))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.72)
-                    } else if let displayPrice = plan.displayPrice {
+                    if let displayPrice = plan.displayPrice {
                         Text(L10n.formatString(
                             isYearly ? "paywall.price.year" : "paywall.price.month",
                             displayPrice
@@ -867,17 +644,13 @@ private struct PaywallPlanRow: View {
         .accessibilityLabel(L10n.formatString(
             "paywall.plan.accessibility",
             plan.title,
-            plan.introductoryDisplayPrice ?? plan.displayPrice ?? L10n.string("paywall.loading"),
+            plan.displayPrice ?? L10n.string("paywall.loading"),
             planDetail
         ))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var planDetail: String {
-        if plan.introductoryDisplayPrice != nil,
-           let regularPrice = plan.displayPrice {
-            return L10n.formatString("paywall.intro.renews", regularPrice)
-        }
         return plan.billingDescription
     }
 }

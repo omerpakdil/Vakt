@@ -18,7 +18,6 @@ struct AppRootView: View {
     @StateObject private var spiritualContentStore: SpiritualContentStore
     @StateObject private var socialAccountStore: SocialAccountStore
     @StateObject private var socialPrayerStore: SocialPrayerStore
-    @StateObject private var referralStore: ReferralStore
 
     init() {
         _spiritualContentStore = StateObject(
@@ -30,7 +29,6 @@ struct AppRootView: View {
         _socialPrayerStore = StateObject(
             wrappedValue: BackendComposition.makeSocialPrayerStore()
         )
-        _referralStore = StateObject(wrappedValue: BackendComposition.makeReferralStore())
     }
 
     var body: some View {
@@ -61,7 +59,7 @@ struct AppRootView: View {
                 NearbyMosquesView(store: MosqueFinderStore())
                     .transition(.opacity)
             } else if isPaywallPreview {
-                PaywallView(store: subscriptionStore, referralStore: referralStore)
+                PaywallView(store: subscriptionStore)
                     .transition(.opacity)
             } else if isSignInPreview {
                 SocialSignInView(store: socialAccountStore)
@@ -116,7 +114,6 @@ struct AppRootView: View {
             registerStoredRemoteNotificationTokenIfAvailable()
             Task {
                 await subscriptionStore.refreshSubscription()
-                await referralStore.refresh()
             }
         }
         .onChange(of: socialAccountStore.profile?.profileCompletedAt) { _, completedAt in
@@ -293,7 +290,7 @@ struct AppRootView: View {
             SubscriptionLaunchView()
                 .transition(.opacity)
         case .inactive:
-            PaywallView(store: subscriptionStore, referralStore: referralStore)
+            PaywallView(store: subscriptionStore)
                 .transition(.opacity)
         case .active:
             if subscriptionStore.completedPurchaseID != nil {
@@ -374,9 +371,7 @@ struct AppRootView: View {
 
             SocialCircleView(
                 socialPrayerStore: socialPrayerStore,
-                prayerStore: prayerStore,
-                referralStore: referralStore,
-                subscriptionStore: subscriptionStore
+                prayerStore: prayerStore
             )
                 .tabItem {
                     Label(L10n.text(.tabCircle), systemImage: "person.2")
@@ -396,7 +391,6 @@ struct AppRootView: View {
                     reviewPromptStore: reviewPromptStore,
                     socialAccountStore: socialAccountStore,
                     socialPrayerStore: socialPrayerStore,
-                    referralStore: referralStore,
                     onReviewOpportunity: considerReviewPrompt
                 )
             }

@@ -65,13 +65,4 @@ enum BackendComposition {
     static func makeSocialPrayerStore() -> SocialPrayerStore {
         SocialPrayerStore(repositories: makeSocialRepositories())
     }
-
-    static func makeReferralStore() -> ReferralStore {
-        guard let configuration = try? SupabaseBackendConfiguration.load() else {
-            return ReferralStore(repository: nil)
-        }
-        return ReferralStore(
-            repository: SupabaseReferralRepository(client: configuration.makeClient())
-        )
-    }
 }

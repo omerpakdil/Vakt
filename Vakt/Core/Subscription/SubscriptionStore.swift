@@ -1,5 +1,7 @@
 import Foundation
 import RevenueCat
+import StoreKit
+import UIKit
 
 @MainActor
 final class SubscriptionStore: ObservableObject {
@@ -41,7 +43,6 @@ final class SubscriptionStore: ObservableObject {
         let id: String
         let cadence: Cadence
         let displayPrice: String?
-        let introductoryDisplayPrice: String?
         let billingDescription: String
 
         var title: String {
@@ -178,6 +179,31 @@ final class SubscriptionStore: ObservableObject {
         }
     }
 
+    func presentOfferCodeRedemption() async {
+        guard let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }) else {
+            purchaseState = .failed(L10n.string("paywall.error.purchase_failed"))
+            return
+        }
+
+        purchaseState = .idle
+
+        if #available(iOS 18.0, *) {
+            do {
+                try await AppStore.presentOfferCodeRedeemSheet(in: scene)
+            } catch {
+                purchaseState = .failed(L10n.string("paywall.error.purchase_failed"))
+                return
+            }
+        } else {
+            SKPaymentQueue.default().presentCodeRedemptionSheet()
+        }
+
+        try? await Task.sleep(for: .milliseconds(900))
+        await refreshEntitlement()
+    }
+
     func dismissMessage() {
         guard purchaseState != .purchasing else { return }
         purchaseState = .idle
@@ -195,18 +221,13 @@ final class SubscriptionStore: ObservableObject {
             let offerings = try await fetchOfferings()
             let offering = offerings.offering(identifier: offeringID) ?? offerings.current
             let packages = offering?.availablePackages ?? []
-            let eligibilityByProductID = await Purchases.shared.checkTrialOrIntroDiscountEligibility(
-                productIdentifiers: packages.map(\.storeProduct.productIdentifier)
-            )
 
             packagesByPlanID = Dictionary(uniqueKeysWithValues: packages.compactMap { package in
-                let eligibility = eligibilityByProductID[package.storeProduct.productIdentifier]?.status ?? .unknown
-                guard let plan = makePlan(package: package, introEligibility: eligibility) else { return nil }
+                guard let plan = makePlan(package: package) else { return nil }
                 return (plan.id, package)
             })
             plans = packages.compactMap { package in
-                let eligibility = eligibilityByProductID[package.storeProduct.productIdentifier]?.status ?? .unknown
-                return makePlan(package: package, introEligibility: eligibility)
+                makePlan(package: package)
             }
             .sorted { $0.cadence < $1.cadence }
         } catch {
@@ -274,28 +295,7 @@ final class SubscriptionStore: ObservableObject {
         )
     }
 
-    func redeemReferralReward(productID: String, offerID: String) async throws {
-        guard let package = packagesByPlanID[productID] else {
-            throw ReferralPurchaseError.productUnavailable
-        }
-        guard let discount = package.storeProduct.discounts.first(where: {
-            $0.offerIdentifier == offerID && $0.type == .promotional
-        }) else {
-            throw ReferralPurchaseError.offerUnavailable
-        }
-
-        let offer = try await Purchases.shared.promotionalOffer(
-            forProductDiscount: discount,
-            product: package.storeProduct
-        )
-        let result = try await Purchases.shared.purchase(package: package, promotionalOffer: offer)
-        apply(customerInfo: result.customerInfo)
-    }
-
-    private func makePlan(
-        package: RevenueCat.Package,
-        introEligibility: IntroEligibilityStatus = .unknown
-    ) -> Plan? {
+    private func makePlan(package: RevenueCat.Package) -> Plan? {
         let productID = package.storeProduct.productIdentifier
 
         let cadence: Plan.Cadence
@@ -319,27 +319,8 @@ final class SubscriptionStore: ObservableObject {
             id: productID,
             cadence: cadence,
             displayPrice: package.storeProduct.localizedPriceString,
-            introductoryDisplayPrice: introductoryPrice(
-                for: package,
-                cadence: cadence,
-                eligibility: introEligibility
-            ),
             billingDescription: billingDescription(for: cadence)
         )
-    }
-
-    private func introductoryPrice(
-        for package: RevenueCat.Package,
-        cadence: Plan.Cadence,
-        eligibility: IntroEligibilityStatus
-    ) -> String? {
-        guard cadence == .yearly,
-              eligibility == .eligible,
-              let discount = package.storeProduct.introductoryDiscount,
-              discount.paymentMode == .payUpFront else {
-            return nil
-        }
-        return discount.localizedPriceString
     }
 
     private func billingDescription(for cadence: Plan.Cadence) -> String {
@@ -404,14 +385,12 @@ final class SubscriptionStore: ObservableObject {
             id: SubscriptionStore.monthlyProductID,
             cadence: .monthly,
             displayPrice: nil,
-            introductoryDisplayPrice: nil,
             billingDescription: L10n.string("paywall.billing.monthly")
         ),
         Plan(
             id: SubscriptionStore.yearlyProductID,
             cadence: .yearly,
             displayPrice: nil,
-            introductoryDisplayPrice: nil,
             billingDescription: L10n.string("paywall.billing.yearly")
         )
     ]
@@ -438,16 +417,4 @@ private enum RevenueCatStoreError: Error {
 
 private enum RevenueCatPurchaseError: Error {
     case cancelled
-}
-
-private enum ReferralPurchaseError: LocalizedError {
-    case productUnavailable
-    case offerUnavailable
-
-    var errorDescription: String? {
-        switch self {
-        case .productUnavailable: L10n.string("paywall.error.referral_product_unavailable")
-        case .offerUnavailable: L10n.string("paywall.error.referral_offer_unavailable")
-        }
-    }
 }

@@ -105,18 +105,32 @@ private struct LocationPermissionSetupView: View {
                 )
                 .padding(.top, 14)
 
-                Button {
-                    isCityPickerPresented = true
-                } label: {
-                    Text(L10n.string("permission.location.continue_without"))
-                        .font(VaktFont.button(13))
-                        .foregroundStyle(Color.vaktMuted)
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .contentShape(Rectangle())
+                Group {
+                    if prayerStore.locationAuthorizationStatus != .notDetermined {
+                        Button {
+                            if prayerStore.locationAccessNeedsSettings {
+                                onOpenSettings()
+                            } else {
+                                isCityPickerPresented = true
+                            }
+                        } label: {
+                            Text(L10n.string(
+                                prayerStore.locationAccessNeedsSettings
+                                    ? "open_settings"
+                                    : "permission.location.choose_city"
+                            ))
+                                .font(VaktFont.button(13))
+                                .foregroundStyle(Color.vaktMuted)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isLocating)
+                        .padding(.top, 4)
+                    } else {
+                        Color.clear.frame(height: 48)
+                    }
                 }
-                .buttonStyle(.plain)
-                .disabled(isLocating)
-                .padding(.top, 4)
                 .padding(.bottom, max(8, proxy.safeAreaInsets.bottom))
             }
             .padding(.horizontal, VaktSpace.lg)
@@ -173,30 +187,44 @@ private struct LocationPermissionSetupView: View {
     }
 
     private var locationActionTitle: String {
+        if prayerStore.locationAuthorizationStatus == .notDetermined {
+            return L10n.string("action.continue")
+        }
+        if prayerStore.locationAuthorizationStatus == .denied ||
+            prayerStore.locationAuthorizationStatus == .restricted {
+            return L10n.string("permission.location.choose_city")
+        }
         if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
             return L10n.string("common.retry")
-        }
-        if prayerStore.locationAccessNeedsSettings {
-            return L10n.string("open_settings")
         }
         if case .failed = prayerStore.status {
             return L10n.string("common.retry")
         }
-        return L10n.string("action.use_location")
+        return L10n.string("action.continue")
     }
 
     private var locationActionIcon: String {
+        if prayerStore.locationAuthorizationStatus == .denied ||
+            prayerStore.locationAuthorizationStatus == .restricted {
+            return "building.2"
+        }
         if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
             return "arrow.clockwise"
         }
-        return prayerStore.locationAccessNeedsSettings ? "gear" : "location.fill"
+        return prayerStore.locationAuthorizationStatus == .notDetermined
+            ? "arrow.right"
+            : "location.fill"
     }
 
     private var locationAction: () -> Void {
+        if prayerStore.locationAuthorizationStatus == .denied ||
+            prayerStore.locationAuthorizationStatus == .restricted {
+            return { isCityPickerPresented = true }
+        }
         if case .failed = prayerStore.status, prayerStore.manualLocationName != nil {
             return prayerStore.retryPrayerTimes
         }
-        return prayerStore.locationAccessNeedsSettings ? onOpenSettings : onRequestLocation
+        return onRequestLocation
     }
 }
 

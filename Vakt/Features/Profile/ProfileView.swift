@@ -16,7 +16,6 @@ struct ProfileView: View {
     @ObservedObject var reviewPromptStore: ReviewPromptStore
     @ObservedObject var socialAccountStore: SocialAccountStore
     @ObservedObject var socialPrayerStore: SocialPrayerStore
-    @ObservedObject var referralStore: ReferralStore
     let onReviewOpportunity: (Int) -> Void
 
     @Environment(\.openURL) private var openURL
@@ -30,7 +29,6 @@ struct ProfileView: View {
     @State private var isRemindersPresented = false
     @State private var isDeletionAuthorizationPresented = false
     @State private var isDeveloperPresented = false
-    @State private var isReferralPresented = false
     @State private var isSystemSurfacesPresented = false
 
     var body: some View {
@@ -72,13 +70,8 @@ struct ProfileView: View {
                 subscriptionStore: subscriptionStore,
                 onManageSubscription: openSubscriptionSettings,
                 onRestorePurchases: restorePurchases,
-                onOpenReferrals: {
-                    referralStore.clearMessage()
-                    isAccountPresented = false
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(350))
-                        isReferralPresented = true
-                    }
+                onRedeemOfferCode: {
+                    Task { await subscriptionStore.presentOfferCodeRedemption() }
                 },
                 onOpenTerms: { openURL(VaktExternalLinks.terms) },
                 onOpenPrivacy: { openURL(VaktExternalLinks.privacy) },
@@ -93,9 +86,6 @@ struct ProfileView: View {
                 quietSoundEnabled: $profileSettings.quietNotificationSoundEnabled,
                 onOpenSystemSettings: openSystemSettings
             )
-        }
-        .sheet(isPresented: $isReferralPresented) {
-            ReferralCenterView(store: referralStore, subscriptionStore: subscriptionStore)
         }
         .fullScreenCover(isPresented: $isDeletionAuthorizationPresented) {
             AppleAccountDeletionView(
@@ -1748,7 +1738,7 @@ private struct ProfileAccountSheet: View {
     @ObservedObject var subscriptionStore: SubscriptionStore
     let onManageSubscription: () -> Void
     let onRestorePurchases: () -> Void
-    let onOpenReferrals: () -> Void
+    let onRedeemOfferCode: () -> Void
     let onOpenTerms: () -> Void
     let onOpenPrivacy: () -> Void
     let onRequestSignOut: () -> Void
@@ -1766,7 +1756,7 @@ private struct ProfileAccountSheet: View {
         subscriptionStore: SubscriptionStore,
         onManageSubscription: @escaping () -> Void,
         onRestorePurchases: @escaping () -> Void,
-        onOpenReferrals: @escaping () -> Void,
+        onRedeemOfferCode: @escaping () -> Void,
         onOpenTerms: @escaping () -> Void,
         onOpenPrivacy: @escaping () -> Void,
         onRequestSignOut: @escaping () -> Void,
@@ -1777,7 +1767,7 @@ private struct ProfileAccountSheet: View {
         self.subscriptionStore = subscriptionStore
         self.onManageSubscription = onManageSubscription
         self.onRestorePurchases = onRestorePurchases
-        self.onOpenReferrals = onOpenReferrals
+        self.onRedeemOfferCode = onRedeemOfferCode
         self.onOpenTerms = onOpenTerms
         self.onOpenPrivacy = onOpenPrivacy
         self.onRequestSignOut = onRequestSignOut
@@ -1887,7 +1877,11 @@ private struct ProfileAccountSheet: View {
                     }
 
                     SubscriptionAccountSummary(summary: subscriptionStore.summary)
-                    accountRow(icon: "person.badge.plus", title: L10n.string("account.action.referrals"), action: onOpenReferrals)
+accountRow(
+    icon: "ticket",
+    title: L10n.string("subscription.offer_code.redeem"),
+    action: onRedeemOfferCode
+)
                     accountRow(icon: "rectangle.stack", title: L10n.string("account.action.manage_subscription"), action: onManageSubscription)
                     accountRow(icon: "arrow.clockwise", title: L10n.string("account.action.restore_purchases"), action: onRestorePurchases)
 

@@ -10,6 +10,9 @@ Deno.serve(async (request) => {
     return json({ error: "Unauthorized" }, 401);
   }
 
+  return json({ disabled: true, reason: "Referral subscription rewards were retired." }, 410);
+
+  /*
   const admin = createClient(requiredSecret("SUPABASE_URL"), requiredSecret("SUPABASE_SERVICE_ROLE_KEY"));
   const now = new Date().toISOString();
   await admin.from("referral_rewards").update({ status: "expired", updated_at: now })
@@ -33,6 +36,7 @@ Deno.serve(async (request) => {
     ));
   }
   return json({ finalized: rewards?.length ?? 0 });
+  */
 });
 
 async function sendPush(

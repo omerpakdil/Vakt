@@ -42,7 +42,6 @@ struct StoreScreenshotPreviewRoot: View {
     @StateObject private var reflectionStore = PrayerReflectionStore()
     @StateObject private var socialPrayerStore = SocialPrayerStore(repositories: nil)
     @StateObject private var spiritualContentStore = SpiritualContentStore()
-    @StateObject private var referralStore = ReferralStore(repository: nil)
     @StateObject private var subscriptionStore = SubscriptionStore()
     @StateObject private var mosqueStore = MosqueFinderStore()
     @StateObject private var qiblaStore = QiblaCompassStore()
@@ -145,9 +144,7 @@ struct StoreScreenshotPreviewRoot: View {
 
             SocialCircleView(
                 socialPrayerStore: socialPrayerStore,
-                prayerStore: prayerStore,
-                referralStore: referralStore,
-                subscriptionStore: subscriptionStore
+                prayerStore: prayerStore
             )
             .tabItem { Label(L10n.text(.tabCircle), systemImage: "person.2") }
             .tag(VaktTab.circle)

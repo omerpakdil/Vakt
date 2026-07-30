@@ -11,6 +11,9 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
+  return json({ error: "Referral subscription rewards were retired." }, 410);
+
+  /*
   try {
     const authorization = request.headers.get("Authorization");
     if (!authorization) return json({ error: "Unauthorized" }, 401);
@@ -73,6 +76,7 @@ Deno.serve(async (request) => {
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : "Unexpected error" }, 500);
   }
+  */
 });
 
 async function upsertSnapshot(

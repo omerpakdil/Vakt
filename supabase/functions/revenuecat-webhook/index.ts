@@ -1,7 +1,6 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const allowedProducts = new Set(["vakt_premium_monthly", "vakt_premium_yearly"]);
-const referralOffers = new Set(["vakt_referral_monthly_1m", "vakt_referral_yearly_1m"]);
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -36,9 +35,6 @@ Deno.serve(async (request) => {
     }
 
     await updateSnapshot(admin, event);
-    await rejectRefundedReward(admin, event);
-    await createPendingReward(admin, event);
-    await completeRedemption(admin, event);
     await markProcessed(admin, event.id);
     return json({ received: true });
   } catch (error) {
@@ -64,54 +60,6 @@ async function updateSnapshot(admin: ReturnType<typeof createClient>, event: Rev
     updated_at: new Date().toISOString(),
   });
   if (error) throw error;
-}
-
-async function createPendingReward(admin: ReturnType<typeof createClient>, event: RevenueCatEvent) {
-  const paidInitialPurchase = event.type === "INITIAL_PURCHASE" &&
-    event.period_type === "NORMAL" &&
-    (event.price_in_purchased_currency ?? event.price ?? 0) > 0 &&
-    allowedProducts.has(event.product_id ?? "") &&
-    (event.entitlement_ids ?? []).includes("premium") &&
-    event.app_user_id && event.transaction_id;
-  if (!paidInitialPurchase) return;
-
-  const purchasedAt = isoFromMillis(event.purchased_at_ms);
-  if (!purchasedAt) return;
-  const { error } = await admin.rpc("register_referral_purchase", {
-    input_invitee_id: event.app_user_id,
-    input_source_event_id: event.id,
-    input_source_transaction_id: event.transaction_id,
-    input_purchased_at: purchasedAt,
-  });
-  if (error) throw error;
-}
-
-async function rejectRefundedReward(admin: ReturnType<typeof createClient>, event: RevenueCatEvent) {
-  if (event.type !== "REFUND" || !event.app_user_id) return;
-  await admin.from("referral_rewards").update({
-    status: "rejected",
-    rejected_reason: "source_purchase_refunded",
-    updated_at: new Date().toISOString(),
-  }).eq("invitee_id", event.app_user_id).in("status", ["pending", "earned", "redeeming"]);
-}
-
-async function completeRedemption(admin: ReturnType<typeof createClient>, event: RevenueCatEvent) {
-  if (!event.app_user_id || !event.offer_code || !referralOffers.has(event.offer_code)) return;
-  const { data: reward } = await admin.from("referral_rewards")
-    .select("id")
-    .eq("inviter_id", event.app_user_id)
-    .eq("status", "redeeming")
-    .eq("promotional_offer_id", event.offer_code)
-    .order("redemption_started_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  if (!reward) return;
-  await admin.from("referral_rewards").update({
-    status: "redeemed",
-    redeemed_at: new Date().toISOString(),
-    redemption_event_id: event.id,
-    updated_at: new Date().toISOString(),
-  }).eq("id", reward.id);
 }
 
 async function markProcessed(admin: ReturnType<typeof createClient>, eventID: string) {
